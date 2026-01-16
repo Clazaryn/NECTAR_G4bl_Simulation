@@ -2,8 +2,8 @@
 ; This file is structured for easy reading by both Python and C++
 
 [beam_info]
-reaction = 206Pbdp      ; reaction of interest (mostly used for labelling) 
-beam_A = 206            ; Beam mass number A
+reaction = 205Pbdp      ; reaction of interest (mostly used for labelling) 
+beam_A = 205            ; Beam mass number A
 beam_q = 82             ; Beam charge state
 beam_Z = 82             ; Beam atomic number Z
 beam_EuA = 13           ; Beam energy in MeV/u 
@@ -17,7 +17,7 @@ disp_x = 1.79           ; Dispersion x (m) of the beam at z=0
 [target_info]
 targ_A = 2              ; Target mass number A
 targ_Z = 1              ; Target atomic number Z
-targ_radius = 2.5       ; Target radius in mm  
+targ_radius = 0.5       ; Target radius in mm  
 targ_x0 = 0             ; Target center position x at z=0 in mm 
 
 [ejectile_info]
@@ -25,36 +25,31 @@ ejec_A = 1              ; Ejectile mass number A
 ejec_Z = 1              ; Ejectile atomic number Z
 
 [recoil_info]
-recoil_A = 207          ; Recoil mass number A
+recoil_A = 206          ; Recoil mass number A
 recoil_Z = 82           ; Recoil atomic number Z
 recoil_q = 82           ; Recoil nucleus charge state
 
 ; ---------- reocil excitation energies ---------- 
-recoil_excEns = 0.005, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0, 22.0, 23.0, 24.0, 25.0, 26.0
+recoil_excEns = 0.005, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0, 22.0, 23.0, 24.0, 25.0
 
-[separation_energies]
-; 206Pb(p,p')/(d,d')
-;rec_Sn = 8.08666       ; 206Pb neutron separation energy in MeV
-;rec_S2n = 6.73166      ; 205Pb neutron separation energy in MeV
-;rec_S3n = 8.39465      ; 204Pb neutron separation energy in MeV
-; 206Pb(d,p)
-rec_Sn = 6.73778        ; 207Pb neutron separation energy in MeV
-rec_S2n = 8.08666       ; 206Pb neutron separation energy in MeV
-rec_S3n = 6.73166       ; 205Pb neutron separation energy in MeV
+[separation_energies]   ; 206Pb(p,p')/(d,d') or 205Pb(d,p)
+rec_Sn = 8.08666        ; 206Pb neutron separation energy in MeV
+rec_S2n = 6.73166       ; 205Pb neutron separation energy in MeV
+rec_S3n = 8.39465       ; 204Pb neutron separation energy in MeV
 
 [reaction_masses]       ; Reaction masses (MeV) used by event_gen_nChamb.py
-mass_beam = 191863.4316910629       ; 206Pb
+mass_beam = 190931.95295829562      ; 205Pb
 mass_target = 1876.1239276943375    ; deuterium
-mass_recoil = 192796.25932043995    ; 207Pb
+mass_recoil = 191863.4316910629     ; 206Pb
 mass_eject = 938.7830736444523      ; proton
 
-[ring_params]
+[ring_params]           ; Determined using Q1_dipole-old_ESR_std
 dip_radius = 6.357      ; Radius dipole magnet (m)
 quad_Leff = 0.289       ; Quadrupole effectile length (m)
-dip_Brho = 1.308197478  ; Beam magnetic rigidity (Tm)
-dip_Bfld = 0.205788497  ; Dipole magnetic field in (T) 
-quad_Q1 = -0.667803196  ; Quadrupole strength Qi  
-quad_Q2 = 0.601179286
-quad_Q3 = 0.440604581
-quad_Q4 = -0.595779846
-quad_Q5 = 0.551111489
+dip_Brho = 1.302126791  ; Beam magnetic rigidity (Tm)
+dip_Bfld = 0.204833536  ; Dipole magnetic field in (T) 
+quad_Q1 = -0.664704257  ; Quadrupole strength Qi  
+quad_Q2 = 0.598389515
+quad_Q3 = 0.438559957
+quad_Q4 = -0.593015131
+quad_Q5 = 0.548554058

@@ -30,9 +30,9 @@ recoil_Z = 82           ; Recoil atomic number Z
 recoil_q = 82           ; Recoil nucleus charge state
 
 ; ---------- reocil excitation energies ---------- 
-recoil_excEns = 0.005, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0, 22.0, 23.0, 24.0, 25.0
+recoil_excEns = 0.005, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0, 30.0
 
-[separation_energies]   ; 206Pb(p,p')/(d,d') or 205Pb(d,p)
+[separation_energies]   ; for 205Pb(d,p)
 rec_Sn = 8.08666        ; 206Pb neutron separation energy in MeV
 rec_S2n = 6.73166       ; 205Pb neutron separation energy in MeV
 rec_S3n = 8.39465       ; 204Pb neutron separation energy in MeV
@@ -43,13 +43,13 @@ mass_target = 1876.1239276943375    ; deuterium
 mass_recoil = 191863.4316910629     ; 206Pb
 mass_eject = 938.7830736444523      ; proton
 
-[ring_params]
+[ring_params]           ; Determined using Q1_dipole-old_ESR_std
 dip_radius = 6.357      ; Radius dipole magnet (m)
 quad_Leff = 0.289       ; Quadrupole effectile length (m)
 dip_Brho = 1.302126791  ; Beam magnetic rigidity (Tm)
 dip_Bfld = 0.204833536  ; Dipole magnetic field in (T) 
-quad_Q1 = -0.642244337  ; Quadrupole strength Qi  
-quad_Q2 = 0.582518761
-quad_Q3 = 0.431700159
-quad_Q4 = -0.569781882
-quad_Q5 = 0.516041501
+quad_Q1 = -0.664704257  ; Quadrupole strength Qi  
+quad_Q2 = 0.598389515
+quad_Q3 = 0.438559957
+quad_Q4 = -0.593015131
+quad_Q5 = 0.548554058

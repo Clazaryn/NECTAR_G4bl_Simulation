@@ -43,7 +43,7 @@ mass_target = 1876.1239276943375    ; deuterium
 mass_recoil = 126596.57059280336    ; 136Xe
 mass_eject = 938.7830736444523      ; proton
 
-[ring_params]
+[ring_params]           ; Determined using Q1_dipole-old_ESR_std
 dip_radius = 6.357      ; Radius dipole magnet (m)
 quad_Leff = 0.289       ; Quadrupole effectile length (m)
 dip_Brho = 1.301393967  ; Beam magnetic rigidity (Tm)
