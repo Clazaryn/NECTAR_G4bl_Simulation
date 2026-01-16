@@ -1,0 +1,4 @@
+__pycache__/
+BACKUPS/
+nuclidemaster/__pycache__/
+nuclidemaster/nuclide_data.py.bak

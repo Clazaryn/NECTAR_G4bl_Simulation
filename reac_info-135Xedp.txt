@@ -1,0 +1,55 @@
+; NECTAR Simulations Reaction Information - INI Format
+; This file is structured for easy reading by both Python and C++
+
+[beam_info]
+reaction = 135Xedp      ; reaction of interest (mostly used for labelling) 
+beam_A = 135            ; Beam mass number A
+beam_q = 54             ; Beam charge state
+beam_Z = 54             ; Beam atomic number Z
+beam_EuA = 13           ; Beam energy in MeV/u 
+sig_pup = 0.0002        ; Rms value of momentum distribution spread 
+emit_x = 5e-07          ; Horizontal emittance of stored ion beam in m rad 
+emit_y = 5e-07          ; Vertical emittance of stored ion beam in m rad 
+beta_x = 11.58          ; Horizontal beta function in m at target position 
+beta_y = 4.709          ; Vertical beta function in m at target position 
+disp_x = 1.79           ; Dispersion x (m) of the beam at z=0
+
+[target_info]
+targ_A = 2              ; Target mass number A
+targ_Z = 1              ; Target atomic number Z
+targ_radius = 0.5       ; Target radius in mm  
+targ_x0 = 0             ; Target center position x at z=0 in mm 
+
+[ejectile_info]
+ejec_A = 1              ; Ejectile mass number A
+ejec_Z = 1              ; Ejectile atomic number Z
+
+[recoil_info]
+recoil_A = 136          ; Recoil mass number A
+recoil_Z = 54           ; Recoil atomic number Z
+recoil_q = 54           ; Recoil nucleus charge state
+
+; ---------- reocil excitation energies ---------- 
+recoil_excEns = 0.005, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0, 22.0, 23.0, 24.0, 25.0, 26.0
+
+[separation_energies]   ; 136Xe(p,p')/(d,d') or 135Xe(d,p)
+rec_Sn = 8.08712        ; 136Xe neutron separation energy in MeV
+rec_S2n = 6.35885       ; 135Xe neutron separation energy in MeV
+rec_S3n = 8.55357       ; 134Xe neutron separation energy in MeV
+
+[reaction_masses]       ; Reaction masses (MeV) used by event_gen_nChamb.py
+mass_beam = 125665.08394233619      ; 135Xe
+mass_target = 1876.1239276943375    ; deuterium
+mass_recoil = 126596.57059280336    ; 136Xe
+mass_eject = 938.7830736444523      ; proton
+
+[ring_params]
+dip_radius = 6.357      ; Radius dipole magnet (m)
+quad_Leff = 0.289       ; Quadrupole effectile length (m)
+dip_Brho = 1.301393967  ; Beam magnetic rigidity (Tm)
+dip_Bfld = 0.204718258  ; Dipole magnetic field in (T) 
+quad_Q1 = -0.641882889  ; Quadrupole strength Qi  
+quad_Q2 = 0.582190925
+quad_Q3 = 0.431457203
+quad_Q4 = -0.569461215
+quad_Q5 = 0.515751078
