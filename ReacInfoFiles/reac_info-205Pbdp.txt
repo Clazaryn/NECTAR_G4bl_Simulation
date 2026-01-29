@@ -33,9 +33,9 @@ recoil_q = 82           ; Recoil nucleus charge state
 recoil_excEns = 0.005, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0, 30.0
 
 [separation_energies]   ; for 205Pb(d,p)
-rec_Sn = 8.08666        ; 206Pb neutron separation energy in MeV
-rec_S2n = 6.73166       ; 205Pb neutron separation energy in MeV
-rec_S3n = 8.39465       ; 204Pb neutron separation energy in MeV
+Sn_CN = 8.08666         ; 206Pb neutron separation energy in MeV
+Sn_1nDght = 6.73166     ; 205Pb neutron separation energy in MeV
+Sn_2nDght = 8.39465     ; 204Pb neutron separation energy in MeV
 
 [reaction_masses]       ; Reaction masses (MeV) used by event_gen_nChamb.py
 mass_beam = 190931.95295829562      ; 205Pb

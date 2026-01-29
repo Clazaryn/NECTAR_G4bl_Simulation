@@ -17,245 +17,215 @@
 from __future__ import print_function
 import numpy as np
 import math
-import os.path
-import random
-import scipy.constants as const                 # this package is for obtaining physical constants
+from scipy.stats import gamma
+import phys_functions as funcs
 
-from nuclidedatamaster import nuclide_data      # this requires the nuclidedatamaster directory
-from func_ah import *                           # to import a file containing functions
-from nuclear_mass_converter import atomic_to_nuclear_mass  # to convert atomic masses to nuclear masses
+amu = 931.49410242              # atomic mass constant from 2025 CODATA
 
-amu=931.49410242                                # atomic mass constant from 2025 CODATA
+max_emission_mode = False       # boolean to switch between max recoil cone and realistic multi-step emission
 
 # _______________________________________________________________________________________________
-# TWO BODY COLLISION FUNCTION 
+# TWO BODY COLLISION FUNCTION - E1, E3, etc. are kinetic energies
 
-def two_body_col(E1,m1,m2,m3,m4,Eex,particle,Eex_min_2sol):
-
-    E3_threshold=0.05
-
+def two_body_col(E1, m1, m2, m3, m4, Eex, particle, Eex_min_2sol):
+    thetaOK = False     # boolean to indicate if the ejectile angle is kinematically allowed
+    
     # Sampling angle in the whole telescope area (taking into account target radius angular resolution)
-    theta3 = np.arccos(1 - 2 * np.random.uniform(0.0, 0.5))
-    #theta3=np.random.uniform(35.0,90.0)*math.pi/180;
-    #theta3=60*math.pi/180;
+    #theta3_lab = np.random.uniform(51.0, 69.0) * math.pi / 180     # use for old telescope acceptance
+    theta3_lab = np.arccos(1 - 2 * np.random.uniform(0.0, 1.0))     # isotropic in the lab frame - edit uniform distribution [0,1] -> [0,2pi]
     
-    # Q value 
-    Q=Q_val_proj_targ_ejec(m1,m2,m3,m4)  
-    #print("Excitation energy Eex (MeV) : ",Eex,"Q value : ",Q)
-    #print("Theta ejectile -> degree : ",theta3*180/math.pi,"radian : ",theta3,"cosinus : ",math.cos(theta3))
+    # Q value       - $$$$ not used in current build $$$$
+    # Q = Q_val_proj_targ_ejec(m1, m2, m3, m4)
 
-    # Relativistic kinematics equations
-    Etot = E1 + m1 + m2
-    m4_new=m4+Eex
-    P1 = math.sqrt(math.pow(E1,2)+2.*E1*m1)
-    a=4.*math.pow(P1,2)*math.pow(math.cos(theta3),2.)-4.*math.pow(Etot,2.)
-    b=4.*math.pow(Etot,3.)-4.*math.pow(P1,2.)*Etot+4.*math.pow(m3,2.)*Etot-4.*math.pow(m4_new,2.)*Etot
-    c=2.*math.pow(P1,2.)*math.pow(Etot,2.)-2.*math.pow(m3,2.)*math.pow(Etot,2.)+2.*math.pow(m3,2.)*math.pow(P1,2.)+2.*math.pow(m4_new,2.)*math.pow(Etot,2.)-2.*math.pow(m4_new,2.)*math.pow(P1,2.)+2.*math.pow(m3,2.)*math.pow(m4_new,2.)-math.pow(Etot,4.)-math.pow(P1,4.)-math.pow(m4_new,4.)-math.pow(m3,4.)-4.*math.pow(m3,2.)*math.pow(P1,2.)*math.pow(math.cos(theta3),2.)
-    delta = math.pow(b,2.)-4.*a*c
-    #print("Etot : ",Etot,"Beam momentum P1 : ",P1,"Beam energy E1 : ",E1)
-    #print("a",a,"b",b,"c",c,"delta",delta);
+    # Relativistic kinematics equations - solving for a defined angle theta3_lab of the ejectile
+    Etot = E1 + m1 + m2     # total energy in the lab frame
+    m4_new = m4 + Eex       # new mass of the target nucleus after excitation
+    P1_lab = funcs.momentum_rel(E1, m1)      # beam momentum in the lab frame
 
-    # Calculating kinematic solutions for ejectile
-    # Quadratic equation
-    if(delta>=0):   # Delta < 0
-        E3_m=(-b-math.sqrt(delta))/(2*a)-m3
-        E3_p=(-b+math.sqrt(delta))/(2*a)-m3
-        if(E3_m>0 and E3_p>0):
-            n_sol=2
-            thetaOK=1
-            #print("okay")       
-        else:
-            n_sol=0
-            E3=0
-    elif(delta==0): # Delta = 0
-        thetaOK=1
-        n_sol=2
-        E3_m=-b/(2*a)-m3
-        E3_p=-b/(2*a)-m3
-    else:           # Delta > 0
-        n_sol=0
-        E3=0
-        thetaOK=0
+    # Centre of Mass quantities - needed to determine solution space
+    Beta_CM_vec = np.array([0.0, 0.0, P1_lab]) / Etot                   # CM beta vector is conserved in collision
+    Gamma_CM = 1. / math.sqrt(1 - np.dot(Beta_CM_vec, Beta_CM_vec))     # Center of mass final velocity - gamma
+    Etot_CM = math.sqrt((m1 + m2)**2 + 2*E1*m2)                      # total energy in the CM frame (had to hack E1/m1 to get MeV/u)
+    E3_CM = (Etot_CM**2 + m3**2 - m4_new**2) / (2. * Etot_CM)           # E3 in the CM frame
+    Gamma3_ratio = ((E3_CM/m3) / Gamma_CM)**2                           # ratio of Lorentz factor of E3 and CM frame
+    # if Gamma3_ratio >= 1, then only the first kinematic solution is allowed. If Gamma3_ratio < 1, then 2 solutions emerge.
 
-    # In case of 2 solutions, we take a random one 
-    # (and checks the energy threshold for 2nd solution)
-    #random_solution=random.randint(1,2)
-    random_solution=1
-    if(n_sol==2):   # 2 solutions or 1 solution
-        if(E3_p>=E3_m):
-            E3_1sol=E3_p
-            E3_2sol=E3_m
-        else:
-            E3_1sol=E3_m
-            E3_2sol=E3_p
-        if (random_solution==1):
-            E3=E3_1sol
-            #print("E3",E3)
-        elif(random_solution==2 and Eex>Eex_min_2sol):
-            E3=E3_2sol
-            #print("E3",E3)
-        else:
-            E3=0
-            n_sol=0
+    # '''''''''' Solving kinematic quadratic equation for lab frame solutions ''''''''''''
+    # next we solve the quadratic equation grouped as parameters of the ejectile energy E3. 
+    # This solution is derived in: https://personalpages.surrey.ac.uk/w.catford/kinematics/relativistic-kinematics-carl-wheldon.pdf
+    a = 4. * P1_lab**2 * math.cos(theta3_lab)**2 - 4. * Etot**2
+    b = 4. * Etot * (Etot**2 - P1_lab**2  + m3**2 - m4_new**2)
+    c = (2. * P1_lab**2 * Etot**2 - 2. * m3**2 * Etot**2 + 2. * m3**2 * P1_lab**2 
+        + 2. * m4_new**2 * Etot**2 - 2. * m4_new**2 * P1_lab**2 + 2. * m3**2 * m4_new**2 
+        - Etot**4. - P1_lab**4. - m3**4. - m4_new**4. 
+        - 4. * m3**2 * P1_lab**2 * math.cos(theta3_lab)**2
+    )
+    delta = b**2 - 4. * a * c
 
-    if(n_sol==0): # exit loop
-        #print("No solution")
-        thetaOK=0
-        E3,E4,pX_4,pY_4,pZ_4,pX_3,pY_3,pZ_3,theta4,theta3,theta4_CM,theta3_CM,phi4_lab=0,0,0,0,0,0,0,0,0,0,0,0,0 
+    # Sorting kinematic solutions for ejectile
+    if delta < 0:       # no real solutions, exiting function
+        return thetaOK, 0, 0, 0, 0, 0, 0
 
-    # Center of mass kinematics     
-    if(n_sol==2):
-        # Ejectile lab frame 
-        P3=momentum_rel(E3,m3)                                      # Ejectile momentum in lab frame
-        #print("P3",P3,"E3",E3)
-
-        # Recoil lab frame 
-        E4=Etot-E3-m3-m4_new                                        # Recoil energy in lab frame
-        P4=math.sqrt(math.pow(E4+m4_new,2)-math.pow(m4_new,2))      # Recoil momentum in lab frame
-        #print("m1",m1,"E1",E1,"m3",m3,"E3",E3)
-
-        # somtimes there's a rounding error when cos_arg is exactly 1 (ie theta4=0)
-        cos_arg = (m1*E1 + m4_new*E4 - m3*E3) / (2 * math.sqrt(m1 * m4_new * E1 * E4))
-        if(cos_arg<1):  # Select "good events": ie physical values for theta4
-            theta4=math.acos(cos_arg)   # Recoil theta angle in lab frame (radian)
-        elif(1<cos_arg<1.000001):   # rounding error
-            theta4=0
-        else:   # if truly unphysical, throw error
-            theta4=0
-            thetaOK=0
+    if Gamma3_ratio >= 1:       # only the first kinematic solution exists
+        if (math.cos(theta3_lab) >= 0):             # minus solution is correct for forward hemisphere
+            E3_lab = (-b - math.sqrt(delta)) / (2*a) - m3
+        else:                                       # plus solution is correct for backward hemisphere
+            E3_lab = (-b + math.sqrt(delta)) / (2*a) - m3
         
-        #print("E4",E4,"P4",P4,"theta4",theta4*180/math.pi)
-        # '''''''''' Center of mass frame  ''''''''''''
-        # Velocities
-        Beta_CM_ini=P1/Etot                                         # Center of mass initial velocity - beta 
-        E_CM=E1*m2/(m1+m2)                                          # Center of mass energy 
-        Gamma_CM_ini=1./math.sqrt(1-math.pow(Beta_CM_ini,2))        # Center of mass initial velocity - gamma         
-        Beta_CM_fin=math.sqrt(math.pow((Gamma_CM_ini*(m1+m2)*Beta_CM_ini)/(m3+m4_new),2)/(1+math.pow((Gamma_CM_ini*(m1+m2)*Beta_CM_ini)/(m3+m4_new),2)))     # Center of mass initial velocity - beta
-        Gamma_CM_fin=1./math.sqrt(1-math.pow(Beta_CM_fin,2))        # Center of mass final velocity - gamma            
-        #print("Beta_CM_ini",Beta_CM_ini,"Gamma_CM_ini",Gamma_CM_ini)         
-        #print("Beta_CM_fin",Beta_CM_fin,"Gamma_CM_fin",Gamma_CM_fin)
-        # Energies
-        E3_CM=Gamma_CM_fin*(E3+m3-P3*math.cos(theta3)*Beta_CM_fin)      # Ejectile CM energy
-        P3_CM=math.sqrt(math.pow(E3_CM,2)-math.pow(m3,2))               # Ejectile CM momentum
-        E4_CM=Gamma_CM_fin*(E4+m4_new-P4*math.cos(theta4)*Beta_CM_fin)  # Recoil CM energy
-        P4_CM=math.sqrt(math.pow(E4_CM,2)-math.pow(m4_new,2))           # Recoil CM momentum
-        #print("E3CM",E3_CM,"P3_CM",P3_CM,"E4_CM",E4CM,"P4_CM",P4_CM)
-        # Angles
-        theta3_CM=math.atan((P3*math.sin(theta3))/(Gamma_CM_fin*(P3*math.cos(theta3)-(E3+m3)*Beta_CM_fin)))*180/math.pi # Ejectile CM theta angle
-        if(theta3_CM<0):
-            theta3_CM=theta3_CM+180
-        theta4_CM=180-theta3_CM                                         # Recoil CM theta angle        
-        #print("theta3_CM",theta3_CM,"theta4_CM",theta4_CM)
-        phi3_lab = np.random.uniform(0.0, math.pi)                      # Ejectile lab phi angle
-        phi4_lab = -phi3_lab;                                           # Recoil lab phi angle
-        if(phi4_lab<0):
-            phi4_lab = phi4_lab+2*math.pi
-        # Momenta
-        pX_3,pY_3,pZ_3=SetMagThetaPhi(P3,theta3,phi3_lab)              # Ejectile lab momentum x,y,z
-        pX_4,pY_4,pZ_4=SetMagThetaPhi(P4,theta4,phi4_lab)              # Recoil lab momentum x,y,z
-        #print("pX_4",pX_4,"pY_4",pY_4,"pZ_4",pZ_4)
-        #print("pX_3",pX_3,"pY_3",pY_3,"pZ_3",pZ_3)
-        # Checking variables  
-        #P3_check=Mag(pX_3,pY_3,pZ_3)
-        #E3_check=math.sqrt(math.pow(P3_check,2)+math.pow(m3,2))
-        #print("P3 after CM",P3_check,"E3 after CM",E3_check-m3)         
-        #phi_3,theta_3 = get_theta_phi(pX_3,pY_3,pZ_3)        
-        #print("theta3_check",theta3*180/math.pi)    
-        #
-        #P4_check=Mag(pX_4,pY_4,pZ_4)
-        #E4_check=math.sqrt(math.pow(P4_check,2)+math.pow(m4_new,2))
-        #print("P4 after CM",P4_check,"E4 after CM",E4_check-m4_new)         
-        #phi_4,theta_4 = get_theta_phi(pX_4,pY_4,pZ_4)
-        #print("theta4_check",theta_4*180/math.pi)
+        if (E3_lab > 0):        # energies must be positive
+            thetaOK = True      # valid solution, continue 
+        else:
+            return thetaOK, 0, 0, 0, 0, 0, 0        # no valid solution, exiting function
 
-        if(thetaOK==0):
-            print("test failed: recoil angle unphysical, cos argument: {:.8f}".format(cos_arg))
-            E3,E4,pX_4,pY_4,pZ_4,pX_3,pY_3,pZ_3,theta4,theta3,theta4_CM,theta3_CM,phi4_lab=0,0,0,0,0,0,0,0,0,0,0,0,0
+    elif (0 < Gamma3_ratio < 1 and theta3_lab < math.pi/2):    # when Gamma3_ratio is strictly less than 1, two kinematic solutions exist
+        E3_1sol = (-b + math.sqrt(delta)) / (2*a) - m3
+        E3_2sol = (-b - math.sqrt(delta)) / (2*a) - m3
+        if (E3_1sol > 0 and E3_2sol > 0):            # energies must be positive and 2 solutions exist
+            thetaOK = True      # valid solution, continue 
+        else:
+            return thetaOK, 0, 0, 0, 0, 0, 0        # no valid solution, exiting function
+        
+        #chosen_sol = 1
+        chosen_sol = np.random.randint(1, 3)       # if random is desired
+        if (chosen_sol == 1):       # if chosen_sol = 1, use the first solution
+            E3_lab = E3_1sol
+        elif(chosen_sol == 2 and Eex > Eex_min_2sol):   # if chosen_sol = 2, use the second solution if it is above the threshold
+            E3_lab = E3_2sol
+        else:       # if below threshold, set to 0
+            return thetaOK, 0, 0, 0, 0, 0, 0                # below threshold, exiting function
 
-    return E3,E4,pX_4,pY_4,pZ_4,pX_3,pY_3,pZ_3,theta4,theta3,theta4_CM,theta3_CM,phi4_lab,thetaOK
+    else:
+        if Gamma3_ratio < 0: 
+            raise ValueError("Unphysical Gamma3_ratio: Gamma3_ratio = ", Gamma3_ratio, " How did we get here?")
+        return thetaOK, 0, 0, 0, 0, 0, 0                # below threshold, exiting function
+        
+    # '''''''''' defining collision product kinematics ''''''''''''
+    P3_lab = funcs.momentum_rel(E3_lab, m3)                     # Ejectile momentum in lab frame
+    E4_lab = Etot - E3_lab - m3 - m4_new                        # Recoil kinetic energy in lab frame
+    P4_lab = funcs.momentum_rel(E4_lab, m4_new)                 # Recoil momentum in lab frame
+    # From momentum conservation: 0 = P3*sin(theta3_lab) - P4*sin(theta4) (transverse plane)
+    theta4_lab = math.asin((P3_lab * math.sin(theta3_lab)) / P4_lab)    # Recoil theta angle in lab frame (radian)
+    
+    # set random phi angles
+    phi3 = np.random.uniform(-math.pi, math.pi)     # Ejectile lab phi angle
+    phi4 = -phi3                                # Recoil lab phi angle
+    if(phi4 < 0):
+        phi4 = phi4 + 2 * math.pi
+    
+    # Momenta in four-vector format
+    FV3_lab = np.concatenate(([E3_lab + m3], funcs.spherical_to_cartesian(P3_lab, theta3_lab, phi3)))       # Ejectile four-vector
+    FV4_lab = np.concatenate(([E4_lab + m4_new], funcs.spherical_to_cartesian(P4_lab, theta4_lab, phi4)))   # Recoil four-vector
+    # CM Angles for plotting
+    FV3_CM = funcs.lorentz_boost(FV3_lab, -Beta_CM_vec, Gamma_CM)
+    theta3_CM = math.acos(FV3_CM[3] / np.linalg.norm(FV3_CM[1:4]))
+    theta4_CM = math.pi - theta3_CM 
+
+    return thetaOK, FV3_lab, theta3_lab, theta3_CM, FV4_lab, theta4_lab, theta4_CM
 
 # _______________________________________________________________________________________________
-# GAMMA DEEXCITATION FUNCTION : A relativistic version will have to be done at some point
+# GAMMA DEEXCITATION FUNCTION : A relativistic deexcitation function with options for single-step or cascade gamma emission
 
-def dexec_gamma(mass_recoil,q_recoil,Ek_recoil,Eex_before,E_gamma):
+def deexec_gamma(A_recoil, FV4, Eex):
+    # determine CM frame velocity from recoil before decay
+    Beta_CM_vec = FV4[1:4] / FV4[0]                                 # beta vector = momentum / total_energy
+    Gamma_CM = 1. / math.sqrt(1 - np.linalg.norm(Beta_CM_vec)**2)   # CM velocity - gamma
+    FV4_CM = funcs.lorentz_boost(FV4, -Beta_CM_vec, Gamma_CM)       # boost recoil to the CM frame to start the deexcitation process
 
-    if E_gamma<=0 : 
-        E_gamma=Eex_before #desexcitation gamma
+    # de-excitation function chooses mode of emission based on max_emission_mode
+    if max_emission_mode or Eex < 2.0:              # also single step for low excitation energies
+        E_gamma = Eex                               # single step gamma emission - worse case scenario
 
-    # CM velocity
-    V_CM = math.sqrt(2*mass_recoil*Ek_recoil)/mass_recoil   
-    #print("V_CM",V_CM)
-    # Heavy residue energy (after gamma emission) in the CM frame
-    E_HR_CM = math.pow(E_gamma,2.)/(2.*mass_recoil) 
-    #print("E_HR_CM",E_HR_CM)           
-    # Heavy residue momentum (after gamma emission) in the CM frame
-    P_HR_CM=math.sqrt(2*E_HR_CM*mass_recoil)
-    #print("P_HR_CM",P_HR_CM)
-   
-    # Excitation energy after gamma emission
-    Eex_after = Eex_before-E_HR_CM-E_gamma 
+        # Heavy residue momentum (after gamma emission) in the CM frame
+        P_gamma_CM = E_gamma                                                  # HR recoil kick is just gamma momentumn from relativity
+        theta_gamma_CM = math.acos(np.random.uniform(-1., 1.))             # CM theta isotropic
+        phi_gamma_CM = np.random.uniform(0., 2 * math.pi)                  # CM phi isotropic
+        FV4_gamma_CM = np.concatenate(([E_gamma], funcs.spherical_to_cartesian(P_gamma_CM, theta_gamma_CM, phi_gamma_CM)))    # construct gamma four-vector in CM frame
+        FV4_CM -= FV4_gamma_CM    # subtract gamma four-vector from recoil four-vector to get the heavy residue four-vector in the CM frame
 
-    # Sampling on theta and phi in CM
-    theta_HR_CM = math.acos(np.random.uniform(-1.,1.))                      # CM theta 
-    phi_HR_CM = np.random.uniform(0.,2*math.pi)                             # CM phi
+    else:
+        sparam = math.pow(A_recoil, 0.4) / 50        # very rough estimate of slope parameter for the gSF
+        def gSF_sample(Emax):                        # simple exponential between 0 and Eex for the gSF - not correct but better than uniform
+            return math.log(1 + (math.exp(sparam * Emax) - 1) * np.random.uniform(0.0, 1.0)) / sparam
 
-    pX_HR,pY_HR,pZ_HR=SetMagThetaPhi(P_HR_CM,theta_HR_CM,phi_HR_CM)         # HR CM momentum 3 axis         
+        Eex_new = Eex
+        for i in range(3):                          # assuming the entire cascade is always 3 gammas
+            if i == 2:
+                E_gamma = Eex_new                   # last gamma always goes to the ground state
+            else:
+                E_gamma = gSF_sample(Eex_new)       # first 2 gammas are emitted following the gSF
+            Eex_new = Eex_new - E_gamma             # update the excitation energy for the next iteration
 
-    # Back in the LAB frame    
-    pZ_HR = pZ_HR+mass_recoil*V_CM                                          # Adding CM velocity to pz component      
-    P_HR=Mag(pX_HR,pY_HR,pZ_HR) 
-    #print("P_HR",P_HR)                                                      # LAB momentum
-    Ek_HR=math.pow(P_HR,2.)/(2.*mass_recoil)                                # LAB kinetic energy
-    #print("Ek_HR",Ek_HR)
-    phi_LAB,theta_LAB=get_theta_phi(pX_HR,pY_HR,pZ_HR)                      # LAB theta and phi
-    #print("phi_LAB",phi_LAB)
-    #print("theta_LAB",theta_LAB*180/math.pi)
-    #print("Ek_HR ",Ek_HR)
-    
-    return Ek_HR
+            # Heavy residue momentum (after gamma emission) in the CM frame
+            P_gamma_CM = E_gamma                                                  # HR recoil kick is just gamma momentumn from relativity
+            theta_gamma_CM = math.acos(np.random.uniform(-1., 1.))             # CM theta isotropic
+            phi_gamma_CM = np.random.uniform(0., 2 * math.pi)                  # CM phi isotropic
+            FV4_gamma_CM = np.concatenate(([E_gamma], funcs.spherical_to_cartesian(P_gamma_CM, theta_gamma_CM, phi_gamma_CM)))    # construct gamma four-vector in CM frame
+            FV4_CM -= FV4_gamma_CM    # subtract gamma four-vector from recoil four-vector to get the heavy residue four-vector in the CM frame
+
+    # return the heavy residue momentum in the LAB frame
+    return funcs.lorentz_boost(FV4_CM, Beta_CM_vec, Gamma_CM) 
 
 # _______________________________________________________________________________________________
-# NEUTRON DEEXCITATION FUNCTION : A relativistic version will have to be done at some point
+# NEUTRON DEEXCITATION FUNCTION : A relativistic deexcitation function for single-step or Maxwellian distributed single neutron emission
 
-def dexec_neutron(mass_recoil,q_recoil,A_recoil,Ek_recoil,Eex,Sn,mass_neutron):
+def deexec_neutron(A_recoil, FV4, Eex, mass_neutron, mult, Sn_CN, mass_HR1n, Sn_1nDght=0, mass_HR2n=0, Sn_2nDght=0, mass_HR3n=0, Sn_3nDght=0, mass_HR4n=0):
+    if Eex < Sn_CN:
+        raise ValueError("Excitation energy is less than the separation energy: Eex = ", Eex, " Sn_CN = ", Sn_CN)
+    if mult < 1 or mult > 4:
+        raise ValueError("deexec_neutron: Invalid multiplicity: mult = ", mult)
 
-    Eex_before = Eex    
-    En = -1  
+    Eex_new = Eex
+    Sn_array = [Sn_CN, Sn_1nDght, Sn_2nDght, Sn_3nDght]
+    mass_array = [mass_HR1n, mass_HR2n, mass_HR3n, mass_HR4n]
 
-    # Heavy residue 
-    A_HR = A_recoil-1
-    Z_HR = q_recoil
-    mass_HR = atomic_to_nuclear_mass(nuclide_data.weight(Z_HR,A_HR), Z_HR)*amu
+    # determine CM frame velocity from recoil before decay
+    Beta_CM_vec = FV4[1:4] / FV4[0]         # beta vector = momentum / total_energy
+    Gamma_CM = 1. / math.sqrt(1 - np.linalg.norm(Beta_CM_vec)**2)   # CM velocity - gamma
+    FV4_CM = funcs.lorentz_boost(FV4, -Beta_CM_vec, Gamma_CM)       # boost recoil to the CM frame to start the deexcitation process
 
-    # CM velocity
-    V_CM = math.sqrt(2*mass_recoil*Ek_recoil)/mass_recoil 
+    # assume very basic Maxwellian distribution with a temperature depending on the excitation energy
+    def maxwellian_sample(Emax, T):                                    
+        if T <= 0 or Emax <= 0:
+            raise ValueError("deexec_neutron: Temperature or energy maximum is less than or equal to 0: T = ", T, "Emax = ", Emax)
 
-    # Maximum energy of the neutron
-    En_max = mass_HR/(mass_HR+mass_neutron)*(Eex_before-Sn) #maximum energy of the neutron
-        
-    # to be improved
-    # not an uniform distribution!! Maxwel with a given temperature depending on E*
-    if(En<=0):
-        En = np.random.uniform(0.025,En_max)
+        if Emax / T < 1e-3:       #if available energy is tiny, sample uniformly
+            En = Emax * np.random.uniform(0.0, 0.8) # truncating at 0.8 to avoid negative excitation energy    
+            return En
+        else:
+            u_max = gamma.cdf(Emax, a=2.0, scale=T) # CDF at truncation
+            u = np.random.uniform(0.0, u_max)       # Sample uniformly in [0, u_max]
+            return gamma.ppf(u, a=2.0, scale=T)     # Invert CDF
 
-    # Excitation energy after gamma emission
-    Eex_after = Eex_before-Sn-En*(1.+mass_neutron/mass_HR)
-    E_HR_CM = mass_neutron/mass_HR*En
-    P_HR_CM = math.sqrt(2.*mass_HR*E_HR_CM)
+    for i in range(mult):
+        # de-excitation function chooses mode of emission based on max_emission_mode
+        if max_emission_mode:
+            if i < mult-1:
+                En = 0.01                                               # in worst case scenario, first neutrons have tiny kinetic energy
+            elif i == mult-1:
+                En = max(0.0, Eex_new - Sn_CN - (mult-1)*0.01)          # single step neutron emission - worst case scenario
+            else:
+                raise ValueError("Invalid number of iterations: i = ", i, " mult = ", mult)
+        else:
+            Eexc_available = Eex_new - sum(Sn_array[i:mult])            # available energy for the next neutron
+            if Eexc_available <= 0:
+                raise RuntimeError("deexec_neutron: Insufficient excitation energy for forced multiplicity")
+            # to get max neutron energy, we need to include the recoil kinetic energy of the heavy residue
+            # solve
+            En_max = (Eexc_available * (Eexc_available + 2.0 * mass_array[i])) / (2.0 * (mass_array[i] + mass_neutron + Eexc_available))  
+            T_n = math.sqrt(Eex_new / ((A_recoil - i)/8))               # rough estimate of the neutron temperature in MeV
+            En = maxwellian_sample(En_max, T_n)
 
-    # Sampling on theta and phi in CM
-    theta_HR_CM = math.acos(np.random.uniform(-1.,1.))                      # CM theta 
-    phi_HR_CM = np.random.uniform(0,2*math.pi)                              # CM phi
-    
-    pX_HR,pY_HR,pZ_HR=SetMagThetaPhi(P_HR_CM,theta_HR_CM,phi_HR_CM)         # HR CM momentum 3 axis 
-    pZ_HR2=mass_recoil*V_CM 
-    # Back in the LAB frame    
-    pZ_HR = pZ_HR+mass_HR*V_CM                                              # Adding CM velocity to pz component
-       
-    P_HR=Mag(pX_HR,pY_HR,pZ_HR)                                             # LAB momentum
-    Ek_HR=math.pow(P_HR,2)/(2*mass_HR)                                      # LAB kinetic energy
-    
-    phi_LAB,theta_LAB=get_theta_phi(pX_HR,pY_HR,pZ_HR)
-    #print("theta_LAB n",theta_LAB*180/math.pi)
+        # Heavy residue momentum (after neutron emission) in the CM frame
+        P_neutron_CM = funcs.momentum_rel(En, mass_neutron)             # neutron momentum in the CM frame
+        theta_neutron_CM = math.acos(np.random.uniform(-1., 1.))        # CM theta isotropic
+        phi_neutron_CM = np.random.uniform(0., 2 * math.pi)             # CM phi isotropic
+        FV4_neutron_CM = np.concatenate(([En + mass_neutron], funcs.spherical_to_cartesian(P_neutron_CM, theta_neutron_CM, phi_neutron_CM)))    # construct neutron four-vector in CM frame
+        FV4_CM -= FV4_neutron_CM    # subtract neutron four-vector from recoil four-vector to get the heavy residue four-vector in the CM frame
 
-    return Ek_HR,mass_HR,Eex_after,pZ_HR
+        E_recoil = math.sqrt(P_neutron_CM**2 + mass_array[i]**2) - mass_array[i]
+        Eex_new = max(0.0, Eex_new - Sn_array[i] - En - E_recoil)       # update the excitation energy for the next iteration (recoil kinetic energy included)
+
+    # boost recoil kick back to the LAB frame   
+    FV4_new = funcs.lorentz_boost(FV4_CM, Beta_CM_vec, Gamma_CM)    # new four-vector after neutron emission
+
+    return FV4_new, Eex_new

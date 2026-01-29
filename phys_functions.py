@@ -1,64 +1,59 @@
 #!/usr/bin/env python
-import os.path
-import warnings
-import re
-import gzip
-import copy
-import string
-from functools import total_ordering
 import math
 import numpy as np
-import uncertainties as unc #this package was installed to be able to use the next line
-from nuclidedatamaster import nuclide_data #this requires the nuclidedatamaster directory
 import scipy.constants as const
+import os
 
 
 def gaussian(x, amplitude, mean, stddev):
     return amplitude * np.exp(-((x - mean) / 4 / stddev)**2)
 
 #GLOBAL variables
-m0=const.value(u'atomic mass constant energy equivalent in MeV'); #unit mass in MeV/c^2
-e0=const.e
-c=const.c
+m0 = const.value(u'atomic mass constant energy equivalent in MeV');     # unit mass in MeV/c^2
+e0 = const.e
+c = const.c
 
-def Q_val_proj_targ(m_proj,m_targ,m_final):
-    m_Q_reac = m_proj+m_targ-m_final
+def Q_val_proj_targ(m_proj, m_targ, m_final):       # Q value for projectile + target -> final nucleus
+    return m_proj + m_targ - m_final
+
+def Q_val_proj_targ_ejec(m_proj, m_targ, m_eject, m_final):       # Q value for projectile + target -> ejectile + final nucleus
+    return  m_proj + m_targ - m_eject - m_final
+
+def momentum(Ek, m):    # non-relativistic momentum in MeV c
+    return math.sqrt(2 * m * Ek)
+
+def momentum_rel(Ek, m):
+    if Ek <= 0.0:       # if kinetic energy is negative, return 0
+        print("Kinetic energy is negative: Ek = ", Ek)
+        return 0.0
+    return math.sqrt(Ek * (Ek + 2.0 * m))
+
+
+def lorentz_boost(FV, beta_vec, gamma):     # lorentz boost from CM to LAB frame
+    if np.linalg.norm(beta_vec) == 0:       # if beta vector is zero, return the four-vector unchanged
+        return FV
     
-    return Q_proj_targ
-
-def Q_val_proj_targ_ejec(m_proj,m_targ,m_eject,m_final):
-    m_Q_reac = m_proj+m_targ-m_eject-m_final
+    E_CM, p_CM = FV[0], FV[1:4]             # extract energy and momentum from four-vector
+    beta = np.linalg.norm(beta_vec)         # beta vector magnitude
+    beta_hat = beta_vec / beta              # beta vector unit vector
     
-    return m_Q_reac
-
-
-#def momentum(Ek,A):    # Energy in MeV, momentum in MeV c
-#    gamma=Ek/(A*m0)+1
-#    beta=math.sqrt(1-1/gamma**2)
-
-def momentum(Ek,m):    # Energy in MeV, momentum in MeV c
-    p=math.sqrt(2*m*Ek)
-
-    return p
-
-def momentum_rel(Ek,m):    # Energy in MeV, momentum in MeV c
-    gamma=Ek/m+1
-    beta=math.sqrt(1-1/math.pow(gamma,2))
-    p=gamma*m*beta
-
-    return p
-
-
-def energy(p,A,m0):    # Energy in MeV, momentum in MeV c
+    p_par = np.dot(p_CM, beta_hat) * beta_hat    # parallel component of the momentum
+    p_perp = p_CM - p_par                        # perpendicular component of the momentum
     
-    return math.sqrt(p**2+(A*m0)**2)-(A*m0)
+    # Lorentz transformation
+    E_lab = gamma * (E_CM + np.dot(p_CM, beta_vec))    # energy in the LAB frame
+    p_par_lab = gamma * (p_par + beta_vec * E_CM)    # parallel component of the momentum in the LAB frame
+    p_lab = p_perp + p_par_lab              # total momentum in the LAB frame
+    
+    return np.concatenate(([E_lab], p_lab))
 
+def energy_rel(p, A, m0):    # relativistic energy in MeV
+    return math.sqrt(p**2 + (A * m0)**2) - (A * m0)
 
-def brho(p,q):    # Energy in MeV, momentum in MeV c
-    return p*e0/c*10**6/(q*e0)
+def brho(p, q):    # return brho in T m
+    return p * e0 / c * 10**6 / (q * e0)    # return brho in T m
 
-
-def x_alpha(max_X,max_A):
+def x_alpha(max_X, max_A):
     val=10
     while val>1:
         X=np.random.uniform(-max_X,max_X)
@@ -75,29 +70,15 @@ def y_beta(max_Y,max_B):
         
     return B,Y    
     
-def SetMagThetaPhi(mag,theta, phi):
+def spherical_to_cartesian(mag, theta, phi):
     amag = abs(mag)
-    fX = amag*math.sin(theta)*math.cos(phi)
-    fY = amag*math.sin(theta)*math.sin(phi)
-    fZ = amag*math.cos(theta)
-    return fX,fY,fZ
+    fX = amag * math.sin(theta) * math.cos(phi)
+    fY = amag * math.sin(theta) * math.sin(phi)
+    fZ = amag * math.cos(theta)
+    return np.array([fX, fY, fZ])
 
-
-def velocity(P,theta,phi,m):
-    vx = (P*math.sin(theta)*math.cos(phi))/m
-    vy = P*math.sin(theta)*math.sin(phi)/m
-    vz = P*math.cos(theta)/m
-    return vx,vy,vz
-
-def Mag(fx,fy,fz):
-    rho=math.sqrt(fx*fx+fy*fy+fz*fz)
-    return rho
-
-def get_theta_phi(fx,fy,fz):
-    rho=Mag(fx,fy,fz)
-    phi=math.atan2(fy,fx)
-    theta=math.acos(fz/rho)
-    return phi,theta
+def magnitude(fx, fy, fz):
+    return math.sqrt(fx**2 + fy**2 + fz**2)
 
 
 def RotateX(fx,fy,fz,theta):
@@ -148,3 +129,54 @@ def define_PDGid(Z_in,A_in):
         
     return "100"+Z_out+A_out+"0"
 
+# Electron binding energies cache (loaded once)
+_binding_energies = None
+
+def _load_binding_energies():       # load electron binding energies from data file (cached)
+    global _binding_energies
+    if _binding_energies is not None:
+        return _binding_energies
+    
+    _binding_energies = {}
+    binding_energy_file = "Electron_Binding_Energeies-2007.dat"
+    
+    # Try to find the file in the current directory or parent directory
+    if not os.path.exists(binding_energy_file):
+        # Try in the same directory as this script
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        binding_energy_file = os.path.join(script_dir, binding_energy_file)
+    
+    if not os.path.exists(binding_energy_file):
+        # Return empty dict if file not found - function will handle gracefully
+        return _binding_energies
+    
+    with open(binding_energy_file, 'r') as f:
+        for line in f:
+            if line.strip() and not line.startswith('#'):
+                parts = line.strip().split()
+                if len(parts) >= 2:
+                    Z = int(parts[0])
+                    total_binding_energy = float(parts[1])  # in eV
+                    _binding_energies[Z] = total_binding_energy
+    
+    return _binding_energies
+
+def atomic_to_nuclear_mass(atomic_mass_amu, Z):     # Convert atomic mass to nuclear mass using electron binding energies.
+    binding_energies = _load_binding_energies()
+    
+    if Z not in binding_energies:
+        # For Z=1 and Z=2, return atomic mass (no correction available)
+        # This is a reasonable approximation since electron binding energy is very small for light elements
+        return atomic_mass_amu
+    
+    # Get electron binding energy in eV
+    binding_energy_ev = binding_energies[Z]
+    
+    # Convert eV to amu (1 eV = 1.07354410233e-9 amu)
+    # Using E = mc^2 with c = 299792458 m/s and 1 amu = 931.49410242 MeV/c^2
+    binding_energy_amu = binding_energy_ev * 1.07354410233e-9
+    
+    # Nuclear mass = atomic mass - electron binding energy
+    nuclear_mass_amu = atomic_mass_amu - binding_energy_amu
+    
+    return nuclear_mass_amu
