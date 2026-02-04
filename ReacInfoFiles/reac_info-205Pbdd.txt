@@ -2,17 +2,14 @@
 ; This file is structured for easy reading by both Python and C++
 
 [beam_info]
-reaction = 205Pbdd      ; reaction of interest (mostly used for labelling) 
+reaction = 205Pb_dd     ; reaction of interest (mostly used for labelling) 
 beam_A = 205            ; Beam mass number A
 beam_q = 82             ; Beam charge state
 beam_Z = 82             ; Beam atomic number Z
 beam_EuA = 13           ; Beam energy in MeV/u 
 sig_pup = 0.0002        ; Rms value of momentum distribution spread 
 emit_x = 5e-07          ; Horizontal emittance of stored ion beam in m rad 
-emit_y = 5e-07          ; Vertical emittance of stored ion beam in m rad 
-beta_x = 11.58          ; Horizontal beta function in m at target position 
-beta_y = 4.709          ; Vertical beta function in m at target position 
-disp_x = 1.79           ; Dispersion x (m) of the beam at z=0
+emit_y = 5e-07          ; Vertical emittance of stored ion beam in m rad
 
 [target_info]
 targ_A = 2              ; Target mass number A
@@ -28,6 +25,7 @@ ejec_Z = 1              ; Ejectile atomic number Z
 recoil_A = 205          ; Recoil mass number A
 recoil_Z = 82           ; Recoil atomic number Z
 recoil_q = 82           ; Recoil nucleus charge state
+max_excEn = 22          ; max excitation energy (MeV) for which particles can reach our detectors
 
 ; ---------- reocil excitation energies ---------- 
 recoil_excEns = 0.005, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0
@@ -44,10 +42,17 @@ mass_recoil = 190931.95295829562    ; 205Pb
 mass_eject = 1876.1239276943375     ; deuterium
 
 [ring_params]           ; Determined using Q1_dipole-old_ESR_std
+det_setup = new         ; choose which detector setup to run with G4bl: PoP = proof of principle setup from 2022/24, new = future telescopes with new reaction chamber
+
+beta_x = 11.58          ; Horizontal beta function in m at target position 
+beta_y = 4.709          ; Vertical beta function in m at target position 
+disp_x = 1.79           ; Dispersion x (m) of the beam at z=0
+
 dip_radius = 6.357      ; Radius dipole magnet (m)
-quad_Leff = 0.289       ; Quadrupole effectile length (m)
 dip_Brho = 1.302126791  ; Beam magnetic rigidity (Tm)
-dip_Bfld = 0.204833536  ; Dipole magnetic field in (T) 
+dip_Bfld = 0.204833536  ; Dipole magnetic field in (T)
+
+quad_Leff = 0.289       ; Quadrupole effectile length (m)
 quad_Q1 = -0.664704257  ; Quadrupole strength Qi  
 quad_Q2 = 0.598389515
 quad_Q3 = 0.438559957

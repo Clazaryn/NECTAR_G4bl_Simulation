@@ -16,8 +16,8 @@ const bool write_veto_plots = false;         // Veto position maps with overlaye
 // ---------------------------------------------------------------------------------------
 
 // Include the plotting functions header and implementation
-#include "funcs_plotting.h"
-#include "funcs_plotting.C"
+#include "UtilityScripts/funcs_plotting.h"
+#include "UtilityScripts/funcs_plotting.C"
 
 
 // main execution function
@@ -40,7 +40,8 @@ void plotting_nChamb() {
             
             for (size_t chanIdx = 0; chanIdx < hrLabels.size(); ++chanIdx) {        // Process each channel for this reaction
                 TString channel = hrLabels[chanIdx];
-                TString fname = Form("../Hist_output/histograms_%s_%s_posFO_targ2.5mm.root", reaction.Data(), channel.Data());
+                TString reaction_dir = getReactionDir(reaction);
+                TString fname = Form("../%s/Hist_output/histograms_%s_%s_posFO_targ2.5mm.root", reaction_dir.Data(), reaction.Data(), channel.Data());
                 TFile* file = TFile::Open(fname);
                 if (!file || file->IsZombie()) continue;
 
@@ -111,7 +112,7 @@ void plotting_nChamb() {
 
         for (size_t chanIdx = 0; chanIdx < hrLabels.size(); ++chanIdx) {
             TString channel = hrLabels[chanIdx];
-            TString fname = Form("../Hist_output/histograms_%s_%s_posFO_targ2.5mm.root", reaction.Data(), channel.Data());
+            TString fname = Form("../%s_sim/Hist_output/histograms_%s_%s_posFO_targ2.5mm.root", reaction.Data(), reaction.Data(), channel.Data());
             TFile* file = TFile::Open(fname);
             if (!file || file->IsZombie()) continue;
             // Choose appropriate accuracy histograms based on reaction

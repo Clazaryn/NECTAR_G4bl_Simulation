@@ -30,7 +30,7 @@ using namespace std;
 #include <TSpline.h>
 
 // ========= AI header files =========
-#include "reaction_info.h"		// Include reaction information parser
+#include "UtilityScripts/reaction_info.h"		// Include reaction information parser
 
 // ========= Variable declaration ==========
 // Global variables for reaction information
@@ -159,8 +159,8 @@ double pInSS_interp(double x_query)
 std::unordered_map<int, std::pair<double, double>> readEjectileFile(const char* reaction, const char* recType, Int_t excLabel) {
     std::unordered_map<int, std::pair<double, double>> eventMap;
     
-    TString filename = Form("../Event_output/%s/excEn_%02d/output_event_generator_%s_%s_excEn%02d_ejectile.txt", 
-                           reaction, excLabel, reaction, recType, excLabel);
+    TString filename = Form("../%s_sim/Event_output/output_event_generator_%s_%s_excEn%02d_ejectile.txt", 
+                           reaction, reaction, recType, excLabel);
     
     std::ifstream file(filename.Data());
     if (!file.is_open()) {
@@ -420,8 +420,8 @@ void analysis_nChamb(Int_t excLabel, const char* recType)
 
 
 	// ========= Input files ==========
-  	TFile *ejectile_file = TFile::Open(Form("../Detector_output/%s_sims/Detectors_%s_%s_excEn%02d_ejectile.root", reaction, reaction, recType, excLabel));
-	TFile *recoil_file = TFile::Open(Form("../Detector_output/%s_sims/Detectors_%s_%s_excEn%02d_recoil.root", reaction, reaction, recType, excLabel));
+  	TFile *ejectile_file = TFile::Open(Form("../%s_sim/Detector_output/Detectors_%s_%s_excEn%02d_ejectile.root", reaction, reaction, recType, excLabel));
+	TFile *recoil_file = TFile::Open(Form("../%s_sim/Detector_output/Detectors_%s_%s_excEn%02d_recoil.root", reaction, reaction, recType, excLabel));
 
 	// ========= Define telescope detector structure ==========
 	std::vector<TString> detector_names = {"Front", "Back"};		std::vector<TString> detector_prefix = {"h_FP_Eex", "h_BP_Eex"};
@@ -543,7 +543,7 @@ void analysis_nChamb(Int_t excLabel, const char* recType)
 	}
 
 	// create writing file. Can also use open_or_create_rootfile function to alternatively just open
-	TString fname = Form("../Hist_output/histograms_%s_%s_posFO_targ2.5mm.root", reaction, recType);
+	TString fname = Form("../%s_sim/Hist_output/histograms_%s_%s_posFO_targ2.5mm.root", reaction, reaction, recType);
 	TFile* file_temp = open_or_create_rootfile(fname.Data());
 	
 	// ========= Analyse telsecopes ==========

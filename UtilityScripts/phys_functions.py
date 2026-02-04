@@ -138,13 +138,9 @@ def _load_binding_energies():       # load electron binding energies from data f
         return _binding_energies
     
     _binding_energies = {}
-    binding_energy_file = "Electron_Binding_Energeies-2007.dat"
-    
-    # Try to find the file in the current directory or parent directory
-    if not os.path.exists(binding_energy_file):
-        # Try in the same directory as this script
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        binding_energy_file = os.path.join(script_dir, binding_energy_file)
+    # File is now in NuclideDataMaster directory
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    binding_energy_file = os.path.join(script_dir, "..", "NuclideDataMaster", "Electron_Binding_Energies-2007.dat")
     
     if not os.path.exists(binding_energy_file):
         # Return empty dict if file not found - function will handle gracefully

@@ -12,15 +12,17 @@
 ## ===== define parallel operation + output file =====
 param -unset histoFile="Detectors_206Pbdp_HRg_excEn0_ejectile.root"
 param -unset outFile="g4bl_206Pbdp_HRg_excEn0_ejectile.out"
-param -unset eventFile="../Event_output/206Pbdp/excEn_00/output_event_generator_206Pbdp_HRg_excEn00_ejectile.txt"
+param -unset eventFile="../206Pbdp_sim/Event_output/output_event_generator_206Pbdp_HRg_excEn00_ejectile.txt"
 output $outFile
 
-# g4bl ESR_ring.in viewer=best histoFile="Detectors_206Pbdp_HRg_excEn0_ejectile.root" outFile="g4bl_206Pbdp_HRg_excEn0_ejectile.out" eventFile="../Event_output/206Pbdp/excEn_00/output_event_generator_206Pbdp_HRg_excEn00_ejectile.txt"
+# to run g4bl in the cmd line, use the template below or edit the defaults above
+# g4bl ESR_ring.in viewer=best histoFile="Detectors_206Pbdp_HRg_excEn0_ejectile.root" outFile="g4bl_206Pbdp_HRg_excEn0_ejectile.out" eventFile="../206Pbdp_sim/Event_output/output_event_generator_206Pbdp_HRg_excEn00_ejectile.txt"
+
 # __________________________________________________________
 # PHYSICS LIST, INPUT PARAMETERS, VISUALIZATION SETTINGS ----
 
-## ====== Import physics list for highly full stripped charged ions ======
-physics QGSP_BIC_EMY -fluct=0
+## ====== Import physics list for highly stripped charged ions ======
+physics QGSP_BIC_EMY #-fluct=0
 
 ## -- Visualization settings --
 #g4ui when=4 "/vis/viewer/set/background 1 1 1"
@@ -51,7 +53,7 @@ param ntY_Rotation=-20
 param ntX_RotRad=0.34906585039  # 20deg in rad
 param ntY_RotRad=0.34906585039  # 20deg in rad
 
-## ESR magnetic element parameters
+## ESR magnetic element parameters set as a backup if not read from reac_info.txt
 param -unset Bfield=0.205788497
 param -unset Q1=-0.667803196
 param -unset Q2=0.601179286

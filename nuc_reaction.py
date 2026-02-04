@@ -18,6 +18,8 @@ from __future__ import print_function
 import numpy as np
 import math
 from scipy.stats import gamma
+import sys
+sys.path.insert(0, 'UtilityScripts')
 import phys_functions as funcs
 
 amu = 931.49410242              # atomic mass constant from 2025 CODATA

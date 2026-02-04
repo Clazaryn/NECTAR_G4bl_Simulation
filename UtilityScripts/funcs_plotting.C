@@ -189,7 +189,7 @@ TH2D* histChannelPlots(const TString& reaction, const TString& prefix, const TSt
 
     for (size_t chanIdx = 0; chanIdx < hrLabels.size(); ++chanIdx) {
         const char* channel = hrLabels[chanIdx];
-        TString fname = Form("../Hist_output/histograms_%s_%s_posFO_targ2.5mm.root", reaction.Data(), channel);
+        TString fname = Form("../%s_sim/Hist_output/histograms_%s_%s_posFO_targ2.5mm.root", reaction.Data(), reaction.Data(), channel);
         TFile* file = TFile::Open(fname);
         if (!file || file->IsZombie()) continue;
 
@@ -285,7 +285,7 @@ void hrFractionPlot(TCanvas* canvas, const TString& prefix) {
 
         for (size_t rx = 0; rx < reactions.size(); ++rx) {
             const TString& reaction = reactions[rx];
-            TString fname = Form("../Hist_output/histograms_%s_%s_posFO_targ2.5mm.root", reaction.Data(), channel);
+            TString fname = Form("../%s_sim/Hist_output/histograms_%s_%s_posFO_targ2.5mm.root", reaction.Data(), reaction.Data(), channel);
             TFile* file = TFile::Open(fname);
             if (!file || file->IsZombie()) continue;
 
@@ -397,7 +397,7 @@ void vetoPlots(TCanvas* canvas, const TString& prefix, const TString& reaction) 
     
     for (size_t chanIdx = 0; chanIdx < hrLabels.size(); ++chanIdx) {
         const char* channel = hrLabels[chanIdx];
-        TString fname = Form("../Hist_output/histograms_%s_%s_posFO_targ2.5mm.root", reaction.Data(), channel);
+        TString fname = Form("../%s_sim/Hist_output/histograms_%s_%s_posFO_targ2.5mm.root", reaction.Data(), reaction.Data(), channel);
         TFile* file = TFile::Open(fname);
         if (!file || file->IsZombie()) continue;
 
@@ -516,7 +516,7 @@ void vetoBananaPlots(TCanvas* canvasE1, TCanvas* canvasEres, const TString& pref
     
     for (size_t chanIdx = 0; chanIdx < hrLabels.size(); ++chanIdx) {
         const char* channel = hrLabels[chanIdx];
-        TString fname = Form("../Hist_output/histograms_%s_%s_posFO_targ2.5mm.root", reaction.Data(), channel);
+        TString fname = Form("../%s_sim/Hist_output/histograms_%s_%s_posFO_targ2.5mm.root", reaction.Data(), reaction.Data(), channel);
         TFile* file = TFile::Open(fname);
         if (!file || file->IsZombie()) continue;
 

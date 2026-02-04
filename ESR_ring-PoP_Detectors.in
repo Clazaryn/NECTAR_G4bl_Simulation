@@ -1,0 +1,376 @@
+# NECTAR DETECTION SYSTEM SIMULATION CODE
+# Last modification : C. Berthelot - 13/12/2023
+# Adapted from : Manfred Grieser and Michele Sguazzin
+
+#  ~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.
+#
+#    	 G4beamline detector simulation 
+#
+#  ~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.
+
+## ===== define parallel operation + output file =====
+param -unset histoFile="Detectors_206Pbdp_HRg_excEn0_ejectile.root"
+param -unset outFile="g4bl_206Pbdp_HRg_excEn0_ejectile.out"
+param -unset eventFile="../206Pbdp_sim/Event_output/output_event_generator_206Pbdp_HRg_excEn00_ejectile.txt"
+#output $outFile        # this line sends output to file, but we now do this in the bash script for cleaner output
+
+# to run g4bl in the cmd line, use the template below or edit the defaults above
+# g4bl ESR_ring.in viewer=best histoFile="Detectors_206Pbdp_HRg_excEn0_ejectile.root" outFile="g4bl_206Pbdp_HRg_excEn0_ejectile.out" eventFile="../206Pbdp_sim/Event_output/output_event_generator_206Pbdp_HRg_excEn00_ejectile.txt"
+
+# __________________________________________________________
+# PHYSICS LIST, INPUT PARAMETERS, VISUALIZATION SETTINGS ----
+
+## ====== Import physics list for highly full stripped charged ions ======
+physics QGSP_BIC_EMY fluct=0
+
+## -- Visualization settings --
+#g4ui when=4 "/vis/viewer/set/background 1 1 1"
+g4ui when=4  "/vis/scene/add/axes 0 0  0 100 mm" 
+
+trace format=ascii coordinates=centerline
+
+## ====== Importing input files ======
+beam ascii file=$eventFile
+
+## ====== Input parameters ======
+#######################
+param DEthickness=0.305
+param DEthetadeg=-60
+param DEthetarad=-1.047197551
+param DEdistance=96
+param Sidepocketdistance=10
+
+## ESR magnetic element parameters set as a backup if not read from reac_info.txt - values from 238U92+ at 17.24 MeV/u
+param scaling=1.0001*(1-0.00416)     # magnetic field scaling parameter to account for magnet mistuning - implemented inline below!
+param -unset Bfield=0.24445
+param -unset Q1=-0.793252578
+param -unset Q2=0.714113112
+param -unset Q3=0.523373836
+param -unset Q4=-0.707699367
+param -unset Q5=0.654639888
+#######################
+# __________________________________________________________
+# DETECTOR SETTINGS ----
+
+## ====== Target-like residue detector  ======
+# Virtual detector to get initial energy  
+virtualdetector Telescope_virtual height=50 width=50 length=0.001 maxStep=0.0005 color=1,1,1
+
+# DeltaE detector 
+detector Telescope_DE height=20 width=20 length=$DEthickness material=Si maxStep=0.0005 color=0.4,0.5,0
+
+# Telescope stainless steel window
+detector Telescope_window radius=24.9 length=0.025 material=STAINLESS-STEEL maxStep=0.0025 color=1,1,1,0.2 
+
+# Telescope air pocket interior
+tube Telescope_airgap radius=24.9 length=2.98 material=Air maxStep=0.03 color=0,0,1,0.2
+
+# Telescope stainless steel pocket
+tube Telescope_pocket innerRadius=25 outerRadius=25.75 length=200 material=STAINLESS-STEEL maxStep=0.25 color=1,1,1,0.2 
+
+# Telescope pocket closing volume
+tube Telescope_closing radius=24.9 length=0.025 material=STAINLESS-STEEL maxStep=0.0025 color=1,1,1,0.2 	
+# Stack of E detectors
+detector Telescope_E1 height=20 width=20 length=1.499 material=Si maxStep=0.005 color=0.8,0.5,0.4  
+detector Telescope_E2 height=20 width=20 length=1.499 material=Si maxStep=0.005 color=0.8,0.5,0.4  
+detector Telescope_E3 height=20 width=20 length=1.499 material=Si maxStep=0.005 color=0.8,0.5,0.4   
+detector Telescope_E4 height=20 width=20 length=1.499 material=Si maxStep=0.005 color=0.8,0.5,0.4  
+detector Telescope_E5 height=20 width=20 length=1.499 material=Si maxStep=0.005 color=0.8,0.5,0.4
+detector Telescope_E6 height=20 width=20 length=1.499 material=Si maxStep=0.005 color=0.8,0.5,0.4  
+
+# Dead layers 
+# Delta-E
+detector DE_DL_Al_1 height=20 width=20 length=0.0003 material=Al maxStep=0.00003 color=0.4,0.2,1
+detector DE_DL_Si_1 height=20 width=20 length=0.0005 material=Si maxStep=0.00005 color=0.4,0.2,1
+detector DE_DL_Si_2 height=20 width=20 length=0.0005 material=Si maxStep=0.00005 color=0.4,0.2,1
+detector DE_DL_Al_2 height=20 width=20 length=0.0003 material=Al maxStep=0.00003 color=0.4,0.2,1
+# E1
+detector E1_DL_Al_1 height=20 width=20 length=0.0003 material=Al maxStep=0.00003 color=0.4,0.5,0
+detector E1_DL_Si_1 height=20 width=20 length=0.0005 material=Si maxStep=0.00005 color=0.4,0.5,0
+detector E1_DL_Si_2 height=20 width=20 length=0.0005 material=Si maxStep=0.00005 color=0.4,0.5,0
+detector E1_DL_Al_2 height=20 width=20 length=0.0003 material=Al maxStep=0.00003 color=0.4,0.5,0
+# E2
+detector E2_DL_Al_1 height=20 width=20 length=0.0003 material=Al maxStep=0.00003 color=0.4,0.5,0
+detector E2_DL_Si_1 height=20 width=20 length=0.0005 material=Si maxStep=0.00005 color=0.4,0.5,0
+detector E2_DL_Si_2 height=20 width=20 length=0.0005 material=Si maxStep=0.00005 color=0.4,0.5,0
+detector E2_DL_Al_2 height=20 width=20 length=0.0003 material=Al maxStep=0.00003 color=0.4,0.5,0
+# E3
+detector E3_DL_Al_1 height=20 width=20 length=0.0003 material=Al maxStep=0.00003 color=0.4,0.5,0
+detector E3_DL_Si_1 height=20 width=20 length=0.0005 material=Si maxStep=0.00005 color=0.4,0.5,0
+detector E3_DL_Si_2 height=20 width=20 length=0.0005 material=Si maxStep=0.00005 color=0.4,0.5,0
+detector E3_DL_Al_2 height=20 width=20 length=0.0003 material=Al maxStep=0.00003 color=0.4,0.5,0
+# E4
+detector E4_DL_Al_1 height=20 width=20 length=0.0003 material=Al maxStep=0.00003 color=0.4,0.5,0
+detector E4_DL_Si_1 height=20 width=20 length=0.0005 material=Si maxStep=0.00005 color=0.4,0.5,0
+detector E4_DL_Si_2 height=20 width=20 length=0.0005 material=Si maxStep=0.00005 color=0.4,0.5,0
+detector E4_DL_Al_2 height=20 width=20 length=0.0003 material=Al maxStep=0.00003 color=0.4,0.5,0
+# E4
+detector E5_DL_Al_1 height=20 width=20 length=0.0003 material=Al maxStep=0.00003 color=0.4,0.5,0
+detector E5_DL_Si_1 height=20 width=20 length=0.0005 material=Si maxStep=0.00005 color=0.4,0.5,0
+detector E5_DL_Si_2 height=20 width=20 length=0.0005 material=Si maxStep=0.00005 color=0.4,0.5,0
+detector E5_DL_Al_2 height=20 width=20 length=0.0003 material=Al maxStep=0.00003 color=0.4,0.5,0
+# E6
+detector E6_DL_Al_1 height=20 width=20 length=0.0003 material=Al maxStep=0.00003 color=0.4,0.5,0
+detector E6_DL_Si_1 height=20 width=20 length=0.0005 material=Si maxStep=0.00005 color=0.4,0.5,0
+detector E6_DL_Si_2 height=20 width=20 length=0.0005 material=Si maxStep=0.00005 color=0.4,0.5,0
+detector E6_DL_Al_2 height=20 width=20 length=0.0003 material=Al maxStep=0.00003 color=0.4,0.5,0
+
+## ====== Heavy residue detector  ======
+
+# Heavy residue detector 
+detector HR_detector height=40 width=122 length=0.500 material=Si maxStep=0.0005 color=0.4,0.5,0
+
+# Heavy residue stainless steel window
+detector HR_window height=60 width=122 length=0.025 material=STAINLESS-STEEL maxStep=0.0025 color=1,1,1,0.2  
+
+# Heavy residue air pocket interior
+box HR_airgap height=60 width=122 length=4.5 material=Air maxStep=0.001 color=0,0,1,0.2 
+
+# Heavy residue stainless steel pocket
+box HR_pocket_Face1 height=60 width=8 length=1.5 material=STAINLESS-STEEL maxStep=0.002 color=1,1,1,0.2 kill=1
+box HR_pocket_Face2 height=60 width=100 length=1.5 material=STAINLESS-STEEL maxStep=0.002 color=1,1,1,0.2 kill=1
+box HR_pocket_Top height=40 width=230 length=1.5 material=STAINLESS-STEEL maxStep=0.002 color=1,1,1,0.2 
+box HR_pocket_Bottom height=40 width=230 length=1.5 material=STAINLESS-STEEL maxStep=0.002 color=1,1,1,0.2
+#box HR_pocket_Back height=60 width=230 length=1.5 material=STAINLESS-STEEL maxStep=0.002 color=1,1,1,0.2 
+detector HR_pocket_Back height=60 width=230 length=1.5 material=Si maxStep=0.002 color=1,1,1,0.2 
+box HR_pocket_Side height=58 width=38 length=1.5 material=STAINLESS-STEEL maxStep=0.002 color=1,1,1,0.2
+
+## ====== MAGNETIC SEPTUM  ======
+detector MagSept height=500 width=500 length=1792 material=STAINLESS-STEEL maxStep=0.2 color=0,0.8,0.6 kill=1
+virtualdetector MagSept_virtual height=500 width=500 length=20 maxStep=0.0005 color=1,0.4,1 
+
+## ====== Test detectors  ======
+virtualdetector HRplane height=200 width=200 length=0.500 maxStep=0.0005 color=0,0.3,0.4
+virtualdetector Targetplane height=200 width=200 length=0.500 maxStep=0.0005 color=0,0.3,0.4
+virtualdetector Dipoleplane height=200 width=200 length=0.500 maxStep=0.0005 color=0,0.3,0.4
+
+# __________________________________________________________
+# PLACE DETECTOR ELEMENTS ---- 
+# Only for telescope and verification detectors. The heavy rediue detector is placed in the "place ring elements" section
+
+place Targetplane z=10 y=0 x=0
+
+## ====== Telescope ======
+
+place Telescope_virtual z=($DEdistance-10)*cos($DEthetarad) x=($DEdistance-10)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+
+place Telescope_pocket z=($DEdistance+0.0125+100)*cos($DEthetarad) x=($DEdistance+0.0125+100)*sin($DEthetarad) y=0 rotation=y$DEthetadeg 
+
+place Telescope_window z=($DEdistance+0.0125)*cos($DEthetarad) x=($DEdistance+0.0125)*sin($DEthetarad) y=0 rotation=y$DEthetadeg 
+
+place Telescope_closing z=($DEdistance+0.025+200)*cos($DEthetarad) x=($DEdistance+0.025+200)*sin($DEthetarad) y=0 rotation=y$DEthetadeg 
+
+place Telescope_airgap z=($DEdistance+0.025+1.5)*cos($DEthetarad) x=($DEdistance+0.025+1.5)*sin($DEthetarad) rotation=y$DEthetadeg 
+
+# DeltaE
+place DE_DL_Al_1 z=($DEdistance+0.025+3-0.0005-0.0003/2)*cos($DEthetarad) x=($DEdistance+0.025+3-0.0005-0.0003/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place DE_DL_Si_1 z=($DEdistance+0.025+3-0.0005/2)*cos($DEthetarad) x=($DEdistance+0.025+3-0.0005/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place Telescope_DE z=($DEdistance+0.025+3+($DEthickness)/2)*cos($DEthetarad) x=($DEdistance+0.025+3+($DEthickness)/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place DE_DL_Si_2 z=($DEdistance+0.025+3+($DEthickness)+0.0005/2)*cos($DEthetarad) x=($DEdistance+0.025+3+($DEthickness)+0.0005/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place DE_DL_Al_2 z=($DEdistance+0.025+3+($DEthickness)+0.0005+0.0003/2)*cos($DEthetarad) x=($DEdistance+0.025+3+($DEthickness)+0.0005+0.0003/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+
+# E1
+place E1_DL_Al_1 z=($DEdistance+0.025+3+$DEthickness+3.01-0.0005-0.0003/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01-0.0005-0.0003/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place E1_DL_Si_1 z=($DEdistance+0.025+3+$DEthickness+3.01-0.0005/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01-0.0005/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place Telescope_E1 z=($DEdistance+0.025+3+$DEthickness+3.01+0.75)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+0.75)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place E1_DL_Si_2 z=($DEdistance+0.025+3+$DEthickness+3.01+1.5+0.0005/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.5+0.0005/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place E1_DL_Al_2 z=($DEdistance+0.025+3+$DEthickness+3.01+1.5+0.0005+0.0003/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.5+0.0005+0.0003/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+
+# E2
+place E2_DL_Al_1 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4-0.0005-0.0003/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4-0.0005-0.0003/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place E2_DL_Si_1 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4-0.0005/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4-0.0005/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place Telescope_E2 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+0.75)*cos($DEthetarad) x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+0.75)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place E2_DL_Si_2 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.5+0.0005/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.5+0.0005/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place E2_DL_Al_2 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.5+0.0005+0.0003/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.5+0.0005+0.0003/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+	
+## E3					 
+#place E3_DL_Al_1 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6-0.0005-0.0003/2)*cos($DEthetarad) #x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6-0.0005-0.0003/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+#place E3_DL_Si_1 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6-0.0005/2)*cos($DEthetarad) #x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6-0.0005/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg		
+#place Telescope_E3 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+0.75)*cos($DEthetarad) #x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+0.75)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+#place E3_DL_Si_2 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.0005/2)*cos($DEthetarad) #x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.0005/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+#place E3_DL_Al_2 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.0005+0.0003/2)*cos($DEthetarad) #x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.0005+0.0003/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+#
+## E4
+#place E4_DL_Al_1 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.50+0.4-0.0005-0.0003/2)*cos($DEthetarad) #x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.50+0.4-0.0005-0.0003/2)*sin($DEthetarad) y=0 #rotation=y$DEthetadeg
+#place E4_DL_Si_1 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.50+0.4-0.0005/2)*cos($DEthetarad) #x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.50+0.4-0.0005/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg#	
+#place Telescope_E4 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.50+0.4+0.75)*cos($DEthetarad) #x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+0.75)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+#place E4_DL_Si_2 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.50+0.4+1.5+0.0005/2)*cos($DEthetarad) #x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.50+0.4+1.5+0.0005/2)*sin($DEthetarad) y=0 #rotation=y$DEthetadeg
+#place E4_DL_Al_2 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.50+0.4+1.5+0.0005+0.0003/#2)*cos($DEthetarad) x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.50+0.4+1.5+0.0005+0.0003/#2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg		
+#
+## E5
+#place E5_DL_Al_1 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6-0.0005-0.0003/#2)*cos($DEthetarad) x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6-0.0005-0.0003/#2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+#place E5_DL_Si_1 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6-0.0005/2)*cos($DEthetarad) #x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6-0.0005/2)*sin($DEthetarad) y=0 #rotation=y$DEthetadeg
+#place Telescope_E5 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+0.75)*cos($DEthetarad) #x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+0.75)*sin($DEthetarad) y=0 #rotation=y$DEthetadeg
+#place E5_DL_Si_2 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.5+0.0005/#2)*cos($DEthetarad) x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.5+0.0005/#2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+#place E5_DL_Al_2 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.5+0.0005+0.0003/#2)*cos($DEthetarad) x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.5+0.0005+0.0003/#2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg	
+#
+## E6
+#place E6_DL_Al_1 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4-0.0005-0.0003/#2)*cos($DEthetarad) x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4-0.0005-0.0003/#2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+#place E6_DL_Si_1 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4-0.0005/#2)*cos($DEthetarad) x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4-0.0005/#2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+#place Telescope_E6 #z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4+0.75)*cos($DEthetarad) #x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4+0.75)*sin($DEthetarad) y=0 #rotation=y$DEthetadeg
+#place E6_DL_Si_2 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4+1.5+0.0005/#2)*cos($DEthetarad) x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4+1.5+0.0005/#2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+#place E6_DL_Al_2 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4+1.5+0.0005+0.0003/#2)*cos($DEthetarad) x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4+1.5+0.0005+0.0003/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg	
+
+
+# __________________________________________________________
+# RING SETTINGS ----
+# Most values taken from Manfred Grieser ESR ring studies
+
+# ====== Quadrupole definition : Quadrupole strength values taken from the reaction info file ======
+
+# Quadrupole 1
+genericquad quad1 fieldLength=821.6 ironLength=821.6 ironRadius=450 apertureRadius=111 \
+gradient=$Q1*$scaling  poleTipRadius=100 ironColor=1,0.,0.,0.6 kill=1
+
+#genericquad quad1 fieldLength=821.6 ironLength=821.6 ironRadius=450 apertureRadius=111 \
+#gradient=$Q1  poleTipRadius=100 ironColor=1,0.,0.,0.6 kill=1
+
+# Quadrupole 2
+genericquad quad2 fieldLength=834.6 ironLength=834.6 ironRadius=450 apertureRadius=111 \
+gradient=$Q2*$scaling  poleTipRadius=100 ironColor=1,0.,0.,0.6  kill=1
+
+#genericquad quad2 fieldLength=834.6 ironLength=834.6 ironRadius=450 apertureRadius=111 \
+#gradient=$Q2  poleTipRadius=100 ironColor=1,0.,0.,0.6  kill=1
+
+# Quadrupole 3
+genericquad quad3 fieldLength=821.6 ironLength=821.6 ironRadius=450 apertureRadius=111 \
+gradient=$Q3*$scaling  poleTipRadius=100 ironColor=1,0.,0.,0.6  kill=1
+
+#genericquad quad3 fieldLength=821.6 ironLength=821.6 ironRadius=450 apertureRadius=111 \
+#gradient=$Q3 poleTipRadius=100 ironColor=1,0.,0.,0.6  kill=1
+
+# Quadrupole 4
+genericquad quad4 fieldLength=1240.4 ironLength=1240.4 ironRadius=450 apertureRadius=111 \
+gradient=$Q4*$scaling  poleTipRadius=100 ironColor=1,0.,0.,0.6 kill=1
+
+#genericquad quad4 fieldLength=1240.4 ironLength=1240.4 ironRadius=450 apertureRadius=111 \
+#gradient=$Q4  poleTipRadius=100 ironColor=1,0.,0.,0.6 kill=1
+
+# Quadrupole 5
+genericquad quad5 fieldLength=821.6 ironLength=821.6 ironRadius=450 apertureRadius=111 \
+gradient=$Q5*$scaling  poleTipRadius=100 ironColor=1,0.,0.,0.6 kill=1
+
+#genericquad quad5 fieldLength=821.6 ironLength=821.6 ironRadius=450 apertureRadius=111 \
+#gradient=$Q5  poleTipRadius=100 ironColor=1,0.,0.,0.6 kill=1
+
+# ====== Field map ====== 
+
+# edge angle
+param alpha=7.5*3.1416/180   
+param lsim=10
+param kappa=-tan($alpha)*$Bfield*$scaling/$lsim
+
+# small correction angle determined by fringing field integral: alphacorr
+param alphacorr=-1.5*3.1416/180
+param kappav=tan($alpha-$alphacorr)*$Bfield*$scaling/$lsim
+
+# Simulation edge angle
+fieldexpr edge width=300 height=108 length=$lsim nX=100 nY=10 nZ=50 By=$kappa*x Bx=-$kappav*y
+
+# ====== Ideal sector bending magnets ======
+# real fieldheight=108 mm is reduced to fieldheight= 70 mm to simulate the vacuum chamber height 
+
+param R=6357
+idealsectorbend B  angle=-60 fieldCenterRadius=$R fieldInnerRadius=$R-100 fieldOuterRadius=$R+100 fieldHeight=70 \
+ironInnerRadius=$R-500 ironOuterRadius=$R+500 ironHeight=1000 kill=1 \
+ironColor=1,0.5,0,0.3\
+fieldColor=0,1,0,0.2 \
+fieldMaterial=Vacuum By=$Bfield*$scaling
+
+idealsectorbend Ba  angle=-53.5 fieldCenterRadius=$R fieldInnerRadius=$R-100 fieldOuterRadius=$R+100 fieldHeight=70 \
+ironInnerRadius=$R-500 ironOuterRadius=$R+500 ironHeight=1000 kill=1 \
+ironColor=1,0.5,0,0.3\
+fieldColor=0,1,0,0.2 \
+fieldMaterial=Vacuum By=$Bfield*$scaling
+
+idealsectorbend Bb  angle=-6.5 fieldCenterRadius=$R fieldInnerRadius=$R-100 fieldOuterRadius=$R+100 fieldHeight=70 \
+ironInnerRadius=$R-500 ironOuterRadius=$R+500 ironHeight=1000 kill=1 \
+ironColor=1,0.5,0,0.3\
+fieldColor=0,1,0,0.2 \
+fieldMaterial=Vacuum By=$Bfield*$scaling
+
+# ====== Chamber tubes ======
+
+param zdipol=9244.0
+tube Rohr1 innerRadius=100 outerRadius=110.0  length=$zdipol-500 kill=1 color=1,1,1,0.2
+
+# -- Corrections closed orbit shift -- 
+box CorrM width=800.0 height=1000.0 length=100 material=Vacuum color=1,1,0
+fieldexpr def1  width=800.0 height=1000.0 length=100 nX=100 nY=10 nZ=50 By=-0.00923772
+fieldexpr def2  width=800.0 height=1000.0 length=100 nX=100 nY=10 nZ=50 By=0.0516417
+
+param zdipol2=23761
+tube Rohr2 innerRadius=100 outerRadius=110.0 length=5701 kill=1 color=1,1,1,0.1 
+
+# Air section tube
+tube Rohr3 innerRadius=100 outerRadius=110.0  length=70 initialPhi=14.47 finalPhi=345.53 kill=1 color=1,1,1
+
+# __________________________________________________________
+# PLACE RING ELEMENTS ----
+
+# ====== First corner : chamber tube, quadrupoles 1 and 2 ======
+
+place quad1 z=5381.5
+
+place quad2 z=6725
+
+place MagSept z=8133 x=250+70
+#place MagSept_virtual z=7480
+
+place Rohr1 z=($zdipol+500)/2
+
+# ====== First dipole in 2 parts : Ba and Bb ======
+
+place edge z=$zdipol 
+
+place Dipoleplane z=$zdipol
+
+place CorrM z=$zdipol+832.12
+place def1  z=$zdipol+832.12
+
+place Ba z=$zdipol  x=0 rotation=y0  rename=dipole                                                     
+cornerarc z=$zdipol centerRadius=$R angle=-53.5
+
+param zdet=53.5*3.1416/180*$R
+place Bb z=$zdipol+$zdet  x=0 rotation=y0  rename=dipole
+cornerarc z=$zdipol+$zdet centerRadius=$R angle=-6.5
+param ldipol=60*3.1416/180*$R
+
+place CorrM z=$zdipol+$ldipol-832.12
+place def2 z=$zdipol+$ldipol-832.12
+
+place edge z=$zdipol+$ldipol
+
+# ====== Second corner : chamber tube, quadrupoles 3, 4, 5, HR detector ======
+
+place quad3 z=16963
+place quad4 z=18536
+place quad5 z=20083
+
+param xhrdet=3
+
+place HRplane z=21624
+place HR_window z=21634 x=-($xhrdet+61)
+place HR_airgap z=21636.5 x=-($xhrdet+61)
+place HR_detector z=21640 x=-($xhrdet+61) 
+place HR_pocket_Face1 z=21634 x=-($xhrdet-4)
+place HR_pocket_Face2 z=21634 x=-($xhrdet+122+50)
+place HR_pocket_Top z=21634+20 x=-($xhrdet+115-8) y=31 rotation=x90
+place HR_pocket_Bottom z=21634+20 x=-($xhrdet+115-8) y=-31 rotation=x90
+place HR_pocket_Back z=21634+41 x=-($xhrdet+115-8)
+place HR_pocket_Side z=21634+20 x=-($xhrdet-8+0.75) rotation=y90
+
+place Rohr2 z=21605-5704/2 
+#place Rohr3 z=21640 rotation=Z180
+
+# ====== Second dipole in 1 parts B ======
+
+place edge z=$zdipol2
+place B z=$zdipol2  x=0 rotation=y0  rename=dipole                                                       
+cornerarc z=$zdipol2 centerRadius=$R angle=-60 
+place edge z=$zdipol2+$ldipol
+
+# ====== General settings ======
+
+trackcuts killSecondaries=1 #kineticEnergyCut=1 #
+#printfield type=grid file="fieldmap.dat" X0=-200 Y0=0. Z0=900 nX=201 nY=1 nZ=251 dX=2. dY=2. dZ=1.

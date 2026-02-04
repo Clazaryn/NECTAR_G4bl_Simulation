@@ -2,7 +2,7 @@
 ; This file is structured for easy reading by both Python and C++
 
 [beam_info]
-reaction = 238Udp       ; reaction of interest (mostly used for labelling) 
+reaction = 238U_dp      ; reaction of interest (mostly used for labelling) 
 beam_A = 238            ; Beam mass number A
 beam_q = 92             ; Beam charge state
 beam_Z = 92             ; Beam atomic number Z
