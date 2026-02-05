@@ -2,6 +2,9 @@
 
 The NECTAR G4 Beamline (G4bl) simulation is a 3-step simulation pipeline that simulates the NECTAR surrogate reaction experiments conducted at the Experimental Storage Ring at GSI, Darmstadt. This repository hosts the most generalised version of the simulation, but specialised analysis formats can and should be forked.
 
+Package in current form assembled by Guy Leckenby. `event_generator.py`, `nuc_reaction.py` originally written by Ana Henriques, Michele Sguazzin 
+from the MatLab event generator by Manfred Grieser, with relativistic updates from Camille Berthelot. `ESR_ring.in` simulation originally written by Michele Sguazzin and Manfred Grieser. `analysis.cxx` originally written by Michele Sguazzin and updated by Camille Berthelot.
+
 ## Structure of Simulation
 
 The simulation uses 3 bash scripts to run three important but separate components of the simulation successively:
