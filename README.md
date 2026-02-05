@@ -36,6 +36,14 @@ All aspects of the simulation refer to `reac_info.txt` where the user input is k
 - The magnetic optic values can be calculated using the `Qi_dipole` Excel spreadsheets stored in `./ReacInfoFiles`
 - The masses used in the input file are the ones sourced from the NuclideDataMaster in `event_generator.py`. These are printed if `event_generator.py` is run in Verbose mode.
 
+If you change the beam type or energy, you MUST update the ring parameters Brho, Bfield, and Qi.
+
+### Limiting angular range sampled
+In `nuc_reaction.py`, you can limit the angular range and kinematic solution that is sampled:
+ - on line 37: you can define the telescope theta range. The range is defined from the CDF to ensure isotropic sampling.
+ - on line 112: you can define the telescope phi range in radians.
+ - on line 91: you can define the kinematic solution. Default is random.
+
 ## Detailed Description of Files
 
 ### Main Simulation Scripts
