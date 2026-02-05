@@ -10,13 +10,13 @@
 #  ~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.
 
 ## ===== define parallel operation + output file =====
-param -unset histoFile="Detectors_206Pbdp_HRg_excEn0_ejectile.root"
-param -unset outFile="g4bl_206Pbdp_HRg_excEn0_ejectile.out"
-param -unset eventFile="../206Pbdp_sim/Event_output/output_event_generator_206Pbdp_HRg_excEn00_ejectile.txt"
-output $outFile
+param -unset histoFile="Detectors_238U_dp_HRg_excEn00MeV_ejectile.root"
+param -unset outFile="g4bl_238U_dp_HRg_excEn00MeV_ejectile.out"
+param -unset eventFile="../238U_dp_sim/Event_output/output_event_generator_238U_dp_HRg_excEn00MeV_ejectile.txt"
+#output $outFile        # this line sends output to file, but we now do this in the bash script for cleaner output
 
 # to run g4bl in the cmd line, use the template below or edit the defaults above
-# g4bl ESR_ring.in viewer=best histoFile="Detectors_206Pbdp_HRg_excEn0_ejectile.root" outFile="g4bl_206Pbdp_HRg_excEn0_ejectile.out" eventFile="../206Pbdp_sim/Event_output/output_event_generator_206Pbdp_HRg_excEn00_ejectile.txt"
+# g4bl ESR_ring-New_Detectors.in viewer=best eventFile="../238U_dp_sim/Event_output/output_event_generator_238U_dp_HRg_excEn00MeV_ejectile.txt"
 
 # __________________________________________________________
 # PHYSICS LIST, INPUT PARAMETERS, VISUALIZATION SETTINGS ----
@@ -67,7 +67,7 @@ param -unset Q5=0.551111489
 
 ## ====== New target-like residue detector - 2026 telescope at new pocket position PT2 ======
 # Virtual detector to get initial energy  
-virtualdetector Telescope_virtual height=50 width=150 length=0.001 maxStep=0.0005 color=1,1,1
+virtualdetector virt_telescope height=50 width=150 length=0.001 maxStep=0.0005 color=1,1,1
 
 ## front-pocket telescope
 detector Front_tele_window   height=40 width=122 length=0.025    material=STAINLESS-STEEL  maxStep=0.0005  color=1,1,1,0.2 
@@ -101,9 +101,13 @@ virtualdetector escBP_Eres_bot      height=$ntEresthickness width=134 length=0.0
 virtualdetector escBP_Eres_inring   height=$ntEresthickness width=44  length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
 virtualdetector escBP_Eres_outring  height=$ntEresthickness width=44  length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
 
-## HR plane & dipole entrance testblock
-virtualdetector dipole_testblock height=500 width=500 length=20 maxStep=0.0005 color=1,0.4,1
-detector HR_testblock       height=500 width=500 length=20 material=Si maxStep=0.0005 color=1,0.4,1
+## ====== MAGNETIC SEPTUM  ======
+detector MagSept height=500 width=500 length=1792 material=STAINLESS-STEEL maxStep=0.2 color=0,0.8,0.6 kill=1
+
+## ====== Virtual tracking detectors  ======
+virtualdetector virt_MagSept height=500 width=500 length=0.5 maxStep=0.05 color=0.4,0.0,0.4
+virtualdetector virt_HRplane height=500 width=500 length=0.5 maxStep=0.05 color=0.4,0.0,0.4
+virtualdetector virt_QuadWall height=70 width=0.01 length=5722 maxStep=0.05 color=0.4,0.0,0.4
 
 # __________________________________________________________
 # PLACE DETECTOR ELEMENTS ---- 
@@ -111,7 +115,7 @@ detector HR_testblock       height=500 width=500 length=20 material=Si maxStep=0
 
 ## ====== Target-like residue detector 2 - 2026 telescope at bottom fitting ======
 
-#place Telescope_virtual  z=$ntfpZ_Offset-(0.0125+10)*cos($ntY_RotRad)*cos($ntX_RotRad) x=$ntfpX_Offset-(0.0125+10)*-sin($ntY_RotRad)*cos($ntX_RotRad) y=$ntfpY_Offset-(0.0125+10)*sin($ntX_RotRad) rotation=x$ntX_Rotation,y$ntY_Rotation
+#place virt_telescope  z=$ntfpZ_Offset-(0.0125+10)*cos($ntY_RotRad)*cos($ntX_RotRad) x=$ntfpX_Offset-(0.0125+10)*-sin($ntY_RotRad)*cos($ntX_RotRad) y=$ntfpY_Offset-(0.0125+10)*sin($ntX_RotRad) rotation=x$ntX_Rotation,y$ntY_Rotation
 
 # displacements for telescope detectors relative to window offsets
 param fpDE_zDisp=(3.025+$ntDEthickness/2)*cos($ntY_RotRad)*cos($ntX_RotRad)
@@ -135,8 +139,8 @@ place Front_tele_Eres    z=$ntfpZ_Offset+$fpEres_zDisp+$fpE1_zCentDisp x=$ntfpX_
 
 place escFP_E1_top       z=$ntfpZ_Offset+$fpE1_zDisp+$fpE1_zCentDisp+(22.025*-sin($ntX_RotRad)*cos($ntY_RotRad))     x=$ntfpX_Offset+$fpE1_xDisp+$fpE1_xCentDisp+(22.025*sin($ntY_RotRad)*sin($ntX_RotRad))   y=$ntfpY_Offset+$fpE1_yDisp+$fpE1_yCentDisp+(22.025*cos($ntY_RotRad))    rotation=x$ntX_Rotation+90,y$ntY_Rotation
 place escFP_E1_bot       z=$ntfpZ_Offset+$fpE1_zDisp+$fpE1_zCentDisp-(22.025*-sin($ntX_RotRad)*cos($ntY_RotRad))     x=$ntfpX_Offset+$fpE1_xDisp+$fpE1_xCentDisp-(22.025*sin($ntY_RotRad)*sin($ntX_RotRad))   y=$ntfpY_Offset+$fpE1_yDisp+$fpE1_yCentDisp-(22.025*cos($ntY_RotRad))    rotation=x$ntX_Rotation+90,y$ntY_Rotation
-place escFP_E1_inring    z=$ntfpZ_Offset+$fpE1_zDisp+$fpE1_zCentDisp-(67.025*-sin(-$ntY_RotRad))                     x=$ntfpX_Offset+$fpE1_xDisp+$fpE1_xCentDisp-(67.025*cos($ntY_RotRad))                    y=$ntfpY_Offset+$fpE1_yDisp+$fpE1_yCentDisp                              rotation=x90,z90,x$ntX_Rotation,y$ntY_Rotation
-place escFP_E1_outring   z=$ntfpZ_Offset+$fpE1_zDisp+$fpE1_zCentDisp+(67.025*-sin(-$ntY_RotRad))                     x=$ntfpX_Offset+$fpE1_xDisp+$fpE1_xCentDisp+(67.025*cos($ntY_RotRad))                    y=$ntfpY_Offset+$fpE1_yDisp+$fpE1_yCentDisp                              rotation=x90,z90,x$ntX_Rotation,y$ntY_Rotation
+place escFP_E1_inring    z=$ntfpZ_Offset+$fpE1_zDisp+$fpE1_zCentDisp-(65.025*-sin(-$ntY_RotRad))                     x=$ntfpX_Offset+$fpE1_xDisp+$fpE1_xCentDisp-(65.025*cos($ntY_RotRad))                    y=$ntfpY_Offset+$fpE1_yDisp+$fpE1_yCentDisp                              rotation=x90,z90,x$ntX_Rotation,y$ntY_Rotation
+place escFP_E1_outring   z=$ntfpZ_Offset+$fpE1_zDisp+$fpE1_zCentDisp+(65.025*-sin(-$ntY_RotRad))                     x=$ntfpX_Offset+$fpE1_xDisp+$fpE1_xCentDisp+(65.025*cos($ntY_RotRad))                    y=$ntfpY_Offset+$fpE1_yDisp+$fpE1_yCentDisp                              rotation=x90,z90,x$ntX_Rotation,y$ntY_Rotation
 place escFP_Eres_top     z=$ntfpZ_Offset+$fpEres_zDisp+$fpE1_zCentDisp+(22.025*-sin($ntX_RotRad)*cos($ntY_RotRad))   x=$ntfpX_Offset+$fpEres_xDisp+$fpE1_xCentDisp+(22.025*sin($ntY_RotRad)*sin($ntX_RotRad)) y=$ntfpY_Offset+$fpEres_yDisp+$fpE1_yCentDisp+(22.025*cos($ntY_RotRad))  rotation=x$ntX_Rotation+90,y$ntY_Rotation
 place escFP_Eres_bot     z=$ntfpZ_Offset+$fpEres_zDisp+$fpE1_zCentDisp-(22.025*-sin($ntX_RotRad)*cos($ntY_RotRad))   x=$ntfpX_Offset+$fpEres_xDisp+$fpE1_xCentDisp-(22.025*sin($ntY_RotRad)*sin($ntX_RotRad)) y=$ntfpY_Offset+$fpEres_yDisp+$fpE1_yCentDisp-(22.025*cos($ntY_RotRad))  rotation=x$ntX_Rotation+90,y$ntY_Rotation
 place escFP_Eres_inring  z=$ntfpZ_Offset+$fpEres_zDisp+$fpE1_zCentDisp-(67.025*-sin(-$ntY_RotRad))                   x=$ntfpX_Offset+$fpEres_xDisp+$fpE1_xCentDisp-(67.025*cos($ntY_RotRad))                  y=$ntfpY_Offset+$fpEres_yDisp+$fpE1_yCentDisp                            rotation=x90,z90,x$ntX_Rotation,y$ntY_Rotation
@@ -245,11 +249,12 @@ place quad1 z=5381.5
 
 place quad2 z=6725
 
+place virt_MagSept z=7236
+place MagSept z=8133 x=250+70
+
 place Rohr1 z=($zdipol+500)/2
 
 # ====== First dipole in 2 parts : Ba and Bb ======
-
-place dipole_testblock z=$zdipol-10
 
 place edge z=$zdipol 
 place Ba z=$zdipol  x=0 rotation=y0  rename=dipole                                                     
@@ -265,9 +270,10 @@ place edge z=$zdipol+$ldipol
 
 place quad3 z=16963
 place quad4 z=18536
+place virt_QuadWall z=18763 x=-98
 place quad5 z=20083
 
-place HR_testblock z=21640         # place testblock at HR_plane
+place virt_HRplane z=21640
 
 place Rohr2 z=21605-5704/2 
 #place Rohr3 z=21640 rotation=Z180

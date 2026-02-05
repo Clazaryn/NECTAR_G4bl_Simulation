@@ -9,13 +9,13 @@
 #  ~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.
 
 ## ===== define parallel operation + output file =====
-param -unset histoFile="Detectors_206Pbdp_HRg_excEn0_ejectile.root"
-param -unset outFile="g4bl_206Pbdp_HRg_excEn0_ejectile.out"
-param -unset eventFile="../206Pbdp_sim/Event_output/output_event_generator_206Pbdp_HRg_excEn00_ejectile.txt"
+param -unset histoFile="Detectors_238U_dp_HRg_excEn00MeV_ejectile.root"
+param -unset outFile="g4bl_238U_dp_HRg_excEn00MeV_ejectile.out"
+param -unset eventFile="../238U_dp_sim/Event_output/output_event_generator_238U_dp_HRg_excEn00MeV_ejectile.txt"
 #output $outFile        # this line sends output to file, but we now do this in the bash script for cleaner output
 
 # to run g4bl in the cmd line, use the template below or edit the defaults above
-# g4bl ESR_ring.in viewer=best histoFile="Detectors_206Pbdp_HRg_excEn0_ejectile.root" outFile="g4bl_206Pbdp_HRg_excEn0_ejectile.out" eventFile="../206Pbdp_sim/Event_output/output_event_generator_206Pbdp_HRg_excEn00_ejectile.txt"
+# g4bl ESR_ring-PoP_Detectors.in viewer=best
 
 # __________________________________________________________
 # PHYSICS LIST, INPUT PARAMETERS, VISUALIZATION SETTINGS ----
@@ -54,7 +54,7 @@ param -unset Q5=0.654639888
 
 ## ====== Target-like residue detector  ======
 # Virtual detector to get initial energy  
-virtualdetector Telescope_virtual height=50 width=50 length=0.001 maxStep=0.0005 color=1,1,1
+virtualdetector virt_telescope height=50 width=50 length=0.01 maxStep=0.0005 color=0.4,0.0,0.4
 
 # DeltaE detector 
 detector Telescope_DE height=20 width=20 length=$DEthickness material=Si maxStep=0.0005 color=0.4,0.5,0
@@ -137,22 +137,19 @@ box HR_pocket_Side height=58 width=38 length=1.5 material=STAINLESS-STEEL maxSte
 
 ## ====== MAGNETIC SEPTUM  ======
 detector MagSept height=500 width=500 length=1792 material=STAINLESS-STEEL maxStep=0.2 color=0,0.8,0.6 kill=1
-virtualdetector MagSept_virtual height=500 width=500 length=20 maxStep=0.0005 color=1,0.4,1 
 
-## ====== Test detectors  ======
-virtualdetector HRplane height=200 width=200 length=0.500 maxStep=0.0005 color=0,0.3,0.4
-virtualdetector Targetplane height=200 width=200 length=0.500 maxStep=0.0005 color=0,0.3,0.4
-virtualdetector Dipoleplane height=200 width=200 length=0.500 maxStep=0.0005 color=0,0.3,0.4
+## ====== Virtual tracking detectors  ======
+virtualdetector virt_MagSept height=500 width=500 length=0.5 maxStep=0.05 color=0.4,0.0,0.4
+virtualdetector virt_HRplane height=200 width=200 length=0.5 maxStep=0.05 color=0.4,0.0,0.4
+virtualdetector virt_QuadWall height=70 width=0.01 length=5722 maxStep=0.05 color=0.4,0.0,0.4
 
 # __________________________________________________________
 # PLACE DETECTOR ELEMENTS ---- 
 # Only for telescope and verification detectors. The heavy rediue detector is placed in the "place ring elements" section
 
-place Targetplane z=10 y=0 x=0
-
 ## ====== Telescope ======
 
-place Telescope_virtual z=($DEdistance-10)*cos($DEthetarad) x=($DEdistance-10)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place virt_telescope z=($DEdistance-10)*cos($DEthetarad) x=($DEdistance-10)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
 
 place Telescope_pocket z=($DEdistance+0.0125+100)*cos($DEthetarad) x=($DEdistance+0.0125+100)*sin($DEthetarad) y=0 rotation=y$DEthetadeg 
 
@@ -314,16 +311,14 @@ place quad1 z=5381.5
 
 place quad2 z=6725
 
+place virt_MagSept z=7480
 place MagSept z=8133 x=250+70
-#place MagSept_virtual z=7480
 
 place Rohr1 z=($zdipol+500)/2
 
 # ====== First dipole in 2 parts : Ba and Bb ======
 
 place edge z=$zdipol 
-
-place Dipoleplane z=$zdipol
 
 place CorrM z=$zdipol+832.12
 place def1  z=$zdipol+832.12
@@ -345,11 +340,12 @@ place edge z=$zdipol+$ldipol
 
 place quad3 z=16963
 place quad4 z=18536
+place virt_QuadWall z=18763 x=-98
 place quad5 z=20083
 
 param xhrdet=3
 
-place HRplane z=21624
+place virt_HRplane z=21624
 place HR_window z=21634 x=-($xhrdet+61)
 place HR_airgap z=21636.5 x=-($xhrdet+61)
 place HR_detector z=21640 x=-($xhrdet+61) 

@@ -33,8 +33,8 @@ def two_body_col(E1, m1, m2, m3, m4, Eex, particle, Eex_min_2sol):
     thetaOK = False     # boolean to indicate if the ejectile angle is kinematically allowed
     
     # Sampling angle in the whole telescope area (taking into account target radius angular resolution)
-    #theta3_lab = np.random.uniform(51.0, 69.0) * math.pi / 180     # use for old telescope acceptance
-    theta3_lab = np.arccos(1 - 2 * np.random.uniform(0.0, 1.0))     # isotropic in the lab frame - edit uniform distribution [0,1] -> [0,2pi]
+    theta3_lab = np.random.uniform(51.0, 69.0) * math.pi / 180     # use for PoP telescope acceptance
+    #theta3_lab = np.arccos(1 - 2 * np.random.uniform(0.0, 1.0))     # isotropic in the lab frame - edit uniform distribution [0,1] -> [0,2pi]
     
     # Q value       - $$$$ not used in current build $$$$
     # Q = Q_val_proj_targ_ejec(m1, m2, m3, m4)
@@ -103,14 +103,23 @@ def two_body_col(E1, m1, m2, m3, m4, Eex, particle, Eex_min_2sol):
         
     # '''''''''' defining collision product kinematics ''''''''''''
     P3_lab = funcs.momentum_rel(E3_lab, m3)                     # Ejectile momentum in lab frame
-    E4_lab = Etot - E3_lab - m3 - m4_new                        # Recoil kinetic energy in lab frame
-    P4_lab = funcs.momentum_rel(E4_lab, m4_new)                 # Recoil momentum in lab frame
-    # From momentum conservation: 0 = P3*sin(theta3_lab) - P4*sin(theta4) (transverse plane)
-    theta4_lab = math.asin((P3_lab * math.sin(theta3_lab)) / P4_lab)    # Recoil theta angle in lab frame (radian)
+    P3x_lab =  P3_lab * math.sin(theta3_lab)                    # momentum components from conservation
+    P3z_lab =  P3_lab * math.cos(theta3_lab)
+
+    P4x_lab = -P3x_lab                                          # conservation defines recoil components
+    P4z_lab =  P1_lab - P3z_lab
+    P4_lab = math.sqrt(P4x_lab**2 + P4z_lab**2)
+    theta4_lab = math.atan2(P4x_lab, P4z_lab)                   # recoil angle (robust, correct quadrant)
+
+    E4_lab = Etot - E3_lab - m3 - m4_new                  # Recoil kinetic energy in lab frame
+    P4_lab_check = funcs.momentum_rel(E4_lab, m4_new)     # Recoil momentum in lab frame
+    if abs(P4_lab - P4_lab_check) > 1e-6*P4_lab:
+        raise ValueError("Recoil momentum mismatch: P4_lab = ", P4_lab, " P4_lab_check = ", P4_lab_check)
     
     # set random phi angles
-    phi3 = np.random.uniform(-math.pi, math.pi)     # Ejectile lab phi angle
-    phi4 = -phi3                                # Recoil lab phi angle
+    #phi3 = np.random.uniform(-math.pi, math.pi)     # Ejectile lab phi angle
+    phi3 = np.random.uniform(-math.pi/20, math.pi/20)   # sample for PoP telescope acceptance
+    phi4 = -phi3                                    # Recoil lab phi angle
     if(phi4 < 0):
         phi4 = phi4 + 2 * math.pi
     
