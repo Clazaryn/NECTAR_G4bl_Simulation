@@ -41,6 +41,7 @@ echo "  HR2n: indices $HR2n_start to $HR2n_stop (${excitation_Ens[$HR2n_start]} 
 echo "  HR3n: indices $HR3n_start to $HR3n_stop (${excitation_Ens[$HR3n_start]} to ${excitation_Ens[$HR3n_stop]} MeV)"
 echo "  HR4n: indices $HR4n_start to $HR4n_stop (${excitation_Ens[$HR4n_start]} to ${excitation_Ens[$HR4n_stop]} MeV)"
 echo "  Max excitation energy: $max_excEn MeV"
+echo ""
 
 # Create output directory
 mkdir -p ../${reaction}_sim/Det_analysis
@@ -108,18 +109,16 @@ run_analysis() {
   local exc_index=$1
   local rec_type=$2
   
-  # Get absolute path to library to avoid path issues
+  # Get script directory to ensure ROOT runs from correct location
   local script_dir=$(cd "$(dirname "$0")" && pwd)
   local lib_path="${script_dir}/libDetAnalysis.so"
   
   (
-    # Run ROOT and capture errors (filter out ROOT banner noise)
-    root -l -b -q <<ROOT_EOF 2>&1 | grep -E "(Error|Warning|failed|not found|Analysis complete)" || true
+    # Change to script directory so relative paths work correctly
+    cd "$script_dir"
+    # Run ROOT - redirect both stdout and stderr to log file
+    root -l -b <<ROOT_EOF &>../${reaction}_sim/Det_analysis/root_output_excEn${exc_index}_${rec_type}.log
 gSystem->Load("$lib_path");
-if (gSystem->Load("$lib_path") != 0) {
-  gErrorIgnoreLevel = kError;
-  .q
-}
 .L UtilityScripts/det_analysis.h
 det_analysis($exc_index,"$rec_type");
 .q

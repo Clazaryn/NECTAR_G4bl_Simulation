@@ -5,7 +5,6 @@
 // Based on analysis_nChamb.C and TreeAnalysis.C codes
 
 #include "UtilityScripts/det_analysis.h"
-#include "UtilityScripts/reaction_info.h"
 
 // ========= Helper Function to Process Telescope Events =========
 
@@ -62,11 +61,11 @@ void processTelescopeEvents(TTree* tree_DE, TTree* tree_E1, TTree* tree_Eres,
             auto it = eventMap.find(eventID);
             if (it != eventMap.end()) {
                 auto true_vals = it->second;
-                ejectile->true_theta = std::get<0>(true_vals);
-                ejectile->true_Etot = std::get<2>(true_vals);
-                ejectile->true_Estar = std::get<1>(true_vals);
-                ejectile->Z = std::get<3>(true_vals);
-                ejectile->A = std::get<4>(true_vals);
+                ejectile->Z = std::get<0>(true_vals);
+                ejectile->A = std::get<1>(true_vals);
+                ejectile->true_Eexc = std::get<2>(true_vals);
+                ejectile->true_Eejc = std::get<3>(true_vals);
+                ejectile->true_theta = std::get<4>(true_vals);
             }
             
             // Set detector ID
@@ -119,14 +118,18 @@ void det_analysis(Int_t excLabel, const char* recType) {
         return;
     }
     
-    // Read true values from ejectile file
-    auto eventMap = readEjectileFile(reaction, recType, excLabel);
+    // Get excitation energy value to format label (matches bash script: excEnXXMeV)
+    Double_t excEn = reactionInfo.recoil_excEns[excLabel];
+    TString lbl = Form("%02dMeV", (Int_t)(excEn + 0.5));  // Format: XXMeV (2 sig figs with leading zero, rounded)
     
-    // Open input files
-    TString ejectile_filename = Form("../%s_sim/Detector_output/Detectors_%s_%s_excEn%02d_ejectile.root",
-                                    reaction, reaction, recType, excLabel);
-    TString recoil_filename = Form("../%s_sim/Detector_output/Detectors_%s_%s_excEn%02d_recoil.root",
-                                   reaction, reaction, recType, excLabel);
+    // Read true values from ejectile file
+    auto eventMap = readEjectileFile(reaction, recType, excLabel, excEn, reactionInfo);
+    
+    // Open input files (format matches bash script: excEnXXMeV)
+    TString ejectile_filename = Form("../%s_sim/Detector_output/Detectors_%s_%s_excEn%s_ejectile.root",
+                                     reaction, reaction, recType, lbl.Data());
+    TString recoil_filename = Form("../%s_sim/Detector_output/Detectors_%s_%s_excEn%s_recoil.root",
+                                   reaction, reaction, recType, lbl.Data());
     
     TFile* ejectile_file = TFile::Open(ejectile_filename.Data());
     TFile* recoil_file = TFile::Open(recoil_filename.Data());
@@ -136,9 +139,9 @@ void det_analysis(Int_t excLabel, const char* recType) {
         return;
     }
     
-    // Create output file
-    TString output_filename = Form("../%s_sim/Det_analysis/events_%s_%s_excEn%02d.root",
-                                   reaction, reaction, recType, excLabel);
+    // Create output file (use same label format for consistency)
+    TString output_filename = Form("../%s_sim/Det_analysis/events_%s_%s_excEn%s.root",
+                                   reaction, reaction, recType, lbl.Data());
     TFile* output_file = new TFile(output_filename.Data(), "RECREATE");
     
     // Create output tree
@@ -153,9 +156,13 @@ void det_analysis(Int_t excLabel, const char* recType) {
     tree->Branch("residue", &residue);
     
     // Load virtual detector data (same names for both detector types)
-    VirtualDetectorData magsept_data = loadVirtualDetector(recoil_file, "VirtualDetector/virt_MagSept");
-    VirtualDetectorData hrplane_data = loadVirtualDetector(recoil_file, "VirtualDetector/virt_HRplane");
-    VirtualDetectorData quadwall_data = loadVirtualDetector(recoil_file, "VirtualDetector/virt_QuadWall");
+    // Read PDGid from Event_output text file to avoid precision loss from ROOT Float_t storage
+    VirtualDetectorData magsept_data = loadVirtualDetector(recoil_file, "VirtualDetector/virt_MagSept",
+                                                            reaction, recType, excLabel, excEn);
+    VirtualDetectorData hrplane_data = loadVirtualDetector(recoil_file, "VirtualDetector/virt_HRplane",
+                                                            reaction, recType, excLabel, excEn);
+    VirtualDetectorData quadwall_data = loadVirtualDetector(recoil_file, "VirtualDetector/virt_QuadWall",
+                                                            reaction, recType, excLabel, excEn);
     
     if (strcmp(detType, "New") != 0 && strcmp(detType, "PoP") != 0) {
         std::cerr << "Error: Unknown detector type: " << detType << std::endl;

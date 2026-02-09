@@ -3,16 +3,17 @@
 
 // ========= Utility Functions Implementation =========
 
-Int_t getZ(Float_t PDGid) {
+Int_t getZ(Int_t PDGid) {
     // PDGid format: "100" + Z_out (3 digits) + A_out (3 digits) + "0"
-    // Extract Z: (PDGid - 1000000000) / 10000, then floor
-    return floor((PDGid - 1000000000) * 0.0001);
+    // Use integer arithmetic to avoid floating point precision issues
+    return (PDGid - 1000000000) / 10000;
 }
 
-Int_t getA(Float_t PDGid) {
-    // Extract A: (PDGid - 1000000000 - Z*10000) / 10
+Int_t getA(Int_t PDGid) {
+    // Extract A: Remove "100" prefix, Z (3 digits), and last digit, then divide by 10
+    // Use integer arithmetic to avoid floating point precision issues
     Int_t Z = getZ(PDGid);
-    return (PDGid - 1000000000 - Z * 10000) * 0.1;
+    return (PDGid - 1000000000 - Z * 10000) / 10;
 }
 
 Float_t getEres(Float_t EnergyMeV, Float_t Res_Percent) {
@@ -27,12 +28,27 @@ double GAGG_resolution(double E) {
 }
 
 std::unordered_map<int, std::tuple<double, double, double, int, int>> readEjectileFile(
-    const char* reaction, const char* recType, Int_t excLabel) {
+    const char* reaction, const char* recType, Int_t excLabel, Double_t excEn,
+    const ReactionInfo& reactionInfo) {
     
     std::unordered_map<int, std::tuple<double, double, double, int, int>> eventMap;
     
-    TString filename = Form("../%s_sim/Event_output/output_event_generator_%s_%s_excEn%02d_ejectile.txt",
-                           reaction, reaction, recType, excLabel);
+    // Get masses and beam parameters from ReactionInfo
+    Double_t mass_beam = reactionInfo.mass_beam;
+    Double_t mass_target = reactionInfo.mass_target;
+    Double_t mass_recoil = reactionInfo.mass_recoil;
+    Double_t mass_ejectile = reactionInfo.mass_eject;
+    Float_t EuA_beam = reactionInfo.beam_EuA;
+    
+    // Calculate beam kinetic energy and momentum
+    Double_t amu = 931.49410242;     // atomic mass constant from 2025 CODATA
+    Double_t Ek_beam = mass_beam / amu * EuA_beam;
+    Double_t P_beam = sqrt(pow(Ek_beam + mass_beam, 2.0) - pow(mass_beam, 2.0));
+    
+    // Format label to match bash script: excEnXXMeV
+    TString lbl = Form("%02dMeV", (Int_t)(excEn + 0.5));  // Format: XXMeV (2 sig figs with leading zero, rounded)
+    TString filename = Form("../%s_sim/Event_output/output_event_generator_%s_%s_excEn%s_ejectile.txt",
+                           reaction, reaction, recType, lbl.Data());
     
     std::ifstream file(filename.Data());
     if (!file.is_open()) {
@@ -50,17 +66,18 @@ std::unordered_map<int, std::tuple<double, double, double, int, int>> readEjecti
         double weight;
         
         if (iss >> x >> y >> z >> px >> py >> pz >> t >> pdgid >> eventid >> trackid >> parentid >> weight) {
-            double p_mag = sqrt(px*px + py*py + pz*pz);
-            double theta_true = acos(pz / p_mag) * 180.0 / M_PI;
+            double P_ejc = sqrt(pow(px, 2.) + pow(py, 2.) + pow(pz, 2.));
+            double theta = atan2( sqrt(pow(px, 2.) + pow(py, 2.)), pz ) * 180.0 / M_PI;
             
-            double proton_mass = 938.7830736444523; // MeV/c^2
-            double E_true = sqrt(p_mag*p_mag + proton_mass*proton_mass) - proton_mass;
-            double Etot_true = E_true;
+            double Eejc = sqrt(pow(P_ejc, 2.) + pow(mass_ejectile, 2.)) - mass_ejectile;
+
+            double Eexc = sqrt(pow(Ek_beam + mass_beam + mass_target - Eejc - mass_ejectile, 2.) -
+                           pow(P_beam, 2.) - pow(P_ejc, 2.) + 2*P_beam*P_ejc*cos(theta*M_PI/180)) - mass_recoil;
             
             int Z = getZ(pdgid);
             int A = getA(pdgid);
             
-            eventMap[eventid] = std::make_tuple(theta_true, E_true, Etot_true, Z, A);
+            eventMap[eventid] = std::make_tuple(Z, A, Eexc, Eejc, theta);
         }
     }
     
@@ -71,8 +88,8 @@ std::unordered_map<int, std::tuple<double, double, double, int, int>> readEjecti
 
 // ========= Data Classes Implementation =========
 
-LightEjectile::LightEjectile() : Z(0), A(0), true_Estar(0), true_Etot(0), true_theta(0),
-                                  recon_Estar(0), recon_Etot(0), recon_theta(0), vert_strip(0), detector_id(0) {}
+LightEjectile::LightEjectile() : Z(0), A(0), true_Eexc(0), true_Eejc(0), true_theta(0),
+                                  recon_Eexc(0), recon_Eejc(0), recon_theta(0), vert_strip(0), detector_id(0) {}
 
 HeavyResidue::HeavyResidue() : Z(0), A(0), MagSept_x(0), MagSept_y(0), hit_MagSept(kFALSE),
                                 HRplane_x(0), HRplane_y(0), hit_HRplane(kFALSE),
@@ -146,9 +163,9 @@ bool NewTelescopeAnalyzer::analyzeEvent(Int_t eventID, Float_t x_DE, Float_t y_D
     
     // Fill ejectile structure
     ejectile.vert_strip = vert_strip;
+    ejectile.recon_Eexc = Exc_en;
+    ejectile.recon_Eejc = En_tot;
     ejectile.recon_theta = theta_calc;
-    ejectile.recon_Etot = En_tot;
-    ejectile.recon_Estar = Exc_en;
     
     return true;
 }
@@ -305,47 +322,79 @@ bool PoPTelescopeAnalyzer::analyzeEvent(Int_t eventID, Float_t x_DE, Float_t y_D
     
     // Calculate excitation energy
     Double_t P_tel_res = sqrt(pow(Etot_tel_res + mass_ejectile, 2) - pow(mass_ejectile, 2));
-    Double_t Exc_energy = sqrt(pow(Ek_beam + mass_beam + mass_target - Etot_tel_res - mass_ejectile, 2.) -
+    Double_t Exc_en = sqrt(pow(Ek_beam + mass_beam + mass_target - Etot_tel_res - mass_ejectile, 2.) -
                                pow(P_beam, 2.) - pow(P_tel_res, 2.) + 2*P_beam*P_tel_res*TMath::Cos(theta_DE_pix)) - mass_recoil;
     
     // Fill ejectile structure
     ejectile.vert_strip = vert_strip;
     ejectile.recon_theta = theta_DE_pix * 180.0 / M_PI;
-    ejectile.recon_Etot = Etot_tel_res;
-    ejectile.recon_Estar = Exc_energy;
+    ejectile.recon_Eejc = Etot_tel_res;
+    ejectile.recon_Eexc = Exc_en;
     
     return true;
 }
 
 // ========= Helper Functions Implementation =========
 
-VirtualDetectorData loadVirtualDetector(TFile* recoil_file, const char* tree_path) {
+VirtualDetectorData loadVirtualDetector(TFile* recoil_file, const char* tree_path,
+                                        const char* reaction, const char* recType, 
+                                        Int_t excLabel, Double_t excEn) {
     VirtualDetectorData data;
     
-    TTree* tree = (TTree*)recoil_file->Get(tree_path);
-    if (!tree) {
-        return data;  // Return empty data if tree not found
+    // First, read PDGid from Event_output text file (where it's stored as integer, avoiding precision loss)
+    TString lbl = Form("%02dMeV", (Int_t)(excEn + 0.5));  // Format: XXMeV (2 sig figs with leading zero, rounded)
+    TString recoil_event_filename = Form("../%s_sim/Event_output/output_event_generator_%s_%s_excEn%s_recoil.txt",
+                                         reaction, reaction, recType, lbl.Data());
+    
+    std::unordered_map<int, Int_t> eventid_to_pdgid;  // Map EventID -> PDGid from text file
+    
+    std::ifstream event_file(recoil_event_filename.Data());
+    if (event_file.is_open()) {
+        std::string line;
+        std::getline(event_file, line); // Skip header
+        
+        while (std::getline(event_file, line)) {
+            std::istringstream iss(line);
+            double x, y, z, px, py, pz, t;
+            int pdgid, eventid, trackid, parentid;
+            double weight;
+            
+            if (iss >> x >> y >> z >> px >> py >> pz >> t >> pdgid >> eventid >> trackid >> parentid >> weight) {
+                eventid_to_pdgid[eventid] = pdgid;  // Store PDGid as integer from text file
+            }
+        }
+        event_file.close();
+        std::cout << "Loaded " << eventid_to_pdgid.size() << " PDGid values from recoil event file: " 
+                  << recoil_event_filename << std::endl;
+    } else {
+        std::cerr << "Warning: Could not open recoil event file: " << recoil_event_filename << std::endl;
     }
     
-    Float_t EventID, x, y, z, PDGid;
+    // Now read position data from ROOT tree
+    TTree* tree = (TTree*)recoil_file->Get(tree_path);
+    if (!tree) {
+        std::cerr << "Warning: Could not find tree: " << tree_path << std::endl;
+        return data;  // Return data with PDGid map even if tree not found
+    }
+    
+    Float_t EventID, x, y, z;
     tree->SetBranchAddress("EventID", &EventID);
     tree->SetBranchAddress("x", &x);
     tree->SetBranchAddress("y", &y);
     tree->SetBranchAddress("z", &z);
     
-    bool has_pdgid = (tree->GetBranch("PDGid") != nullptr);
-    if (has_pdgid) {
-        tree->SetBranchAddress("PDGid", &PDGid);
-    }
-    
     for (Int_t i = 0; i < tree->GetEntries(); ++i) {
         tree->GetEntry(i);
         Int_t eventID = static_cast<int>(EventID);
         data.pos_map[eventID] = std::make_tuple(x, y, z);
-        if (has_pdgid) {
-            data.pdgid_map[eventID] = PDGid;
+        
+        // Use PDGid from text file (integer) instead of ROOT file (float with precision loss)
+        if (eventid_to_pdgid.count(eventID) > 0) {
+            data.pdgid_map[eventID] = eventid_to_pdgid[eventID];
         }
     }
+    
+    std::cout << "Loaded " << data.pos_map.size() << " positions from tree: " << tree_path << std::endl;
     
     return data;
 }
@@ -364,11 +413,13 @@ void fillResidueFromMaps(Int_t eventID,
         
         // Extract Z and A from PDGid if available
         if (magsept_data.pdgid_map.count(eventID) > 0) {
-            Float_t pdgid = magsept_data.pdgid_map.at(eventID);
-            residue->Z = getZ(pdgid);
-            residue->A = getA(pdgid);
+            Int_t pdgid_int = magsept_data.pdgid_map.at(eventID);
+            residue->Z = getZ(pdgid_int);
+            residue->A = getA(pdgid_int);
         }
     } else {
+        residue->MagSept_x = -9999;
+        residue->MagSept_y = -9999;
         residue->hit_MagSept = kFALSE;
     }
     
@@ -380,8 +431,8 @@ void fillResidueFromMaps(Int_t eventID,
         residue->hit_HRplane = kTRUE;
     } else {
         // Event hit wall before reaching HRplane
-        residue->HRplane_x = 0;
-        residue->HRplane_y = 0;
+        residue->HRplane_x = -9999;
+        residue->HRplane_y = -9999;
         residue->hit_HRplane = kFALSE;
     }
     
@@ -393,8 +444,8 @@ void fillResidueFromMaps(Int_t eventID,
         residue->hit_QuadWall = kTRUE;
     } else {
         // Event did not hit QuadWall
-        residue->QuadWall_x = 0;
-        residue->QuadWall_y = 0;
+        residue->QuadWall_x = -9999;
+        residue->QuadWall_y = -9999;
         residue->hit_QuadWall = kFALSE;
     }
 }

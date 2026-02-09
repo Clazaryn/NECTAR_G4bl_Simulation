@@ -105,7 +105,7 @@ def pol1(x, m, b):
 
 # Function to convert Z et A as g4beamline understands it (Z_in and A_in are integer values, 
 # Z_out and A_out are values converted for g4beamline) 
-def define_PDGid(Z_in,A_in):
+def define_PDGid(Z_in, A_in):
     Z_out=0
     A_out=0
     

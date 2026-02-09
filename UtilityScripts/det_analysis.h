@@ -18,14 +18,15 @@
 #include <TMath.h>
 #include <TF1.h>
 
+#include "reaction_info.h"
 
 // ========= Data Classes =========
 
 class LightEjectile {
 public:
     Int_t Z, A;
-    Double_t true_Estar, true_Etot, true_theta;
-    Double_t recon_Estar, recon_Etot, recon_theta;
+    Double_t true_Eexc, true_Eejc, true_theta;
+    Double_t recon_Eexc, recon_Eejc, recon_theta;
     Int_t vert_strip;
     Int_t detector_id;  // 0=primary, 1=auxillary for New detectors
     
@@ -121,14 +122,10 @@ public:
 // ========= Utility Functions =========
 
 // Extract Z from PDGid
-// PDGid format: "100" + Z_out (3 digits) + A_out (3 digits) + "0"
-// Example: Z=1, A=1 -> "1000010010" -> 1000010010
-// Z extraction: (PDGid - 1000000000) / 10000, then floor
-Int_t getZ(Float_t PDGid);
+Int_t getZ(Int_t PDGid);
 
 // Extract A from PDGid
-// A extraction: (PDGid - 1000000000 - Z*10000) / 10
-Int_t getA(Float_t PDGid);
+Int_t getA(Int_t PDGid);
 
 // Energy resolution function
 Float_t getEres(Float_t EnergyMeV, Float_t Res_Percent);
@@ -138,15 +135,18 @@ double GAGG_resolution(double E);
 
 // Read ejectile file to get true values
 std::unordered_map<int, std::tuple<double, double, double, int, int>> readEjectileFile(
-    const char* reaction, const char* recType, Int_t excLabel);
+    const char* reaction, const char* recType, Int_t excLabel, Double_t excEn,
+    const ReactionInfo& reactionInfo);
 
 // Helper function to load virtual detector data
 struct VirtualDetectorData {
     std::unordered_map<int, std::tuple<Float_t, Float_t, Float_t>> pos_map;
-    std::unordered_map<int, Float_t> pdgid_map;
+    std::unordered_map<int, Int_t> pdgid_map;
 };
 
-VirtualDetectorData loadVirtualDetector(TFile* recoil_file, const char* tree_path);
+VirtualDetectorData loadVirtualDetector(TFile* recoil_file, const char* tree_path,
+                                        const char* reaction, const char* recType, 
+                                        Int_t excLabel, Double_t excEn);
 
 // Helper function to fill residue from virtual detector maps
 void fillResidueFromMaps(Int_t eventID, 

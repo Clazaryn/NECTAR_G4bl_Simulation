@@ -1,7 +1,7 @@
 #ifndef REACTION_INFO_H
 #define REACTION_INFO_H
 
-#include "UtilityScripts/ini_parser.h"
+#include "ini_parser.h"
 #include <iostream>
 #include <vector>
 
@@ -23,8 +23,8 @@ struct ReactionInfo {
     int recoil_A, recoil_Z, recoil_q;
     std::vector<double> recoil_excEns;
     
-    // Separation energies
-    double rec_Sn, rec_S2n, rec_S3n;
+    // Separation energies (matching INI file format)
+    double Sn_CN, Sn_1nDght, Sn_2nDght, Sn_3nDght;
     
     // Reaction masses
     double mass_beam, mass_target, mass_recoil, mass_eject;
@@ -52,9 +52,6 @@ struct ReactionInfo {
             sig_pup = parser.getDouble("beam_info", "sig_pup");
             emit_x = parser.getDouble("beam_info", "emit_x");
             emit_y = parser.getDouble("beam_info", "emit_y");
-            beta_x = parser.getDouble("beam_info", "beta_x");
-            beta_y = parser.getDouble("beam_info", "beta_y");
-            disp_x = parser.getDouble("beam_info", "disp_x");
             
             // Target info
             targ_A = parser.getInt("target_info", "targ_A");
@@ -72,10 +69,11 @@ struct ReactionInfo {
             recoil_q = parser.getInt("recoil_info", "recoil_q");
             recoil_excEns = parser.getDoubleVector("recoil_info", "recoil_excEns");
             
-            // Separation energies
-            rec_Sn = parser.getDouble("separation_energies", "rec_Sn");
-            rec_S2n = parser.getDouble("separation_energies", "rec_S2n");
-            rec_S3n = parser.getDouble("separation_energies", "rec_S3n");
+            // Separation energies (matching INI file format)
+            Sn_CN = parser.getDouble("separation_energies", "Sn_CN");
+            Sn_1nDght = parser.getDouble("separation_energies", "Sn_1nDght");
+            Sn_2nDght = parser.getDouble("separation_energies", "Sn_2nDght");
+            Sn_3nDght = parser.getDouble("separation_energies", "Sn_3nDght");
             
             // Reaction masses
             mass_beam = parser.getDouble("reaction_masses", "mass_beam");
@@ -85,6 +83,9 @@ struct ReactionInfo {
             
             // Ring parameters
             det_setup = parser.getString("ring_params", "det_setup");
+            beta_x = parser.getDouble("ring_params", "beta_x");
+            beta_y = parser.getDouble("ring_params", "beta_y");
+            disp_x = parser.getDouble("ring_params", "disp_x");
             dip_radius = parser.getDouble("ring_params", "dip_radius");
             quad_Leff = parser.getDouble("ring_params", "quad_Leff");
             dip_Brho = parser.getDouble("ring_params", "dip_Brho");
