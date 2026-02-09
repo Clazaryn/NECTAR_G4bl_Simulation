@@ -18,42 +18,6 @@
 #include <TMath.h>
 #include <TF1.h>
 
-// ========= Utility Functions =========
-
-// Extract Z from PDGid
-// PDGid format: "100" + Z_out (3 digits) + A_out (3 digits) + "0"
-// Example: Z=1, A=1 -> "1000010010" -> 1000010010
-// Z extraction: (PDGid - 1000000000) / 10000, then floor
-Int_t getZ(Float_t PDGid);
-
-// Extract A from PDGid
-// A extraction: (PDGid - 1000000000 - Z*10000) / 10
-Int_t getA(Float_t PDGid);
-
-// Energy resolution function
-Float_t getEres(Float_t EnergyMeV, Float_t Res_Percent);
-
-// GAGG scintillator resolution
-double GAGG_resolution(double E);
-
-// Read ejectile file to get true values
-std::unordered_map<int, std::tuple<double, double, double, int, int>> readEjectileFile(
-    const char* reaction, const char* recType, Int_t excLabel);
-
-// Helper function to load virtual detector data
-struct VirtualDetectorData {
-    std::unordered_map<int, std::tuple<Float_t, Float_t, Float_t>> pos_map;
-    std::unordered_map<int, Float_t> pdgid_map;
-};
-
-VirtualDetectorData loadVirtualDetector(TFile* recoil_file, const char* tree_path);
-
-// Helper function to fill residue from virtual detector maps
-void fillResidueFromMaps(Int_t eventID, 
-                         const VirtualDetectorData& magsept_data,
-                         const VirtualDetectorData& hrplane_data,
-                         const VirtualDetectorData& quadwall_data,
-                         HeavyResidue* residue);
 
 // ========= Data Classes =========
 
@@ -106,10 +70,10 @@ class NewTelescopeAnalyzer : public TelescopeAnalyzer {
 private:
     TVector3 offset;
     TVector2 rotation;
-    static const Float_t Tel_DET_WIDTH;
-    static const Float_t Tel_DET_HEIGHT;
-    static const Float_t Tel_VSTRIP_WIDTH;
-    static const Float_t Tel_HSTRIP_WIDTH;
+    const Float_t Tel_DET_WIDTH;
+    const Float_t Tel_DET_HEIGHT;
+    const Float_t Tel_VSTRIP_WIDTH;
+    const Float_t Tel_HSTRIP_WIDTH;
     
 public:
     NewTelescopeAnalyzer(const char* r, const char* rt, Int_t el,
@@ -125,12 +89,12 @@ public:
 
 class PoPTelescopeAnalyzer : public TelescopeAnalyzer {
 private:
-    static const Float_t z_DE_pix;
-    static const Float_t Tel_DET_WIDTH;
-    static const Float_t Tel_DET_HEIGHT;
-    static const Float_t Tel_STRIP_WIDTH;
-    static const Float_t Tel_STRIP_OFFSET;
-    static const Float_t Tel_ROTATION_ANGLE;
+    const Float_t z_DE_pix;
+    const Float_t Tel_DET_WIDTH;  // -10 to +10 mm
+    const Float_t Tel_DET_HEIGHT;  // -10 to +10 mm
+    const Float_t Tel_STRIP_WIDTH;
+    const Float_t Tel_STRIP_OFFSET;
+    const Float_t Tel_ROTATION_ANGLE;
     
     TTree* tree_E2;
     std::unordered_map<int, Float_t> E2_map;
@@ -152,5 +116,46 @@ public:
                       Float_t Edep_DE, Float_t Edep_E1, Float_t Edep_Eres,
                       LightEjectile& ejectile) override;
 };
+
+
+// ========= Utility Functions =========
+
+// Extract Z from PDGid
+// PDGid format: "100" + Z_out (3 digits) + A_out (3 digits) + "0"
+// Example: Z=1, A=1 -> "1000010010" -> 1000010010
+// Z extraction: (PDGid - 1000000000) / 10000, then floor
+Int_t getZ(Float_t PDGid);
+
+// Extract A from PDGid
+// A extraction: (PDGid - 1000000000 - Z*10000) / 10
+Int_t getA(Float_t PDGid);
+
+// Energy resolution function
+Float_t getEres(Float_t EnergyMeV, Float_t Res_Percent);
+
+// GAGG scintillator resolution
+double GAGG_resolution(double E);
+
+// Read ejectile file to get true values
+std::unordered_map<int, std::tuple<double, double, double, int, int>> readEjectileFile(
+    const char* reaction, const char* recType, Int_t excLabel);
+
+// Helper function to load virtual detector data
+struct VirtualDetectorData {
+    std::unordered_map<int, std::tuple<Float_t, Float_t, Float_t>> pos_map;
+    std::unordered_map<int, Float_t> pdgid_map;
+};
+
+VirtualDetectorData loadVirtualDetector(TFile* recoil_file, const char* tree_path);
+
+// Helper function to fill residue from virtual detector maps
+void fillResidueFromMaps(Int_t eventID, 
+                         const VirtualDetectorData& magsept_data,
+                         const VirtualDetectorData& hrplane_data,
+                         const VirtualDetectorData& quadwall_data,
+                         HeavyResidue* residue);
+
+// Main analysis function
+void det_analysis(Int_t excLabel, const char* recType);
 
 #endif // DET_ANALYSIS_H

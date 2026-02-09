@@ -78,141 +78,75 @@ show_progress() {
   printf "\rProgress: [%s] %d/%d (%d%%)" "$bar" "$completed" "$total" "$percent"
 }
 
+# Function to wait for jobs when limit is reached
+# If max_jobs is 0, waits for all jobs to complete
+wait_for_jobs() {
+  local max_jobs=${1:-$N}  # Default to N, but can be overridden (use 0 for all jobs)
+  
+  while [ "$jobs_running" -ge "$max_jobs" ] && [ ${#job_pids[@]} -gt 0 ]; do
+    # Wait for the oldest job (first in array) to finish
+    wait ${job_pids[0]} 2>/dev/null
+    # Remove the finished job from the array
+    job_pids=("${job_pids[@]:1}")
+    jobs_running=$((jobs_running - 1))
+    completed_iterations=$((completed_iterations + 1))
+    show_progress $completed_iterations $total_iterations
+  done
+}
+
+# Function to run event generation in background
+run_event_generation() {
+  local exc_index=$1
+  local rec_type=$2
+  
+  (
+    en=${excitation_Ens[$exc_index]}
+    lbl=$(echo "$en" | awk '{printf "%02dMeV", int($1 + 0.5)}')  # Format: XXMeV (2 sig figs with leading zero, rounded to nearest integer)
+    python3.5 event_generator.py "$nevents" "$rec_type" "$en" "$lbl"
+  ) &  # Background job
+  
+  job_pids+=($!)  # Capture the PID of the current background job
+  jobs_running=$((jobs_running + 1))  # Increment job count
+  wait_for_jobs  # Wait if we've reached the limit
+}
+
 echo ""  # New line before progress bar starts
 
 # Create reaction directory structure
 mkdir -p ../${reaction}_sim/Event_output
 
-for i in $(seq $HRg_start $HRg_stop); do		# HRg block
-  (
-    en=${excitation_Ens[$i]}
-    lbl=$(echo "$en" | awk '{printf "%02dMeV", int($1 + 0.5)}')  # Format: XXMeV (2 sig figs with leading zero, rounded to nearest integer)
-    python3.5 event_generator.py "$nevents" "HRg" "$en" "$lbl"
-  ) &  # Background job
-  
-  job_pids+=($!)		# Capture the PID of the current background job
-
-  jobs_running=$((jobs_running + 1))		# Throttle the number of parallel jobs
-
-  # Wait for a job to finish if we've reached the limit
-  while [ "$jobs_running" -ge "$N" ]; do
-    # Wait for the oldest job (first in array) to finish
-    wait ${job_pids[0]} 2>/dev/null
-    # Remove the finished job from the array
-    job_pids=("${job_pids[@]:1}")
-    jobs_running=$((jobs_running - 1))
-    completed_iterations=$((completed_iterations + 1))
-    show_progress $completed_iterations $total_iterations
-  done
+#HRg block
+for i in $(seq $HRg_start $HRg_stop); do
+  run_event_generation $i "HRg"
 done
 
-for i in $(seq $HR1n_start $HR1n_stop); do		# HR1n block
-  (
-    en=${excitation_Ens[$i]}
-    lbl=$(echo "$en" | awk '{printf "%02dMeV", int($1 + 0.5)}')  # Format: XXMeV (2 sig figs with leading zero, rounded to nearest integer)
-	  python3.5 event_generator.py "$nevents" "HR1n" "$en" "$lbl"
-  ) &  # Background job
-  
-  job_pids+=($!)		# Capture the PID of the current background job
-
-  jobs_running=$((jobs_running + 1))		# Throttle the number of parallel jobs
-
-  # Wait for a job to finish if we've reached the limit
-  while [ "$jobs_running" -ge "$N" ]; do
-    # Wait for the oldest job (first in array) to finish
-    wait ${job_pids[0]} 2>/dev/null
-    # Remove the finished job from the array
-    job_pids=("${job_pids[@]:1}")
-    jobs_running=$((jobs_running - 1))
-    completed_iterations=$((completed_iterations + 1))
-    show_progress $completed_iterations $total_iterations
-  done
+#HR1n block
+for i in $(seq $HR1n_start $HR1n_stop); do
+  run_event_generation $i "HR1n"
 done
 
 # HR2n block (only if range is valid)
 if [ "$HR2n_start" -le "$HR2n_stop" ] && [ "$HR2n_stop" -ge 0 ]; then
-  for i in $(seq $HR2n_start $HR2n_stop); do		# HR2n block
-    (
-      en=${excitation_Ens[$i]}
-      lbl=$(echo "$en" | awk '{printf "%02dMeV", int($1 + 0.5)}')  # Format: XXMeV (2 sig figs with leading zero, rounded to nearest integer)
-  	  python3.5 event_generator.py "$nevents" "HR2n" "$en" "$lbl"
-    ) &  # Background job
-
-    job_pids+=($!)		# Capture the PID of the current background job
-
-    jobs_running=$((jobs_running + 1))		# Throttle the number of parallel jobs
-
-    # Wait for a job to finish if we've reached the limit
-    while [ "$jobs_running" -ge "$N" ]; do
-      # Wait for the oldest job (first in array) to finish
-      wait ${job_pids[0]} 2>/dev/null
-      # Remove the finished job from the array
-      job_pids=("${job_pids[@]:1}")
-      jobs_running=$((jobs_running - 1))
-      completed_iterations=$((completed_iterations + 1))
-      show_progress $completed_iterations $total_iterations
-    done
+  for i in $(seq $HR2n_start $HR2n_stop); do  # HR2n block
+    run_event_generation $i "HR2n"
   done
 fi
 
 # HR3n block (only if range is valid)
 if [ "$HR3n_start" -le "$HR3n_stop" ] && [ "$HR3n_stop" -ge 0 ]; then
   for i in $(seq $HR3n_start $HR3n_stop); do
-    (
-      en=${excitation_Ens[$i]}
-      lbl=$(echo "$en" | awk '{printf "%02dMeV", int($1 + 0.5)}')  # Format: XXMeV (2 sig figs with leading zero, rounded to nearest integer)
-      python3.5 event_generator.py "$nevents" "HR3n" "$en" "$lbl"
-    ) &  # Background job
-
-    job_pids+=($!)		# Capture the PID of the current background job
-
-    jobs_running=$((jobs_running + 1))		# Throttle the number of parallel jobs
-
-    # Wait for a job to finish if we've reached the limit
-    while [ "$jobs_running" -ge "$N" ]; do
-      # Wait for the oldest job (first in array) to finish
-      wait ${job_pids[0]} 2>/dev/null
-      # Remove the finished job from the array
-      job_pids=("${job_pids[@]:1}")
-      jobs_running=$((jobs_running - 1))
-      completed_iterations=$((completed_iterations + 1))
-      show_progress $completed_iterations $total_iterations
-    done
+    run_event_generation $i "HR3n"
   done
 fi
 
 # HR4n block (only if range is valid and Sn_4nDght is defined)
 if [ "$HR4n_start" -le "$HR4n_stop" ] && [ "$HR4n_stop" -ge 0 ]; then
   for i in $(seq $HR4n_start $HR4n_stop); do
-    (
-      en=${excitation_Ens[$i]}
-      lbl=$(echo "$en" | awk '{printf "%02dMeV", int($1 + 0.5)}')  # Format: XXMeV (2 sig figs with leading zero, rounded to nearest integer)
-      python3.5 event_generator.py "$nevents" "HR4n" "$en" "$lbl"
-    ) &  # Background job
-
-    job_pids+=($!)		# Capture the PID of the current background job
-
-    jobs_running=$((jobs_running + 1))		# Throttle the number of parallel jobs
-
-    # Wait for a job to finish if we've reached the limit
-    while [ "$jobs_running" -ge "$N" ]; do
-      # Wait for the oldest job (first in array) to finish
-      wait ${job_pids[0]} 2>/dev/null
-      # Remove the finished job from the array
-      job_pids=("${job_pids[@]:1}")
-      jobs_running=$((jobs_running - 1))
-      completed_iterations=$((completed_iterations + 1))
-      show_progress $completed_iterations $total_iterations
-    done
+    run_event_generation $i "HR4n"
   done
 fi
 
 # Wait for all remaining jobs to finish and update progress
-while [ ${#job_pids[@]} -gt 0 ]; do
-  wait ${job_pids[0]}
-  job_pids=("${job_pids[@]:1}")
-  completed_iterations=$((completed_iterations + 1))
-  show_progress $completed_iterations $total_iterations
-done
+wait_for_jobs 0  # Wait until 0 jobs running (i.e., all done)
 
 echo ""  # New line after progress bar completes

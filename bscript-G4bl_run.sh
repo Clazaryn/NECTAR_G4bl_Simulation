@@ -104,10 +104,13 @@ show_progress() {
 }
 
 # Function to wait for jobs and update progress
+# If max_jobs is 0, waits for all jobs to complete
+# Keeps particle-specific logic for timing scripts and progress tracking
 wait_for_jobs() {
   local particle_type=$1
+  local max_jobs=${2:-$N}  # Default to N, but can be overridden (use 0 for all jobs)
   
-  while [ "$jobs_running" -ge "$N" ]; do
+  while [ "$jobs_running" -ge "$max_jobs" ] && [ ${#job_pids[@]} -gt 0 ]; do
     # Wait for the oldest job (first in array) to finish
     local finished_pid=${job_pids[0]}
     wait $finished_pid 2>/dev/null
@@ -145,6 +148,54 @@ wait_for_jobs() {
   done
 }
 
+# Function to run G4beamline simulation for a single excitation energy
+# Parameters: exc_index, rec_type (HRg, HR1n, etc.), particle (ejectile/recoil)
+run_G4bl_sim() {
+  local exc_index=$1
+  local rec_type=$2
+  local particle=$3
+  
+  en=${excitation_Ens[$exc_index]}
+  lbl=$(echo "$en" | awk '{printf "%02dMeV", int($1 + 0.5)}')  # Format: XXMeV (2 sig figs with leading zero, rounded to nearest integer)
+  
+  # Format the file names in bash (outside subshell for HRg so they're available for Python script)
+  histoFile="Detectors_${reaction}_${rec_type}_excEn${lbl}_${particle}.root"
+  outFile="g4bl_${reaction}_${rec_type}_excEn${lbl}_${particle}.out"
+  eventFile="../${reaction}_sim/Event_output/output_event_generator_${reaction}_${rec_type}_excEn${lbl}_${particle}.txt"
+  
+  (
+    # run G4beamline simulation
+    g4bl $input_file histoFile=$histoFile eventFile=$eventFile Bfield=$Bfield Q1=$Q1 Q2=$Q2 Q3=$Q3 Q4=$Q4 Q5=$Q5 > $outFile 2>&1
+  ) &  # Background job
+  
+  current_pid=$!
+  job_pids+=($current_pid)  # Capture the PID of the current background job
+  
+  # Track first job for timing (separate for ejectile and recoil) - only for first block (HRg)
+  if [ "${rec_type}" == "HRg" ]; then
+    if [ "${particle}" == "ejectile" ] && [ -z "$first_ejectile_job_pid" ]; then
+      first_ejectile_job_pid=$current_pid
+      first_ejectile_start_time=$(date +%s)
+      remaining_iters=$((ejectile_remaining - 1))
+      # Start Python timing estimation in background and track its PID
+      python3.5 -u UtilityScripts/estimate_recoil_timing.py "$outFile" "$eventFile" "$remaining_iters" "$N" &
+      timing_ejectile_pid=$!
+    elif [ "${particle}" == "recoil" ] && [ -z "$first_recoil_job_pid" ]; then
+      first_recoil_job_pid=$current_pid
+      first_recoil_start_time=$(date +%s)
+      remaining_iters=$((recoil_remaining - 1))
+      # Start Python timing estimation in background and track its PID
+      python3.5 -u UtilityScripts/estimate_recoil_timing.py "$outFile" "$eventFile" "$remaining_iters" "$N" &
+      timing_recoil_pid=$!
+    fi
+  fi
+  
+  jobs_running=$((jobs_running + 1))  # Increment job count
+  
+  # Wait for jobs if we've reached the limit
+  wait_for_jobs "$particle"
+}
+
 # Loop over all particle types in loop_list
 for particle in ${loop_list[@]}; do
 
@@ -171,180 +222,39 @@ elif [ ${particle} == "recoil" ]; then
   recoil_remaining=$iterations_per_particle
 fi
 
-# loop over gamma emission channel for valid excitation energies
-for i in $(seq $HRg_start $HRg_stop); do		# HRg block
-  en=${excitation_Ens[$i]}
-  lbl=$(echo "$en" | awk '{printf "%02dMeV", int($1 + 0.5)}')  # Format: XXMeV (2 sig figs with leading zero, rounded to nearest integer)
-
-  # Format the file names in bash (outside subshell so they're available for Python script)
-  histoFile="Detectors_${reaction}_HRg_excEn${lbl}_${particle}.root"
-  outFile="g4bl_${reaction}_HRg_excEn${lbl}_${particle}.out"
-  eventFile="../${reaction}_sim/Event_output/output_event_generator_${reaction}_HRg_excEn${lbl}_${particle}.txt"
-
-  (
-    # run G4beamline simulation
-    g4bl $input_file histoFile=$histoFile eventFile=$eventFile Bfield=$Bfield Q1=$Q1 Q2=$Q2 Q3=$Q3 Q4=$Q4 Q5=$Q5 > $outFile 2>&1
-  ) &  # Background job
-  
-  current_pid=$!
-  job_pids+=($current_pid)		# Capture the PID of the current background job
-  
-  # Track first job for timing (separate for ejectile and recoil)
-  if [ "${particle}" == "ejectile" ] && [ -z "$first_ejectile_job_pid" ]; then
-    first_ejectile_job_pid=$current_pid
-    first_ejectile_start_time=$(date +%s)
-    remaining_iters=$((ejectile_remaining - 1))
-    # Start Python timing estimation in background and track its PID
-    python3.5 -u UtilityScripts/estimate_recoil_timing.py "$outFile" "$eventFile" "$remaining_iters" "$N" &
-    timing_ejectile_pid=$!
-  elif [ "${particle}" == "recoil" ] && [ -z "$first_recoil_job_pid" ]; then
-    first_recoil_job_pid=$current_pid
-    first_recoil_start_time=$(date +%s)
-    remaining_iters=$((recoil_remaining - 1))
-    # Start Python timing estimation in background and track its PID
-    python3.5 -u UtilityScripts/estimate_recoil_timing.py "$outFile" "$eventFile" "$remaining_iters" "$N" &
-    timing_recoil_pid=$!
-  fi
-
-  jobs_running=$((jobs_running + 1))		# Throttle the number of parallel jobs
-
-  # Wait for jobs if we've reached the limit
-  wait_for_jobs "$particle"
+# HRg block
+for i in $(seq $HRg_start $HRg_stop); do
+  run_G4bl_sim $i "HRg" "$particle"
 done
 
-# loop over 1 neutron emission channel for valid excitation energies
-for i in $(seq $HR1n_start $HR1n_stop); do		# HR1n block
-  (
-    en=${excitation_Ens[$i]}
-    lbl=$(echo "$en" | awk '{printf "%02dMeV", int($1 + 0.5)}')  # Format: XXMeV (2 sig figs with leading zero, rounded to nearest integer)
-    
-    # Format the file names in bash
-    histoFile="Detectors_${reaction}_HR1n_excEn${lbl}_${particle}.root"
-    outFile="g4bl_${reaction}_HR1n_excEn${lbl}_${particle}.out"
-    eventFile="../${reaction}_sim/Event_output/output_event_generator_${reaction}_HR1n_excEn${lbl}_${particle}.txt"
-
-    # run G4beamline simulation
-    g4bl $input_file histoFile=$histoFile eventFile=$eventFile Bfield=$Bfield Q1=$Q1 Q2=$Q2 Q3=$Q3 Q4=$Q4 Q5=$Q5 > $outFile 2>&1
-  ) &  # Background job
-  
-  job_pids+=($!)		# Capture the PID of the current background job
-
-  jobs_running=$((jobs_running + 1))		# Throttle the number of parallel jobs
-
-  # Wait for jobs if we've reached the limit
-  wait_for_jobs "$particle"
+# HR1n block
+for i in $(seq $HR1n_start $HR1n_stop); do
+  run_G4bl_sim $i "HR1n" "$particle"
 done
 
-# loop over 2 neutron emission channel for valid excitation energies (only if range is valid)
+# HR2n block (only if range is valid)
 if [ "$HR2n_start" -le "$HR2n_stop" ] && [ "$HR2n_stop" -ge 0 ]; then
-  for i in $(seq $HR2n_start $HR2n_stop); do		# HR2n block
-    (
-      en=${excitation_Ens[$i]}
-      lbl=$(echo "$en" | awk '{printf "%02dMeV", int($1 + 0.5)}')  # Format: XXMeV (2 sig figs with leading zero, rounded to nearest integer)
-      
-      # Format the file names in bash
-      histoFile="Detectors_${reaction}_HR2n_excEn${lbl}_${particle}.root"
-      outFile="g4bl_${reaction}_HR2n_excEn${lbl}_${particle}.out"
-      eventFile="../${reaction}_sim/Event_output/output_event_generator_${reaction}_HR2n_excEn${lbl}_${particle}.txt"
-
-      # run G4beamline simulation
-      g4bl $input_file histoFile=$histoFile eventFile=$eventFile Bfield=$Bfield Q1=$Q1 Q2=$Q2 Q3=$Q3 Q4=$Q4 Q5=$Q5 > $outFile 2>&1
-    ) &  # Background job
-    
-    job_pids+=($!)		# Capture the PID of the current background job
-
-    jobs_running=$((jobs_running + 1))		# Throttle the number of parallel jobs
-
-    # Wait for jobs if we've reached the limit
-    wait_for_jobs "$particle"
+  for i in $(seq $HR2n_start $HR2n_stop); do
+    run_G4bl_sim $i "HR2n" "$particle"
   done
 fi
 
-# loop over 3 neutron emission channel for valid excitation energies (only if range is valid)
+# HR3n block (only if range is valid)
 if [ "$HR3n_start" -le "$HR3n_stop" ] && [ "$HR3n_stop" -ge 0 ]; then
-  for i in $(seq $HR3n_start $HR3n_stop); do		# HR3n block
-    (
-      en=${excitation_Ens[$i]}
-      lbl=$(echo "$en" | awk '{printf "%02dMeV", int($1 + 0.5)}')  # Format: XXMeV (2 sig figs with leading zero, rounded to nearest integer)
-      
-      # Format the file names in bash
-      histoFile="Detectors_${reaction}_HR3n_excEn${lbl}_${particle}.root"
-      outFile="g4bl_${reaction}_HR3n_excEn${lbl}_${particle}.out"
-      eventFile="../${reaction}_sim/Event_output/output_event_generator_${reaction}_HR3n_excEn${lbl}_${particle}.txt"
-
-      # run G4beamline simulation
-      g4bl $input_file histoFile=$histoFile eventFile=$eventFile Bfield=$Bfield Q1=$Q1 Q2=$Q2 Q3=$Q3 Q4=$Q4 Q5=$Q5 > $outFile 2>&1
-    ) &  # Background job
-
-    job_pids+=($!)		# Capture the PID of the current background job
-
-    jobs_running=$((jobs_running + 1))		# Throttle the number of parallel jobs
-
-    # Wait for jobs if we've reached the limit
-    wait_for_jobs "$particle"
+  for i in $(seq $HR3n_start $HR3n_stop); do
+    run_G4bl_sim $i "HR3n" "$particle"
   done
 fi
 
-# loop over 4 neutron emission channel for valid excitation energies (only if range is valid and Sn_4nDght is defined)
+# HR4n block (only if range is valid)
 if [ "$HR4n_start" -le "$HR4n_stop" ] && [ "$HR4n_stop" -ge 0 ]; then
   for i in $(seq $HR4n_start $HR4n_stop); do
-    (
-      en=${excitation_Ens[$i]}
-      lbl=$(echo "$en" | awk '{printf "%02dMeV", int($1 + 0.5)}')  # Format: XXMeV (2 sig figs with leading zero, rounded to nearest integer)
-      
-      # Format the file names in bash
-      histoFile="Detectors_${reaction}_HR4n_excEn${lbl}_${particle}.root"
-      outFile="g4bl_${reaction}_HR4n_excEn${lbl}_${particle}.out"
-      eventFile="../${reaction}_sim/Event_output/output_event_generator_${reaction}_HR4n_excEn${lbl}_${particle}.txt"
-
-      # run G4beamline simulation
-      g4bl $input_file histoFile=$histoFile eventFile=$eventFile Bfield=$Bfield Q1=$Q1 Q2=$Q2 Q3=$Q3 Q4=$Q4 Q5=$Q5 > $outFile 2>&1
-    ) &  # Background job
-
-    job_pids+=($!)		# Capture the PID of the current background job
-
-    jobs_running=$((jobs_running + 1))		# Throttle the number of parallel jobs
-
-    # Wait for jobs if we've reached the limit
-    wait_for_jobs "$particle"
+    run_G4bl_sim $i "HR4n" "$particle"
   done
 fi
 
 # Wait for all remaining jobs for this particle type to finish and update progress
-while [ ${#job_pids[@]} -gt 0 ]; do
-  finished_pid=${job_pids[0]}
-  wait $finished_pid 2>/dev/null
-  
-  # Remove the finished job from the array
-  job_pids=("${job_pids[@]:1}")
-  
-  # If this was the first job, stop the timing script
-  if [ "${particle}" == "ejectile" ] && [ "$finished_pid" == "$first_ejectile_job_pid" ] && [ -n "$timing_ejectile_pid" ]; then
-    # Check if process still exists before killing to avoid error messages
-    if kill -0 $timing_ejectile_pid 2>/dev/null; then
-      kill $timing_ejectile_pid >/dev/null 2>&1
-      wait $timing_ejectile_pid 2>/dev/null
-    fi
-    timing_ejectile_pid=""
-  elif [ "${particle}" == "recoil" ] && [ "$finished_pid" == "$first_recoil_job_pid" ] && [ -n "$timing_recoil_pid" ]; then
-    # Check if process still exists before killing to avoid error messages
-    if kill -0 $timing_recoil_pid 2>/dev/null; then
-      kill $timing_recoil_pid >/dev/null 2>&1
-      wait $timing_recoil_pid 2>/dev/null
-    fi
-    timing_recoil_pid=""
-  fi
-  
-  # Update appropriate counter based on particle type
-  if [ "${particle}" == "recoil" ]; then
-    completed_recoil=$((completed_recoil + 1))
-    show_progress "Recoil" $completed_recoil $iterations_per_particle
-    recoil_remaining=$((recoil_remaining - 1))
-  else
-    completed_ejectile=$((completed_ejectile + 1))
-    show_progress "Ejectile" $completed_ejectile $iterations_per_particle
-  fi
-done
+wait_for_jobs "$particle" 0  # Wait until 0 jobs running (i.e., all done)
 
 # Reset job tracking variables for the next particle type
 jobs_running=0

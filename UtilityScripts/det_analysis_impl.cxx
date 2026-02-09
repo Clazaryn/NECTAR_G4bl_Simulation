@@ -87,15 +87,13 @@ TelescopeAnalyzer::TelescopeAnalyzer(const char* r, const char* rt, Int_t el,
 
 // ========= New Detector Telescope Analyzer Implementation =========
 
-const Float_t NewTelescopeAnalyzer::Tel_DET_WIDTH = 122.0;
-const Float_t NewTelescopeAnalyzer::Tel_DET_HEIGHT = 40.0;
-const Float_t NewTelescopeAnalyzer::Tel_VSTRIP_WIDTH = 1.0;
-const Float_t NewTelescopeAnalyzer::Tel_HSTRIP_WIDTH = 1.0;
-
 NewTelescopeAnalyzer::NewTelescopeAnalyzer(const char* r, const char* rt, Int_t el,
                         Double_t mb, Double_t mt, Double_t mr, Double_t me, Double_t ek, Double_t p,
                         const TVector3& off, const TVector2& rot)
-    : TelescopeAnalyzer(r, rt, el, mb, mt, mr, me, ek, p), offset(off), rotation(rot) {}
+    : TelescopeAnalyzer(r, rt, el, mb, mt, mr, me, ek, p), 
+      offset(off), rotation(rot),
+      Tel_DET_WIDTH(122.0), Tel_DET_HEIGHT(40.0),
+      Tel_VSTRIP_WIDTH(1.0), Tel_HSTRIP_WIDTH(1.0) {}
 
 bool NewTelescopeAnalyzer::analyzeEvent(Int_t eventID, Float_t x_DE, Float_t y_DE, Float_t z_DE,
                       Float_t Edep_DE, Float_t Edep_E1, Float_t Edep_Eres,
@@ -156,13 +154,6 @@ bool NewTelescopeAnalyzer::analyzeEvent(Int_t eventID, Float_t x_DE, Float_t y_D
 }
 
 // ========= PoP Detector Telescope Analyzer Implementation =========
-
-const Float_t PoPTelescopeAnalyzer::z_DE_pix = 99.025;
-const Float_t PoPTelescopeAnalyzer::Tel_DET_WIDTH = 20.0;  // -10 to +10 mm
-const Float_t PoPTelescopeAnalyzer::Tel_DET_HEIGHT = 20.0;  // -10 to +10 mm
-const Float_t PoPTelescopeAnalyzer::Tel_STRIP_WIDTH = 1.25;
-const Float_t PoPTelescopeAnalyzer::Tel_STRIP_OFFSET = 10.0;
-const Float_t PoPTelescopeAnalyzer::Tel_ROTATION_ANGLE = 60.0 * M_PI / 180.0;
 
 void PoPTelescopeAnalyzer::initializeEnergyReconstructionFunctions() {
     // Initialize total energy reconstruction functions for each vertical strip (1-16)
@@ -239,7 +230,12 @@ void PoPTelescopeAnalyzer::initializeEnergyReconstructionFunctions() {
 PoPTelescopeAnalyzer::PoPTelescopeAnalyzer(const char* r, const char* rt, Int_t el,
                          Double_t mb, Double_t mt, Double_t mr, Double_t me, Double_t ek, Double_t p,
                          TTree* te2)
-    : TelescopeAnalyzer(r, rt, el, mb, mt, mr, me, ek, p), tree_E2(te2) {
+    : TelescopeAnalyzer(r, rt, el, mb, mt, mr, me, ek, p), 
+      tree_E2(te2),
+      z_DE_pix(99.025),
+      Tel_DET_WIDTH(20.0), Tel_DET_HEIGHT(20.0),
+      Tel_STRIP_WIDTH(1.25), Tel_STRIP_OFFSET(10.0),
+      Tel_ROTATION_ANGLE(60.0 * M_PI / 180.0) {
     
     initializeEnergyReconstructionFunctions();
     

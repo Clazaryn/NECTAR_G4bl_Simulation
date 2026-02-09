@@ -59,8 +59,9 @@ void processTelescopeEvents(TTree* tree_DE, TTree* tree_E1, TTree* tree_Eres,
         
         if (analyzer->analyzeEvent(eventID, x_DE, y_DE, z_DE, Edep_DE, Edep_E1_val, Edep_Eres_val, *ejectile)) {
             // Fill true values if available
-            if (eventMap.count(eventID) > 0) {
-                auto true_vals = eventMap[eventID];
+            auto it = eventMap.find(eventID);
+            if (it != eventMap.end()) {
+                auto true_vals = it->second;
                 ejectile->true_theta = std::get<0>(true_vals);
                 ejectile->true_Etot = std::get<2>(true_vals);
                 ejectile->true_Estar = std::get<1>(true_vals);
@@ -86,7 +87,7 @@ void det_analysis(Int_t excLabel, const char* recType) {
     
     // Initialize reaction information
     ReactionInfo reactionInfo;
-    if (!reactionInfo.loadFromIni("reac_info_nChamb.txt")) {
+    if (!reactionInfo.loadFromIni("reac_info.txt")) {
         std::cerr << "Error: Could not load reaction info. Exiting." << std::endl;
         return;
     }

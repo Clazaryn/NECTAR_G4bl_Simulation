@@ -1,7 +1,7 @@
 #ifndef REACTION_INFO_H
 #define REACTION_INFO_H
 
-#include "ini_parser.h"
+#include "UtilityScripts/ini_parser.h"
 #include <iostream>
 #include <vector>
 
