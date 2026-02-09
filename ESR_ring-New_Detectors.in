@@ -42,12 +42,12 @@ param ntEresthickness=25 		# thickness residual-E new telescope
 ##-------------------------------
 ## if you change position of telescope, update position parameters in analysis_nChamb.C !!
 ##-------------------------------
-param ntfpX_Offset=-80.858+0*sin(-0.34906585039)
-param ntfpY_Offset=49.802
-param ntfpZ_Offset=31.162+0*cos(-0.34906585039)
-param ntbpX_Offset=0
-param ntbpY_Offset=49.802
-param ntbpZ_Offset=206.54
+param prim_xOffset=-80.858+0*sin(-0.34906585039)
+param prim_yOffset=49.802
+param prim_zOffset=31.162+0*cos(-0.34906585039)
+param auxl_xOffset=0
+param auxl_yOffset=49.802
+param auxl_zOffset=206.54
 param ntX_Rotation=-20
 param ntY_Rotation=-20
 param ntX_RotRad=0.34906585039  # 20deg in rad
@@ -69,37 +69,37 @@ param -unset Q5=0.551111489
 # Virtual detector to get initial energy  
 virtualdetector virt_telescope height=50 width=150 length=0.001 maxStep=0.0005 color=1,1,1
 
-## front-pocket telescope
-detector Front_tele_window   height=40 width=122 length=0.025    material=STAINLESS-STEEL  maxStep=0.0005  color=1,1,1,0.2 
-detector Front_tele_DE       height=40 width=122 length=$ntDEthickness    material=Si      maxStep=0.0005  color=0.4,0.5,0
-detector Front_tele_E1       height=44 width=130 length=$ntE1thickness    material=Si      maxStep=0.0005  color=0.4,0.5,0
-detector Front_tele_Eres     height=44 width=134 length=$ntEresthickness  material=BGO     maxStep=0.005   color=0.8,0.5,0.4
+## Primary telescope
+detector prim_tele_window   height=40 width=122 length=0.025    material=STAINLESS-STEEL  maxStep=0.0005  color=1,1,1,0.2 
+detector prim_tele_DE       height=40 width=122 length=$ntDEthickness    material=Si      maxStep=0.0005  color=0.4,0.5,0
+detector prim_tele_E1       height=44 width=130 length=$ntE1thickness    material=Si      maxStep=0.0005  color=0.4,0.5,0
+detector prim_tele_Eres     height=44 width=134 length=$ntEresthickness  material=BGO     maxStep=0.005   color=0.8,0.5,0.4
 
-## FP telescope escape detectors
-virtualdetector escFP_E1_top        height=$ntE1thickness   width=130 length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
-virtualdetector escFP_E1_bot        height=$ntE1thickness   width=130 length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
-virtualdetector escFP_E1_inring     height=$ntE1thickness   width=44  length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
-virtualdetector escFP_E1_outring    height=$ntE1thickness   width=44  length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
-virtualdetector escFP_Eres_top      height=$ntEresthickness width=134 length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
-virtualdetector escFP_Eres_bot      height=$ntEresthickness width=134 length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
-virtualdetector escFP_Eres_inring   height=$ntEresthickness width=44  length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
-virtualdetector escFP_Eres_outring  height=$ntEresthickness width=44  length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
+## Primary telescope escape detectors
+virtualdetector prim_escape_E1_top        height=$ntE1thickness   width=130 length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
+virtualdetector prim_escape_E1_bot        height=$ntE1thickness   width=130 length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
+virtualdetector prim_escape_E1_inring     height=$ntE1thickness   width=44  length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
+virtualdetector prim_escape_E1_outring    height=$ntE1thickness   width=44  length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
+virtualdetector prim_escape_Eres_top      height=$ntEresthickness width=134 length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
+virtualdetector prim_escape_Eres_bot      height=$ntEresthickness width=134 length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
+virtualdetector prim_escape_Eres_inring   height=$ntEresthickness width=44  length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
+virtualdetector prim_escape_Eres_outring  height=$ntEresthickness width=44  length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
 
-## back-pocket telescope
-detector Back_tele_window   height=40 width=122 length=0.025    material=STAINLESS-STEEL  maxStep=0.0005  color=1,1,1,0.2 
-detector Back_tele_DE       height=40 width=122 length=$ntDEthickness    material=Si      maxStep=0.0005  color=0.4,0.5,0
-detector Back_tele_E1       height=44 width=130 length=$ntE1thickness    material=Si      maxStep=0.0005  color=0.4,0.5,0
-detector Back_tele_Eres     height=44 width=134 length=$ntEresthickness  material=BGO     maxStep=0.005   color=0.8,0.5,0.4 
+## Auxillary telescope
+detector auxl_tele_window   height=40 width=122 length=0.025    material=STAINLESS-STEEL  maxStep=0.0005  color=1,1,1,0.2 
+detector auxl_tele_DE       height=40 width=122 length=$ntDEthickness    material=Si      maxStep=0.0005  color=0.4,0.5,0
+detector auxl_tele_E1       height=44 width=130 length=$ntE1thickness    material=Si      maxStep=0.0005  color=0.4,0.5,0
+detector auxl_tele_Eres     height=44 width=134 length=$ntEresthickness  material=BGO     maxStep=0.005   color=0.8,0.5,0.4 
 
-## FP telescope escape detectors
-virtualdetector escBP_E1_top        height=$ntE1thickness   width=130 length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
-virtualdetector escBP_E1_bot        height=$ntE1thickness   width=130 length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
-virtualdetector escBP_E1_inring     height=$ntE1thickness   width=44  length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
-virtualdetector escBP_E1_outring    height=$ntE1thickness   width=44  length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
-virtualdetector escBP_Eres_top      height=$ntEresthickness width=134 length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
-virtualdetector escBP_Eres_bot      height=$ntEresthickness width=134 length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
-virtualdetector escBP_Eres_inring   height=$ntEresthickness width=44  length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
-virtualdetector escBP_Eres_outring  height=$ntEresthickness width=44  length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
+## Auxillary telescope escape detectors
+virtualdetector auxl_escape_E1_top        height=$ntE1thickness   width=130 length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
+virtualdetector auxl_escape_E1_bot        height=$ntE1thickness   width=130 length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
+virtualdetector auxl_escape_E1_inring     height=$ntE1thickness   width=44  length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
+virtualdetector auxl_escape_E1_outring    height=$ntE1thickness   width=44  length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
+virtualdetector auxl_escape_Eres_top      height=$ntEresthickness width=134 length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
+virtualdetector auxl_escape_Eres_bot      height=$ntEresthickness width=134 length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
+virtualdetector auxl_escape_Eres_inring   height=$ntEresthickness width=44  length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
+virtualdetector auxl_escape_Eres_outring  height=$ntEresthickness width=44  length=0.05 maxStep=0.0005 color=0.9,0.0,0.9
 
 ## ====== MAGNETIC SEPTUM  ======
 detector MagSept height=500 width=500 length=1792 material=STAINLESS-STEEL maxStep=0.2 color=0,0.8,0.6 kill=1
@@ -115,57 +115,57 @@ virtualdetector virt_QuadWall height=70 width=0.01 length=5722 maxStep=0.05 colo
 
 ## ====== Target-like residue detector 2 - 2026 telescope at bottom fitting ======
 
-#place virt_telescope  z=$ntfpZ_Offset-(0.0125+10)*cos($ntY_RotRad)*cos($ntX_RotRad) x=$ntfpX_Offset-(0.0125+10)*-sin($ntY_RotRad)*cos($ntX_RotRad) y=$ntfpY_Offset-(0.0125+10)*sin($ntX_RotRad) rotation=x$ntX_Rotation,y$ntY_Rotation
+#place virt_telescope  z=$prim_zOffset-(0.0125+10)*cos($ntY_RotRad)*cos($ntX_RotRad) x=$prim_xOffset-(0.0125+10)*-sin($ntY_RotRad)*cos($ntX_RotRad) y=$prim_yOffset-(0.0125+10)*sin($ntX_RotRad) rotation=x$ntX_Rotation,y$ntY_Rotation
 
 # displacements for telescope detectors relative to window offsets
-param fpDE_zDisp=(3.025+$ntDEthickness/2)*cos($ntY_RotRad)*cos($ntX_RotRad)
-param fpDE_xDisp=(3.025+$ntDEthickness/2)*sin(-$ntY_RotRad)*cos($ntX_RotRad)
-param fpDE_yDisp=(3.025+$ntDEthickness/2)*sin($ntX_RotRad)
-param fpE1_zDisp=(6.425+$ntDEthickness+$ntE1thickness/2)*cos($ntY_RotRad)*cos($ntX_RotRad)
-param fpE1_xDisp=(6.425+$ntDEthickness+$ntE1thickness/2)*sin(-$ntY_RotRad)*cos($ntX_RotRad)
-param fpE1_yDisp=(6.425+$ntDEthickness+$ntE1thickness/2)*sin($ntX_RotRad)
-param fpEres_zDisp=(10.425+$ntDEthickness+$ntE1thickness+$ntEresthickness/2)*cos($ntY_RotRad)*cos($ntX_RotRad)
-param fpEres_xDisp=(10.425+$ntDEthickness+$ntE1thickness+$ntEresthickness/2)*sin(-$ntY_RotRad)*cos($ntX_RotRad)
-param fpEres_yDisp=(10.425+$ntDEthickness+$ntE1thickness+$ntEresthickness/2)*sin($ntX_RotRad)
+param prim_DE_zDisp=(3.025+$ntDEthickness/2)*cos($ntY_RotRad)*cos($ntX_RotRad)
+param prim_DE_xDisp=(3.025+$ntDEthickness/2)*sin(-$ntY_RotRad)*cos($ntX_RotRad)
+param prim_DE_yDisp=(3.025+$ntDEthickness/2)*sin($ntX_RotRad)
+param prim_E1_zDisp=(6.425+$ntDEthickness+$ntE1thickness/2)*cos($ntY_RotRad)*cos($ntX_RotRad)
+param prim_E1_xDisp=(6.425+$ntDEthickness+$ntE1thickness/2)*sin(-$ntY_RotRad)*cos($ntX_RotRad)
+param prim_E1_yDisp=(6.425+$ntDEthickness+$ntE1thickness/2)*sin($ntX_RotRad)
+param prim_Eres_zDisp=(10.425+$ntDEthickness+$ntE1thickness+$ntEresthickness/2)*cos($ntY_RotRad)*cos($ntX_RotRad)
+param prim_Eres_xDisp=(10.425+$ntDEthickness+$ntE1thickness+$ntEresthickness/2)*sin(-$ntY_RotRad)*cos($ntX_RotRad)
+param prim_Eres_yDisp=(10.425+$ntDEthickness+$ntE1thickness+$ntEresthickness/2)*sin($ntX_RotRad)
 
-param fpE1_zCentDisp=(2*-sin($ntX_RotRad)*cos($ntY_RotRad))-(4*-sin(-$ntY_RotRad))
-param fpE1_xCentDisp=(2*sin($ntY_RotRad)*sin($ntX_RotRad))-(4*cos($ntY_RotRad))
-param fpE1_yCentDisp=(2*cos($ntY_RotRad))
+param prim_E1_zCentDisp=(2*-sin($ntX_RotRad)*cos($ntY_RotRad))-(4*-sin(-$ntY_RotRad))
+param prim_E1_xCentDisp=(2*sin($ntY_RotRad)*sin($ntX_RotRad))-(4*cos($ntY_RotRad))
+param prim_E1_yCentDisp=(2*cos($ntY_RotRad))
 
-#place Front_tele_window  z=$ntfpZ_Offset x=$ntfpX_Offset y=$ntfpY_Offset rotation=x$ntX_Rotation,y$ntY_Rotation
-place Front_tele_DE      z=$ntfpZ_Offset+$fpDE_zDisp x=$ntfpX_Offset+$fpDE_xDisp y=$ntfpY_Offset+$fpDE_yDisp rotation=x$ntX_Rotation,y$ntY_Rotation
-place Front_tele_E1      z=$ntfpZ_Offset+$fpE1_zDisp+$fpE1_zCentDisp x=$ntfpX_Offset+$fpE1_xDisp+$fpE1_xCentDisp y=$ntfpY_Offset+$fpE1_yDisp+$fpE1_yCentDisp rotation=x$ntX_Rotation,y$ntY_Rotation
-place Front_tele_Eres    z=$ntfpZ_Offset+$fpEres_zDisp+$fpE1_zCentDisp x=$ntfpX_Offset+$fpEres_xDisp+$fpE1_xCentDisp y=$ntfpY_Offset+$fpEres_yDisp+$fpE1_yCentDisp rotation=x$ntX_Rotation,y$ntY_Rotation
+#place prim_tele_window  z=$prim_zOffset x=$prim_xOffset y=$prim_yOffset rotation=x$ntX_Rotation,y$ntY_Rotation
+place prim_tele_DE       z=$prim_zOffset+$prim_DE_zDisp x=$prim_xOffset+$prim_DE_xDisp y=$prim_yOffset+$prim_DE_yDisp rotation=x$ntX_Rotation,y$ntY_Rotation
+place prim_tele_E1       z=$prim_zOffset+$prim_E1_zDisp+$prim_E1_zCentDisp x=$prim_xOffset+$prim_E1_xDisp+$prim_E1_xCentDisp y=$prim_yOffset+$prim_E1_yDisp+$prim_E1_yCentDisp rotation=x$ntX_Rotation,y$ntY_Rotation
+place prim_tele_Eres     z=$prim_zOffset+$prim_Eres_zDisp+$prim_E1_zCentDisp x=$prim_xOffset+$prim_Eres_xDisp+$prim_E1_xCentDisp y=$prim_yOffset+$prim_Eres_yDisp+$prim_E1_yCentDisp rotation=x$ntX_Rotation,y$ntY_Rotation
 
-place escFP_E1_top       z=$ntfpZ_Offset+$fpE1_zDisp+$fpE1_zCentDisp+(22.025*-sin($ntX_RotRad)*cos($ntY_RotRad))     x=$ntfpX_Offset+$fpE1_xDisp+$fpE1_xCentDisp+(22.025*sin($ntY_RotRad)*sin($ntX_RotRad))   y=$ntfpY_Offset+$fpE1_yDisp+$fpE1_yCentDisp+(22.025*cos($ntY_RotRad))    rotation=x$ntX_Rotation+90,y$ntY_Rotation
-place escFP_E1_bot       z=$ntfpZ_Offset+$fpE1_zDisp+$fpE1_zCentDisp-(22.025*-sin($ntX_RotRad)*cos($ntY_RotRad))     x=$ntfpX_Offset+$fpE1_xDisp+$fpE1_xCentDisp-(22.025*sin($ntY_RotRad)*sin($ntX_RotRad))   y=$ntfpY_Offset+$fpE1_yDisp+$fpE1_yCentDisp-(22.025*cos($ntY_RotRad))    rotation=x$ntX_Rotation+90,y$ntY_Rotation
-place escFP_E1_inring    z=$ntfpZ_Offset+$fpE1_zDisp+$fpE1_zCentDisp-(65.025*-sin(-$ntY_RotRad))                     x=$ntfpX_Offset+$fpE1_xDisp+$fpE1_xCentDisp-(65.025*cos($ntY_RotRad))                    y=$ntfpY_Offset+$fpE1_yDisp+$fpE1_yCentDisp                              rotation=x90,z90,x$ntX_Rotation,y$ntY_Rotation
-place escFP_E1_outring   z=$ntfpZ_Offset+$fpE1_zDisp+$fpE1_zCentDisp+(65.025*-sin(-$ntY_RotRad))                     x=$ntfpX_Offset+$fpE1_xDisp+$fpE1_xCentDisp+(65.025*cos($ntY_RotRad))                    y=$ntfpY_Offset+$fpE1_yDisp+$fpE1_yCentDisp                              rotation=x90,z90,x$ntX_Rotation,y$ntY_Rotation
-place escFP_Eres_top     z=$ntfpZ_Offset+$fpEres_zDisp+$fpE1_zCentDisp+(22.025*-sin($ntX_RotRad)*cos($ntY_RotRad))   x=$ntfpX_Offset+$fpEres_xDisp+$fpE1_xCentDisp+(22.025*sin($ntY_RotRad)*sin($ntX_RotRad)) y=$ntfpY_Offset+$fpEres_yDisp+$fpE1_yCentDisp+(22.025*cos($ntY_RotRad))  rotation=x$ntX_Rotation+90,y$ntY_Rotation
-place escFP_Eres_bot     z=$ntfpZ_Offset+$fpEres_zDisp+$fpE1_zCentDisp-(22.025*-sin($ntX_RotRad)*cos($ntY_RotRad))   x=$ntfpX_Offset+$fpEres_xDisp+$fpE1_xCentDisp-(22.025*sin($ntY_RotRad)*sin($ntX_RotRad)) y=$ntfpY_Offset+$fpEres_yDisp+$fpE1_yCentDisp-(22.025*cos($ntY_RotRad))  rotation=x$ntX_Rotation+90,y$ntY_Rotation
-place escFP_Eres_inring  z=$ntfpZ_Offset+$fpEres_zDisp+$fpE1_zCentDisp-(67.025*-sin(-$ntY_RotRad))                   x=$ntfpX_Offset+$fpEres_xDisp+$fpE1_xCentDisp-(67.025*cos($ntY_RotRad))                  y=$ntfpY_Offset+$fpEres_yDisp+$fpE1_yCentDisp                            rotation=x90,z90,x$ntX_Rotation,y$ntY_Rotation
-place escFP_Eres_outring z=$ntfpZ_Offset+$fpEres_zDisp+$fpE1_zCentDisp+(67.025*-sin(-$ntY_RotRad))                   x=$ntfpX_Offset+$fpEres_xDisp+$fpE1_xCentDisp+(67.025*cos($ntY_RotRad))                  y=$ntfpY_Offset+$fpEres_yDisp+$fpE1_yCentDisp                            rotation=x90,z90,x$ntX_Rotation,y$ntY_Rotation
+place prim_escape_E1_top       z=$prim_zOffset+$prim_E1_zDisp+$prim_E1_zCentDisp+(22.025*-sin($ntX_RotRad)*cos($ntY_RotRad))     x=$prim_xOffset+$prim_E1_xDisp+$prim_E1_xCentDisp+(22.025*sin($ntY_RotRad)*sin($ntX_RotRad))   y=$prim_yOffset+$prim_E1_yDisp+$prim_E1_yCentDisp+(22.025*cos($ntY_RotRad))    rotation=x$ntX_Rotation+90,y$ntY_Rotation
+place prim_escape_E1_bot       z=$prim_zOffset+$prim_E1_zDisp+$prim_E1_zCentDisp-(22.025*-sin($ntX_RotRad)*cos($ntY_RotRad))     x=$prim_xOffset+$prim_E1_xDisp+$prim_E1_xCentDisp-(22.025*sin($ntY_RotRad)*sin($ntX_RotRad))   y=$prim_yOffset+$prim_E1_yDisp+$prim_E1_yCentDisp-(22.025*cos($ntY_RotRad))    rotation=x$ntX_Rotation+90,y$ntY_Rotation
+place prim_escape_E1_inring    z=$prim_zOffset+$prim_E1_zDisp+$prim_E1_zCentDisp-(65.025*-sin(-$ntY_RotRad))                     x=$prim_xOffset+$prim_E1_xDisp+$prim_E1_xCentDisp-(65.025*cos($ntY_RotRad))                    y=$prim_yOffset+$prim_E1_yDisp+$prim_E1_yCentDisp                              rotation=x90,z90,x$ntX_Rotation,y$ntY_Rotation
+place prim_escape_E1_outring   z=$prim_zOffset+$prim_E1_zDisp+$prim_E1_zCentDisp+(65.025*-sin(-$ntY_RotRad))                     x=$prim_xOffset+$prim_E1_xDisp+$prim_E1_xCentDisp+(65.025*cos($ntY_RotRad))                    y=$prim_yOffset+$prim_E1_yDisp+$prim_E1_yCentDisp                              rotation=x90,z90,x$ntX_Rotation,y$ntY_Rotation
+place prim_escape_Eres_top     z=$prim_zOffset+$prim_Eres_zDisp+$prim_E1_zCentDisp+(22.025*-sin($ntX_RotRad)*cos($ntY_RotRad))   x=$prim_xOffset+$prim_Eres_xDisp+$prim_E1_xCentDisp+(22.025*sin($ntY_RotRad)*sin($ntX_RotRad)) y=$prim_yOffset+$prim_Eres_yDisp+$prim_E1_yCentDisp+(22.025*cos($ntY_RotRad))  rotation=x$ntX_Rotation+90,y$ntY_Rotation
+place prim_escape_Eres_bot     z=$prim_zOffset+$prim_Eres_zDisp+$prim_E1_zCentDisp-(22.025*-sin($ntX_RotRad)*cos($ntY_RotRad))   x=$prim_xOffset+$prim_Eres_xDisp+$prim_E1_xCentDisp-(22.025*sin($ntY_RotRad)*sin($ntX_RotRad)) y=$prim_yOffset+$prim_Eres_yDisp+$prim_E1_yCentDisp-(22.025*cos($ntY_RotRad))  rotation=x$ntX_Rotation+90,y$ntY_Rotation
+place prim_escape_Eres_inring  z=$prim_zOffset+$prim_Eres_zDisp+$prim_E1_zCentDisp-(67.025*-sin(-$ntY_RotRad))                   x=$prim_xOffset+$prim_Eres_xDisp+$prim_E1_xCentDisp-(67.025*cos($ntY_RotRad))                  y=$prim_yOffset+$prim_Eres_yDisp+$prim_E1_yCentDisp                            rotation=x90,z90,x$ntX_Rotation,y$ntY_Rotation
+place prim_escape_Eres_outring z=$prim_zOffset+$prim_Eres_zDisp+$prim_E1_zCentDisp+(67.025*-sin(-$ntY_RotRad))                   x=$prim_xOffset+$prim_Eres_xDisp+$prim_E1_xCentDisp+(67.025*cos($ntY_RotRad))                  y=$prim_yOffset+$prim_Eres_yDisp+$prim_E1_yCentDisp                            rotation=x90,z90,x$ntX_Rotation,y$ntY_Rotation
 
-param bpDE_zDisp=(3.025+$ntDEthickness/2)*cos($ntX_RotRad)
-param bpDE_yDisp=(3.025+$ntDEthickness/2)*sin($ntX_RotRad)
-param bpE1_zDisp=(6.425+$ntDEthickness+$ntE1thickness/2)*cos($ntX_RotRad)
-param bpE1_yDisp=(6.425+$ntDEthickness+$ntE1thickness/2)*sin($ntX_RotRad)
-param bpEres_zDisp=(10.425+$ntDEthickness+$ntE1thickness+$ntEresthickness/2)*cos($ntX_RotRad)
-param bpEres_yDisp=(10.425+$ntDEthickness+$ntE1thickness+$ntEresthickness/2)*sin($ntX_RotRad)
+param auxl_DE_zDisp=(3.025+$ntDEthickness/2)*cos($ntX_RotRad)
+param auxl_DE_yDisp=(3.025+$ntDEthickness/2)*sin($ntX_RotRad)
+param auxl_E1_zDisp=(6.425+$ntDEthickness+$ntE1thickness/2)*cos($ntX_RotRad)
+param auxl_E1_yDisp=(6.425+$ntDEthickness+$ntE1thickness/2)*sin($ntX_RotRad)
+param auxl_Eres_zDisp=(10.425+$ntDEthickness+$ntE1thickness+$ntEresthickness/2)*cos($ntX_RotRad)
+param auxl_Eres_yDisp=(10.425+$ntDEthickness+$ntE1thickness+$ntEresthickness/2)*sin($ntX_RotRad)
 
-#place Back_tele_window  z=$ntbpZ_Offset x=$ntbpX_Offset y=$ntbpY_Offset rotation=x$ntX_Rotation
-place Back_tele_DE      z=$ntbpZ_Offset+$bpDE_zDisp x=$ntbpX_Offset y=$ntfpY_Offset+$bpDE_yDisp rotation=x$ntX_Rotation
-place Back_tele_E1      z=$ntbpZ_Offset+$bpE1_zDisp x=$ntbpX_Offset y=$ntfpY_Offset+$bpE1_yDisp rotation=x$ntX_Rotation
-place Back_tele_Eres    z=$ntbpZ_Offset+$bpEres_zDisp x=$ntbpX_Offset y=$ntfpY_Offset+$bpEres_yDisp rotation=x$ntX_Rotation
+#place auxl_tele_window  z=$auxl_zOffset x=$auxl_xOffset y=$auxl_yOffset rotation=x$ntX_Rotation
+place auxl_tele_DE       z=$auxl_zOffset+$auxl_DE_zDisp x=$auxl_xOffset y=$auxl_yOffset+$auxl_DE_yDisp rotation=x$ntX_Rotation
+place auxl_tele_E1       z=$auxl_zOffset+$auxl_E1_zDisp x=$auxl_xOffset y=$auxl_yOffset+$auxl_E1_yDisp rotation=x$ntX_Rotation
+place auxl_tele_Eres     z=$auxl_zOffset+$auxl_Eres_zDisp x=$auxl_xOffset y=$auxl_yOffset+$auxl_Eres_yDisp rotation=x$ntX_Rotation
 
-place escBP_E1_top       z=$ntbpZ_Offset+$bpE1_zDisp+(22.025*sin(-$ntX_RotRad)) x=$ntbpX_Offset y=$ntfpY_Offset+$bpE1_yDisp+(22.025*cos($ntX_RotRad)) rotation=x$ntX_Rotation+90
-place escBP_E1_bot       z=$ntbpZ_Offset+$bpE1_zDisp-(22.025*sin(-$ntX_RotRad)) x=$ntbpX_Offset y=$ntfpY_Offset+$bpE1_yDisp-(22.025*cos($ntX_RotRad)) rotation=x$ntX_Rotation+90
-place escBP_E1_inring    z=$ntbpZ_Offset+$bpE1_zDisp x=$ntbpX_Offset-(65.025) y=$ntfpY_Offset+$bpE1_yDisp rotation=x90,z90,x$ntX_Rotation
-place escBP_E1_outring   z=$ntbpZ_Offset+$bpE1_zDisp x=$ntbpX_Offset+(65.025) y=$ntfpY_Offset+$bpE1_yDisp rotation=x90,z90,x$ntX_Rotation
-place escBP_Eres_top     z=$ntbpZ_Offset+$bpEres_zDisp+(22.025*sin(-$ntX_RotRad)) x=$ntbpX_Offset y=$ntfpY_Offset+$bpEres_yDisp+(22.025*cos($ntX_RotRad)) rotation=x$ntX_Rotation+90
-place escBP_Eres_bot     z=$ntbpZ_Offset+$bpEres_zDisp-(22.025*sin(-$ntX_RotRad)) x=$ntbpX_Offset y=$ntfpY_Offset+$bpEres_yDisp-(22.025*cos($ntX_RotRad)) rotation=x$ntX_Rotation+90
-place escBP_Eres_inring  z=$ntbpZ_Offset+$bpEres_zDisp x=$ntbpX_Offset-(67.025) y=$ntfpY_Offset+$bpEres_yDisp rotation=x90,z90,x$ntX_Rotation
-place escBP_Eres_outring z=$ntbpZ_Offset+$bpEres_zDisp x=$ntbpX_Offset+(67.025) y=$ntfpY_Offset+$bpEres_yDisp rotation=x90,z90,x$ntX_Rotation
+place auxl_escape_E1_top       z=$auxl_zOffset+$auxl_E1_zDisp+(22.025*sin(-$ntX_RotRad)) x=$auxl_xOffset y=$auxl_yOffset+$auxl_E1_yDisp+(22.025*cos($ntX_RotRad)) rotation=x$ntX_Rotation+90
+place auxl_escape_E1_bot       z=$auxl_zOffset+$auxl_E1_zDisp-(22.025*sin(-$ntX_RotRad)) x=$auxl_xOffset y=$auxl_yOffset+$auxl_E1_yDisp-(22.025*cos($ntX_RotRad)) rotation=x$ntX_Rotation+90
+place auxl_escape_E1_inring    z=$auxl_zOffset+$auxl_E1_zDisp x=$auxl_xOffset-(65.025) y=$auxl_yOffset+$auxl_E1_yDisp rotation=x90,z90,x$ntX_Rotation
+place auxl_escape_E1_outring   z=$auxl_zOffset+$auxl_E1_zDisp x=$auxl_xOffset+(65.025) y=$auxl_yOffset+$auxl_E1_yDisp rotation=x90,z90,x$ntX_Rotation
+place auxl_escape_Eres_top     z=$auxl_zOffset+$auxl_Eres_zDisp+(22.025*sin(-$ntX_RotRad)) x=$auxl_xOffset y=$auxl_yOffset+$auxl_Eres_yDisp+(22.025*cos($ntX_RotRad)) rotation=x$ntX_Rotation+90
+place auxl_escape_Eres_bot     z=$auxl_zOffset+$auxl_Eres_zDisp-(22.025*sin(-$ntX_RotRad)) x=$auxl_xOffset y=$auxl_yOffset+$auxl_Eres_yDisp-(22.025*cos($ntX_RotRad)) rotation=x$ntX_Rotation+90
+place auxl_escape_Eres_inring  z=$auxl_zOffset+$auxl_Eres_zDisp x=$auxl_xOffset-(67.025) y=$auxl_yOffset+$auxl_Eres_yDisp rotation=x90,z90,x$ntX_Rotation
+place auxl_escape_Eres_outring z=$auxl_zOffset+$auxl_Eres_zDisp x=$auxl_xOffset+(67.025) y=$auxl_yOffset+$auxl_Eres_yDisp rotation=x90,z90,x$ntX_Rotation
 
 # __________________________________________________________
 # RING SETTINGS ----

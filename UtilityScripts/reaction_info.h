@@ -30,6 +30,7 @@ struct ReactionInfo {
     double mass_beam, mass_target, mass_recoil, mass_eject;
     
     // Ring parameters
+    std::string det_setup;  // Detector setup: "new" or "PoP"
     double dip_radius, quad_Leff, dip_Brho, dip_Bfld;
     double quad_Q1, quad_Q2, quad_Q3, quad_Q4, quad_Q5;
     
@@ -83,6 +84,7 @@ struct ReactionInfo {
             mass_eject = parser.getDouble("reaction_masses", "mass_eject");
             
             // Ring parameters
+            det_setup = parser.getString("ring_params", "det_setup");
             dip_radius = parser.getDouble("ring_params", "dip_radius");
             quad_Leff = parser.getDouble("ring_params", "quad_Leff");
             dip_Brho = parser.getDouble("ring_params", "dip_Brho");
@@ -109,6 +111,7 @@ struct ReactionInfo {
         std::cout << "Ejectile: A=" << ejec_A << ", Z=" << ejec_Z << std::endl;
         std::cout << "Recoil: A=" << recoil_A << ", Z=" << recoil_Z << ", q=" << recoil_q << std::endl;
         std::cout << "Masses: beam=" << mass_beam << ", target=" << mass_target << ", recoil=" << mass_recoil << ", ejectile=" << mass_eject << " MeV" << std::endl;
+        std::cout << "Detector setup: " << det_setup << std::endl;
         std::cout << "Excitation energies: ";
         for (size_t i = 0; i < recoil_excEns.size(); ++i) {
             std::cout << recoil_excEns[i];

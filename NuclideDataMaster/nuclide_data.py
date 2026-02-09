@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3.5
 """
 Access to nuclide atomic weights, abundances, and decay constants.
 
@@ -299,7 +299,7 @@ def isomers(Z, A):
 
     Energies in MeV.
     """
-    isom = nuclides[(Z,A)].keys()
+    isom = list(nuclides[(Z,A)].keys())
     isom.sort()
     return isom
 
@@ -392,8 +392,8 @@ class Nuclide:
                             s1 = s1.strip()
                             s2 = s2.strip()
                         else:
-                            s1 = filter(lambda x: x in string.ascii_letters, nuc_id)
-                            s2 = filter(lambda x: not (x in string.ascii_letters), nuc_id).strip()
+                            s1 = ''.join(filter(lambda x: x in string.ascii_letters, nuc_id))
+                            s2 = ''.join(filter(lambda x: not (x in string.ascii_letters), nuc_id)).strip()
                             
 
                         # Not sure of the order of s1 & s2,

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3.5
 import math
 import numpy as np
 import scipy.constants as const

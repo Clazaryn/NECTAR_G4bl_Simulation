@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3.5
 # --
 # NECTAR EXPERIMENT E028 - SIMULATIONS
 # Last modification : C. Berthelot - 28/03/2025

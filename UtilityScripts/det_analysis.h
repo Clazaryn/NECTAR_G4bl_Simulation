@@ -40,6 +40,21 @@ double GAGG_resolution(double E);
 std::unordered_map<int, std::tuple<double, double, double, int, int>> readEjectileFile(
     const char* reaction, const char* recType, Int_t excLabel);
 
+// Helper function to load virtual detector data
+struct VirtualDetectorData {
+    std::unordered_map<int, std::tuple<Float_t, Float_t, Float_t>> pos_map;
+    std::unordered_map<int, Float_t> pdgid_map;
+};
+
+VirtualDetectorData loadVirtualDetector(TFile* recoil_file, const char* tree_path);
+
+// Helper function to fill residue from virtual detector maps
+void fillResidueFromMaps(Int_t eventID, 
+                         const VirtualDetectorData& magsept_data,
+                         const VirtualDetectorData& hrplane_data,
+                         const VirtualDetectorData& quadwall_data,
+                         HeavyResidue* residue);
+
 // ========= Data Classes =========
 
 class LightEjectile {
@@ -57,9 +72,11 @@ class HeavyResidue {
 public:
     Int_t Z, A;
     Double_t MagSept_x, MagSept_y;
-    Bool_t has_MagSept;  // true if event has MagSept data
+    Bool_t hit_MagSept;  // true if event hit MagSept virtual detector
     Double_t HRplane_x, HRplane_y;
-    Bool_t has_HRplane;  // true if event has HRplane data
+    Bool_t hit_HRplane;  // true if event hit HRplane virtual detector
+    Double_t QuadWall_x, QuadWall_y;
+    Bool_t hit_QuadWall;  // true if event hit QuadWall virtual detector
     
     HeavyResidue();
 };
@@ -117,10 +134,13 @@ private:
     
     TTree* tree_E2;
     std::unordered_map<int, Float_t> E2_map;
-    TF1* E_corr_lowE_prot[16];
-    TF1* E_corr_highE_prot[16];
+    // Total energy reconstruction functions for each vertical strip
+    // These functions reconstruct the true total energy from measured E_DE_E (E1 + DE)
+    // Separate functions for low energy (not reaching E2) and high energy (reaching E2) events
+    TF1* Etot_recon_strip_lowE[16];   // Low energy: events that stop in E1
+    TF1* Etot_recon_strip_highE[16];  // High energy: events that reach E2
     
-    void initializeCorrectionFunctions();
+    void initializeEnergyReconstructionFunctions();
     
 public:
     PoPTelescopeAnalyzer(const char* r, const char* rt, Int_t el,

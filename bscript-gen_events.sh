@@ -17,6 +17,12 @@ read -p "Enter number of ejectile events: " nevents < /dev/tty
 ### RUNS IN PARALLEL over the excitation energy range defined in reac_info.txt ###
 N=12  # number of concurrent jobs
 
+# Check if verbose = True in event_generator.py and exit if so
+if grep -q "verbose\s*=\s*True" event_generator.py; then
+  echo "ERROR: verbose = True in event_generator.py. Please set verbose = False before running batch script."
+  exit 1
+fi
+
 # Read excitation energies from reac_info.txt
 excitation_Ens=($(grep '^recoil_excEns' reac_info.txt | awk -F'=' '{print $2}' | tr ',' ' '))
 echo "Excitation energies: ${excitation_Ens[@]}"

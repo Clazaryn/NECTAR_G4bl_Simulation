@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3.5
 # -*- coding: utf-8 -*-
 # --
 # NECTAR EXPERIMENT E028 - SIMULATIONS
@@ -366,8 +366,8 @@ while Ncounter < Nions+1:
             raise ValueError("event_generator: HR_type not recognised: ", HR_type)
 
         # '''''''''' Update plotting variables  ''''''''''''
-        plot_recoil_theta.append(theta4 * 180 / math.pi)
-        plot_recoil_theta_CM.append(theta4_CM * 180 / math.pi)
+        plot_recoil_theta.append(theta4 * 180 / math.pi * -1)
+        plot_recoil_theta_CM.append(theta4_CM * 180 / math.pi * -1)
         plot_recoil_energy.append(FV4_deexc[0] - mHR_final)  # kinetic energy of heavy residue after deexcitation
         plot_ejectile_theta.append(theta3 * 180 / math.pi)
         plot_ejectile_theta_CM.append(theta3_CM * 180 / math.pi)
