@@ -22,7 +22,7 @@ param -unset eventFile="../238U_dp_sim/Event_output/output_event_generator_238U_
 # PHYSICS LIST, INPUT PARAMETERS, VISUALIZATION SETTINGS ----
 
 ## ====== Import physics list for highly stripped charged ions ======
-physics QGSP_BIC_EMY #-fluct=0
+physics QGSP_BIC_EMY
 
 ## -- Visualization settings --
 #g4ui when=4 "/vis/viewer/set/background 1 1 1"

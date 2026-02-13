@@ -25,10 +25,12 @@ ejec_Z = 1              ; Ejectile atomic number Z
 recoil_A = 136          ; Recoil mass number A
 recoil_Z = 54           ; Recoil atomic number Z
 recoil_q = 54           ; Recoil nucleus charge state
-max_excEn = 30          ; max excitation energy (MeV) for which particles can reach our detectors
 
 ; ---------- reocil excitation energies ---------- 
-recoil_excEns = 0.005, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0, 22.0, 23.0, 24.0, 25.0, 26.0
+run_HR_modes = HRg, HR1n, HR2n, HR3n  ; which deexcitation modes to run
+excEn_start = 0.0       ; excitation energy starting bin (MeV)
+excEn_stop = 30.0       ; excitation energy stop bin (MeV)
+excEn_bin = 1.0         ; bin width (MeV)
 
 [separation_energies]   ; 136Xe(p,p')/(d,d') or 135Xe(d,p)
 Sn_CN = 8.08712         ; 136Xe neutron separation energy in MeV

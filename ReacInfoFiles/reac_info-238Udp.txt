@@ -30,7 +30,10 @@ recoil_Z = 92           ; Recoil atomic number Z
 recoil_q = 92           ; Recoil nucleus charge state
 
 ; ---------- reocil excitation energies ---------- 
-recoil_excEns = 0.005, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0, 22.0, 23.0, 24.0, 25.0, 26.0
+run_HR_modes = HRg, HR1n, HR2n, HR3n, HR4n  ; which deexcitation modes to run
+excEn_start = 0.0       ; excitation energy starting bin (MeV)
+excEn_stop = 26.0       ; excitation energy stop bin (MeV)
+excEn_bin = 1.0         ; bin width (MeV)
 
 [separation_energies]   ; 238U(d,p)
 Sn_CN = 4.80638         ; 239U neutron separation energy in MeV
@@ -39,9 +42,9 @@ Sn_2nDght = 5.12577     ; 237U neutron separation energy in MeV
 Sn_3nDght = 6.54552     ; 236U neutron separation energy in MeV
 
 [reaction_masses]       ; Reaction masses (MeV) used by event_gen_nChamb.py
-mass_beam = 221742.14363173253      ; 238U
+mass_beam = 221742.90528473252      ; 238U
 mass_target = 1876.1239276943375    ; deuterium
-mass_recoil = 222676.90271413093    ; 239U
+mass_recoil = 222677.66436713093    ; 239U
 mass_eject = 938.7830736444523      ; proton
 
 [ring_params]           ; Determined using Q1_dipole-old_ESR_std

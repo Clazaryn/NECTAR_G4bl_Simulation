@@ -25,10 +25,12 @@
 class LightEjectile {
 public:
     Int_t Z, A;
+    Int_t detector_id;  // 0=primary, 1=auxillary for New detectors
+    Int_t vert_strip, hor_strip;
     Double_t true_Eexc, true_Eejc, true_theta;
     Double_t recon_Eexc, recon_Eejc, recon_theta;
-    Int_t vert_strip;
-    Int_t detector_id;  // 0=primary, 1=auxillary for New detectors
+    Float_t meas_dE, meas_E1, meas_Eres;  // Measured Eres energy (crystal in New setup)
+    Float_t meas_E2, meas_E3, meas_E4, meas_E5, meas_E6;  // Measured E2 through E6 energy (thick Si in PoP setup)
     
     LightEjectile();
 };
@@ -36,12 +38,12 @@ public:
 class HeavyResidue {
 public:
     Int_t Z, A;
-    Double_t MagSept_x, MagSept_y;
     Bool_t hit_MagSept;  // true if event hit MagSept virtual detector
-    Double_t HRplane_x, HRplane_y;
+    Double_t MagSept_x, MagSept_y;  // x,y coordinates of event in MagSept virtual detector
     Bool_t hit_HRplane;  // true if event hit HRplane virtual detector
-    Double_t QuadWall_x, QuadWall_y;
+    Double_t HRplane_x, HRplane_y;  // x,y coordinates of event in HRplane virtual detector
     Bool_t hit_QuadWall;  // true if event hit QuadWall virtual detector
+    Double_t QuadWall_x, QuadWall_y;  // x,y coordinates of event in QuadWall virtual detector
     
     HeavyResidue();
 };
@@ -61,7 +63,7 @@ public:
                      Double_t mb, Double_t mt, Double_t mr, Double_t me, Double_t ek, Double_t p);
     virtual ~TelescopeAnalyzer() {}
     virtual bool analyzeEvent(Int_t eventID, Float_t x_DE, Float_t y_DE, Float_t z_DE, 
-                              Float_t Edep_DE, Float_t Edep_E1, Float_t Edep_Eres,
+                              const std::vector<Float_t>& Edep_vec,
                               LightEjectile& ejectile) = 0;
 };
 
@@ -82,7 +84,7 @@ public:
                         const TVector3& off, const TVector2& rot);
     
     bool analyzeEvent(Int_t eventID, Float_t x_DE, Float_t y_DE, Float_t z_DE,
-                      Float_t Edep_DE, Float_t Edep_E1, Float_t Edep_Eres,
+                      const std::vector<Float_t>& Edep_vec,
                       LightEjectile& ejectile) override;
 };
 
@@ -114,7 +116,7 @@ public:
     ~PoPTelescopeAnalyzer();
     
     bool analyzeEvent(Int_t eventID, Float_t x_DE, Float_t y_DE, Float_t z_DE,
-                      Float_t Edep_DE, Float_t Edep_E1, Float_t Edep_Eres,
+                      const std::vector<Float_t>& Edep_vec,
                       LightEjectile& ejectile) override;
 };
 
@@ -128,12 +130,12 @@ Int_t getZ(Int_t PDGid);
 Int_t getA(Int_t PDGid);
 
 // Energy resolution function
-Float_t getEres(Float_t EnergyMeV, Float_t Res_Percent);
+Float_t getEnResolution(Float_t EnergyMeV, Float_t Res_Percent);
 
 // GAGG scintillator resolution
 double GAGG_resolution(double E);
 
-// Read ejectile file to get true values
+// Read ejectile event file (Event_output text file) to get true values
 std::unordered_map<int, std::tuple<double, double, double, int, int>> readEjectileFile(
     const char* reaction, const char* recType, Int_t excLabel, Double_t excEn,
     const ReactionInfo& reactionInfo);
@@ -144,7 +146,7 @@ struct VirtualDetectorData {
     std::unordered_map<int, Int_t> pdgid_map;
 };
 
-VirtualDetectorData loadVirtualDetector(TFile* recoil_file, const char* tree_path,
+VirtualDetectorData loadVirtualDetector(TFile* recoil_det_output, const char* tree_path,
                                         const char* reaction, const char* recType, 
                                         Int_t excLabel, Double_t excEn);
 
@@ -155,7 +157,8 @@ void fillResidueFromMaps(Int_t eventID,
                          const VirtualDetectorData& quadwall_data,
                          HeavyResidue* residue);
 
-// Main analysis function
+
+// ========= Main analysis function =========
 void det_analysis(Int_t excLabel, const char* recType);
 
 #endif // DET_ANALYSIS_H

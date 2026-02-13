@@ -19,34 +19,33 @@ Sn_2nDght = float(config['separation_energies'].get('Sn_2nDght', '0'))
 Sn_3nDght = float(config['separation_energies'].get('Sn_3nDght', '0'))
 Sn_4nDght = float(config['separation_energies'].get('Sn_4nDght', '0'))
 
-# Read excitation energy list
-exc_ens_str = config['recoil_info']['recoil_excEns']
-exc_ens = [float(x.strip()) for x in exc_ens_str.split(',')]
+# Read excitation energy parameters (required)
+if 'excEn_start' not in config['recoil_info'] or 'excEn_stop' not in config['recoil_info'] or 'excEn_bin' not in config['recoil_info']:
+    print("Error: Missing required parameters excEn_start, excEn_stop, or excEn_bin in [recoil_info] section", file=sys.stderr)
+    sys.exit(1)
 
-# Read maximum excitation energy limit
-max_excEn = float(config['recoil_info']['max_excEn'])
+excEn_start = float(config['recoil_info']['excEn_start'])
+excEn_stop = float(config['recoil_info']['excEn_stop'])
+excEn_bin = float(config['recoil_info']['excEn_bin'])
 
-# Calculate energy thresholds for each channel (3 MeV beyond next channel opening)
-# HRg: from min to (Sn_CN + 3)
-# HR1n: from Sn_CN to (Sn_CN + Sn_1nDght + 3)
-# HR2n: from (Sn_CN + Sn_1nDght) to (Sn_CN + Sn_1nDght + Sn_2nDght + 3)
-# HR3n: from (Sn_CN + Sn_1nDght + Sn_2nDght) to (Sn_CN + Sn_1nDght + Sn_2nDght + Sn_3nDght + 3)
-# HR4n: from (Sn_CN + Sn_1nDght + Sn_2nDght + Sn_3nDght) to (Sn_CN + Sn_1nDght + Sn_2nDght + Sn_3nDght + Sn_4nDght + 3)
+# Read run_HR_modes to determine which channels to calculate
+if 'run_HR_modes' not in config['recoil_info']:
+    print("Error: Missing required parameter run_HR_modes in [recoil_info] section", file=sys.stderr)
+    sys.exit(1)
 
-HRg_start_E = min(exc_ens)
-HRg_stop_E = Sn_CN + 3.0
+run_HR_modes_str = config['recoil_info']['run_HR_modes']
+run_HR_modes = [mode.strip() for mode in run_HR_modes_str.split(',')]
 
-HR1n_start_E = Sn_CN
-HR1n_stop_E = Sn_CN + Sn_1nDght + 3.0
+# Generate excitation energy list: start, start+bin, start+2*bin, ... up to and including stop
+# Use a small epsilon to handle floating point precision when including stop
+exc_ens = []
+current = excEn_start
+while current <= excEn_stop + 1e-6:  # Add small epsilon to handle floating point precision
+    exc_ens.append(current)
+    current += excEn_bin
 
-HR2n_start_E = Sn_CN + Sn_1nDght
-HR2n_stop_E = Sn_CN + Sn_1nDght + Sn_2nDght + 3.0
-
-HR3n_start_E = Sn_CN + Sn_1nDght + Sn_2nDght
-HR3n_stop_E = Sn_CN + Sn_1nDght + Sn_2nDght + Sn_3nDght + 3.0
-
-HR4n_start_E = Sn_CN + Sn_1nDght + Sn_2nDght + Sn_3nDght
-HR4n_stop_E = Sn_CN + Sn_1nDght + Sn_2nDght + Sn_3nDght + Sn_4nDght + 3.0
+# Read overlap range parameter (3.0 MeV)
+overlap_range = 3.0
 
 # Find indices in exc_ens array that correspond to these energies
 # Find the first index where exc_ens[i] >= threshold
@@ -63,40 +62,47 @@ def find_stop_index(threshold):
             return i
     return len(exc_ens) - 1  # If threshold is beyond all energies, use last index
 
-HRg_start = find_start_index(HRg_start_E)
-HRg_stop = find_stop_index(HRg_stop_E)
+# Calculate energy thresholds and indices only for modes in run_HR_modes
+HR_ranges = {}
 
-HR1n_start = find_start_index(HR1n_start_E)
-HR1n_stop = find_stop_index(HR1n_stop_E)
+if 'HRg' in run_HR_modes:
+    HRg_start_E = min(exc_ens)
+    HRg_stop_E = Sn_CN + overlap_range
+    HR_ranges['HRg'] = (find_start_index(HRg_start_E), find_stop_index(HRg_stop_E))
 
-HR2n_start = find_start_index(HR2n_start_E)
-HR2n_stop = find_stop_index(HR2n_stop_E)
+if 'HR1n' in run_HR_modes:
+    HR1n_start_E = Sn_CN
+    HR1n_stop_E = Sn_CN + Sn_1nDght + overlap_range
+    HR_ranges['HR1n'] = (find_start_index(HR1n_start_E), find_stop_index(HR1n_stop_E))
 
-HR3n_start = find_start_index(HR3n_start_E)
-HR3n_stop = find_stop_index(HR3n_stop_E)
+if 'HR2n' in run_HR_modes:
+    HR2n_start_E = Sn_CN + Sn_1nDght
+    HR2n_stop_E = Sn_CN + Sn_1nDght + Sn_2nDght + overlap_range
+    HR_ranges['HR2n'] = (find_start_index(HR2n_start_E), find_stop_index(HR2n_stop_E))
 
-HR4n_start = find_start_index(HR4n_start_E)
-HR4n_stop = find_stop_index(HR4n_stop_E)
+if 'HR3n' in run_HR_modes:
+    HR3n_start_E = Sn_CN + Sn_1nDght + Sn_2nDght
+    HR3n_stop_E = Sn_CN + Sn_1nDght + Sn_2nDght + Sn_3nDght + overlap_range
+    HR_ranges['HR3n'] = (find_start_index(HR3n_start_E), find_stop_index(HR3n_stop_E))
 
-# Find the maximum allowed index based on max_excEn
-max_index = find_stop_index(max_excEn)
+if 'HR4n' in run_HR_modes:
+    HR4n_start_E = Sn_CN + Sn_1nDght + Sn_2nDght + Sn_3nDght
+    HR4n_stop_E = Sn_CN + Sn_1nDght + Sn_2nDght + Sn_3nDght + Sn_4nDght + overlap_range
+    HR_ranges['HR4n'] = (find_start_index(HR4n_start_E), find_stop_index(HR4n_stop_E))
 
-# Cap all stop indices to not exceed max_index
-HRg_stop = min(HRg_stop, max_index)
-HR1n_stop = min(HR1n_stop, max_index)
-HR2n_stop = min(HR2n_stop, max_index)
-HR3n_stop = min(HR3n_stop, max_index)
-HR4n_stop = min(HR4n_stop, max_index)
+# Output bash variable assignments that can be sourced/eval'd
+# First, output the excitation energies array (formatted to 1 decimal place)
+# Using % formatting for Python 3.5 compatibility
+exc_ens_str = ' '.join(["%.1f" % e for e in exc_ens])
+print("excitation_Ens=(%s)" % exc_ens_str)
 
-# Output bash variable assignments
-print("HRg_start={}".format(HRg_start))
-print("HRg_stop={}".format(HRg_stop))
-print("HR1n_start={}".format(HR1n_start))
-print("HR1n_stop={}".format(HR1n_stop))
-print("HR2n_start={}".format(HR2n_start))
-print("HR2n_stop={}".format(HR2n_stop))
-print("HR3n_start={}".format(HR3n_start))
-print("HR3n_stop={}".format(HR3n_stop))
-print("HR4n_start={}".format(HR4n_start))
-print("HR4n_stop={}".format(HR4n_stop))
-print("max_excEn={}".format(max_excEn))
+# Output run_HR_modes array
+run_HR_modes_str = ' '.join(run_HR_modes)
+print("run_HR_modes=(%s)" % run_HR_modes_str)
+
+# Output HR mode ranges only for modes in run_HR_modes
+for mode in run_HR_modes:
+    if mode in HR_ranges:
+        start_idx, stop_idx = HR_ranges[mode]
+        print("%s_start=%d" % (mode, start_idx))
+        print("%s_stop=%d" % (mode, stop_idx))

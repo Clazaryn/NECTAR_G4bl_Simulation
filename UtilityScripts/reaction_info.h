@@ -39,7 +39,7 @@ struct ReactionInfo {
         try {
             IniParser parser;
             if (!parser.loadFile(filename)) {
-                std::cerr << "Error: Could not load INI file " << filename << std::endl;
+                std::cerr << "reaction_info.h:" << __LINE__ << ": Error: Could not load INI file " << filename << std::endl;
                 return false;
             }
             
@@ -67,7 +67,18 @@ struct ReactionInfo {
             recoil_A = parser.getInt("recoil_info", "recoil_A");
             recoil_Z = parser.getInt("recoil_info", "recoil_Z");
             recoil_q = parser.getInt("recoil_info", "recoil_q");
-            recoil_excEns = parser.getDoubleVector("recoil_info", "recoil_excEns");
+            
+            // Generate excitation energies from start, stop, bin parameters
+            double excEn_start = parser.getDouble("recoil_info", "excEn_start");
+            double excEn_stop = parser.getDouble("recoil_info", "excEn_stop");
+            double excEn_bin = parser.getDouble("recoil_info", "excEn_bin");
+            
+            recoil_excEns.clear();
+            double current = excEn_start;
+            while (current <= excEn_stop + 1e-6) {  // Add small epsilon to handle floating point precision
+                recoil_excEns.push_back(current);
+                current += excEn_bin;
+            }
             
             // Separation energies (matching INI file format)
             Sn_CN = parser.getDouble("separation_energies", "Sn_CN");
@@ -98,7 +109,7 @@ struct ReactionInfo {
             
             return true;
         } catch (const std::exception& e) {
-            std::cerr << "Error loading INI file: " << e.what() << std::endl;
+            std::cerr << "reaction_info.h:" << __LINE__ << ": Error loading INI file: " << e.what() << std::endl;
             return false;
         }
     }

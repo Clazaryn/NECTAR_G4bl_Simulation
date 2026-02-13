@@ -1,4 +1,6 @@
 #!/bin/bash
+### --------------------------------------------------------------------------- ###
+### ================= Setup for script and parallel analysis ================== ###
 
 # Read reaction from reac_info.txt
 reaction=$(grep '^reaction' reac_info.txt | awk -F'=' '{gsub(/^ +| +$/,"",$2); print $2}' | awk '{print $1}')
@@ -15,7 +17,7 @@ echo "   ####################################################   "
 read -p "Enter number of ejectile events: " nevents < /dev/tty
 	
 ### RUNS IN PARALLEL over the excitation energy range defined in reac_info.txt ###
-N=12  # number of concurrent jobs
+N=14  # number of concurrent jobs
 
 # Check if verbose = True in event_generator.py and exit if so
 if grep -q "verbose\s*=\s*True" event_generator.py; then
@@ -23,38 +25,58 @@ if grep -q "verbose\s*=\s*True" event_generator.py; then
   exit 1
 fi
 
-# Read excitation energies from reac_info.txt
-excitation_Ens=($(grep '^recoil_excEns' reac_info.txt | awk -F'=' '{print $2}' | tr ',' ' '))
-echo "Excitation energies: ${excitation_Ens[@]}"
-
-# Calculate HR channel ranges based on separation energies (3 MeV beyond next channel opening)
+# Calculate HR channel ranges and get excitation energies from calc_hr_ranges.py
 eval $(python3 UtilityScripts/calc_hr_ranges.py)
+echo "Excitation energies: ${excitation_Ens[@]}"
+echo "Running HR modes: ${run_HR_modes[@]}"
+
+# Build arrays to store mode information for reuse (prevents calculation inconsistencies)
+declare -a mode_names=()
+declare -a mode_start_indices=()
+declare -a mode_stop_indices=()
+
+# Process each mode once and store the information
+for mode in "${run_HR_modes[@]}"; do
+    mode_clean=$(echo "$mode" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    start_var="${mode_clean}_start"
+    stop_var="${mode_clean}_stop"
+    if [ -n "${!start_var}" ] && [ -n "${!stop_var}" ]; then
+        start_idx=${!start_var}
+        stop_idx=${!stop_var}
+        mode_names+=("$mode_clean")
+        mode_start_indices+=("$start_idx")
+        mode_stop_indices+=("$stop_idx")
+    fi
+done
+
+# Display HR channel ranges using stored information
 echo "HR channel ranges:"
-echo "  HRg: indices $HRg_start to $HRg_stop (${excitation_Ens[$HRg_start]} to ${excitation_Ens[$HRg_stop]} MeV)"
-echo "  HR1n: indices $HR1n_start to $HR1n_stop (${excitation_Ens[$HR1n_start]} to ${excitation_Ens[$HR1n_stop]} MeV)"
-echo "  HR2n: indices $HR2n_start to $HR2n_stop (${excitation_Ens[$HR2n_start]} to ${excitation_Ens[$HR2n_stop]} MeV)"
-echo "  HR3n: indices $HR3n_start to $HR3n_stop (${excitation_Ens[$HR3n_start]} to ${excitation_Ens[$HR3n_stop]} MeV)"
-echo "  HR4n: indices $HR4n_start to $HR4n_stop (${excitation_Ens[$HR4n_start]} to ${excitation_Ens[$HR4n_stop]} MeV)"
-echo "  Max excitation energy: $max_excEn MeV"
+for i in "${!mode_names[@]}"; do
+    mode_clean=${mode_names[$i]}
+    start_idx=${mode_start_indices[$i]}
+    stop_idx=${mode_stop_indices[$i]}
+    start_energy=${excitation_Ens[$start_idx]}
+    stop_energy=${excitation_Ens[$stop_idx]}
+    echo "  $mode_clean: indices $start_idx to $stop_idx ($start_energy to $stop_energy MeV)"
+done
+
+# Calculate total number of iterations across all channels for progress bar
+total_iterations=0
+completed_iterations=0
+for i in "${!mode_names[@]}"; do
+    start_idx=${mode_start_indices[$i]}
+    stop_idx=${mode_stop_indices[$i]}
+    if [ "$start_idx" -le "$stop_idx" ] && [ "$stop_idx" -ge 0 ]; then
+        total_iterations=$((total_iterations + stop_idx - start_idx + 1))
+    fi
+done
 
 jobs_running=0	# Initialize job count	
 job_pids=()		# Track job PIDs
 
-# Calculate total number of iterations across all channels for progress bar
-total_iterations=0
-total_iterations=$((total_iterations + HRg_stop - HRg_start + 1))
-total_iterations=$((total_iterations + HR1n_stop - HR1n_start + 1))
-if [ "$HR2n_start" -le "$HR2n_stop" ] && [ "$HR2n_stop" -ge 0 ]; then
-  total_iterations=$((total_iterations + HR2n_stop - HR2n_start + 1))
-fi
-if [ "$HR3n_start" -le "$HR3n_stop" ] && [ "$HR3n_stop" -ge 0 ]; then
-  total_iterations=$((total_iterations + HR3n_stop - HR3n_start + 1))
-fi
-if [ "$HR4n_start" -le "$HR4n_stop" ] && [ "$HR4n_stop" -ge 0 ]; then
-  total_iterations=$((total_iterations + HR4n_stop - HR4n_start + 1))
-fi
 
-completed_iterations=0  # Track completed iterations
+### --------------------------------------------------------------------------- ###
+### =============== Function definitions for parallel analysis ================ ###
 
 # Function to display progress bar
 show_progress() {
@@ -78,8 +100,7 @@ show_progress() {
   printf "\rProgress: [%s] %d/%d (%d%%)" "$bar" "$completed" "$total" "$percent"
 }
 
-# Function to wait for jobs when limit is reached
-# If max_jobs is 0, waits for all jobs to complete
+# Function to wait for jobs when limit is reached. If max_jobs is 0, waits for all jobs to complete
 wait_for_jobs() {
   local max_jobs=${1:-$N}  # Default to N, but can be overridden (use 0 for all jobs)
   
@@ -94,6 +115,29 @@ wait_for_jobs() {
   done
 }
 
+# Function to check if an excitation energy is in an overlap region between modes
+# Overlap occurs at the boundary between consecutive modes (3.0 MeV overlap_range)
+is_in_overlap() {
+    local exc_index=$1
+    local current_mode=$2
+    local exc_en=${excitation_Ens[$exc_index]}
+    
+    # Check if this excitation energy appears in multiple mode ranges
+    local count=0
+    for i in "${!mode_names[@]}"; do
+        local mode_name=${mode_names[$i]}
+        local mode_start=${mode_start_indices[$i]}
+        local mode_stop=${mode_stop_indices[$i]}
+        
+        # Check if exc_index is within this mode's range
+        if [ "$exc_index" -ge "$mode_start" ] && [ "$exc_index" -le "$mode_stop" ]; then
+            count=$((count + 1))
+        fi
+    done
+    
+    [ $count -gt 1 ]    # Return true if the excitation energy is in an overlap region
+}
+
 # Function to run event generation in background
 run_event_generation() {
   local exc_index=$1
@@ -101,8 +145,15 @@ run_event_generation() {
   
   (
     en=${excitation_Ens[$exc_index]}
-    lbl=$(echo "$en" | awk '{printf "%02dMeV", int($1 + 0.5)}')  # Format: XXMeV (2 sig figs with leading zero, rounded to nearest integer)
-    python3.5 event_generator.py "$nevents" "$rec_type" "$en" "$lbl"
+    lbl=$(echo "$en" | awk '{printf "%04.1fMeV", $1}')  # Format: XX.XMeV (1 decimal place with leading zero)
+    
+    # Check if this excitation energy is in an overlap region. If so, use half the events to avoid double-counting
+    local events_to_use=$nevents
+    if is_in_overlap $exc_index "$rec_type"; then
+        events_to_use=$((nevents / 2))
+    fi
+    
+    python3.5 event_generator.py "$events_to_use" "$rec_type" "$en" "$lbl"
   ) &  # Background job
   
   job_pids+=($!)  # Capture the PID of the current background job
@@ -112,39 +163,23 @@ run_event_generation() {
 
 echo ""  # New line before progress bar starts
 
+### --------------------------------------------------------------------------- ###
+### ========== Main script execution - executed jobs run in parallel ========== ###
+
 # Create reaction directory structure
 mkdir -p ../${reaction}_sim/Event_output
 
-#HRg block
-for i in $(seq $HRg_start $HRg_stop); do
-  run_event_generation $i "HRg"
+# Loop over each HR mode using stored information
+for i in "${!mode_names[@]}"; do
+    mode_clean=${mode_names[$i]}
+    start_idx=${mode_start_indices[$i]}
+    stop_idx=${mode_stop_indices[$i]}
+    if [ "$start_idx" -le "$stop_idx" ] && [ "$stop_idx" -ge 0 ]; then
+        for j in $(seq $start_idx $stop_idx); do
+            run_event_generation $j "$mode_clean"
+        done
+    fi
 done
-
-#HR1n block
-for i in $(seq $HR1n_start $HR1n_stop); do
-  run_event_generation $i "HR1n"
-done
-
-# HR2n block (only if range is valid)
-if [ "$HR2n_start" -le "$HR2n_stop" ] && [ "$HR2n_stop" -ge 0 ]; then
-  for i in $(seq $HR2n_start $HR2n_stop); do  # HR2n block
-    run_event_generation $i "HR2n"
-  done
-fi
-
-# HR3n block (only if range is valid)
-if [ "$HR3n_start" -le "$HR3n_stop" ] && [ "$HR3n_stop" -ge 0 ]; then
-  for i in $(seq $HR3n_start $HR3n_stop); do
-    run_event_generation $i "HR3n"
-  done
-fi
-
-# HR4n block (only if range is valid and Sn_4nDght is defined)
-if [ "$HR4n_start" -le "$HR4n_stop" ] && [ "$HR4n_stop" -ge 0 ]; then
-  for i in $(seq $HR4n_start $HR4n_stop); do
-    run_event_generation $i "HR4n"
-  done
-fi
 
 # Wait for all remaining jobs to finish and update progress
 wait_for_jobs 0  # Wait until 0 jobs running (i.e., all done)

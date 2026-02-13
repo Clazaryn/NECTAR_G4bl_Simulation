@@ -27,7 +27,6 @@ import configparser
 
 from NuclideDataMaster import nuclide_data #this requires the nuclidedatamaster directory
 import nuc_reaction          # to import file containing deexcitation modes
-import sys
 sys.path.insert(0, 'UtilityScripts')
 import phys_functions as funcs
 
@@ -36,6 +35,9 @@ writeBeamFile = False   # boolean for if to write Beam + Recoil before deexcitat
 
 # '''''''''' Input parameters ''''''''''''
 # These inputs parameters are passed as command line arguments when running the script
+if len(sys.argv) != 5:
+    print("Insufficient arguments. Usage: python event_generator.py <number of ions> <heavy recoil type> <excitation energy> <excitation energy label>")
+    sys.exit(1)
 Nions = int(sys.argv[1])          # number of ions to simulate
 HR_type = sys.argv[2]             # heavy recoil type to simulate
 excit_En = float(sys.argv[3])     # excitation energy in MeV
@@ -47,9 +49,9 @@ config = configparser.ConfigParser(inline_comment_prefixes=(';',))
 config.read('reac_info.txt')
 
 reaction = config['beam_info']['reaction']
-A0 = int(config['beam_info']['beam_A'])
+AB = int(config['beam_info']['beam_A'])
 qB = int(config['beam_info']['beam_q'])
-Z0 = int(config['beam_info']['beam_Z'])
+ZB = int(config['beam_info']['beam_Z'])
 EuA = float(config['beam_info']['beam_EuA'])
 sig_pup = float(config['beam_info']['sig_pup'])
 emi_x = float(config['beam_info']['emit_x'])
@@ -63,6 +65,7 @@ ZE = int(config['ejectile_info']['ejec_Z'])
 AR = int(config['recoil_info']['recoil_A'])
 ZR = int(config['recoil_info']['recoil_Z'])
 qR = int(config['recoil_info']['recoil_q'])
+excEn_bin = float(config['recoil_info']['excEn_bin'])
 Sn_CN = float(config['separation_energies']['Sn_CN'])
 Sn_1nDght = float(config['separation_energies']['Sn_1nDght'])
 Sn_2nDght = float(config['separation_energies']['Sn_2nDght'])
@@ -127,7 +130,7 @@ AR_3n = AR-3                              # heavy residue mass for triple neutro
 AR_4n = AR-4                              # heavy residue mass for quadruple neutron emission
 
 # Masses in MeV (converted from atomic to nuclear masses)
-mBeam = funcs.atomic_to_nuclear_mass(nuclide_data.weight(Z0,A0), Z0) * amu     # Beam 
+mBeam = funcs.atomic_to_nuclear_mass(nuclide_data.weight(ZB,AB), ZB) * amu     # Beam 
 mTarg = funcs.atomic_to_nuclear_mass(nuclide_data.weight(ZT,AT), ZT) * amu     # Target
 mEjec = funcs.atomic_to_nuclear_mass(nuclide_data.weight(ZE,AE), ZE) * amu     # Ejectile 
 mHRg = funcs.atomic_to_nuclear_mass(nuclide_data.weight(ZR,AR_g), ZR) * amu    # Heavy residue gamma
@@ -144,7 +147,7 @@ if(verbose):
     print ("     ___ NUCLEI PARAMETERS ")
     print ("    /")
     print ("-- Number of reaction events : ",Nions)
-    print ("-- Beam : A0 =", A0, "; Z0 = ", Z0, "; mass (MeV) = ", mBeam)
+    print ("-- Beam : AB =", AB, "; ZB = ", ZB, "; mass (MeV) = ", mBeam)
     print ("          Kinetic energy (MeV)/(AMeV) :", E1, "/", EuA)
     print ("-- Target : A1 =", AT, "; Z1 = ",ZT,"; mass (MeV) = ", mTarg)
     print ("-- Ejectile : A2 =", AE, "; Z2 = ", ZE, "; mass (MeV) = ", mEjec)
@@ -196,8 +199,8 @@ plot_recoil_theta_CM = []
 # (Z_in and A_in are integer values, Z_out and A_out are values converted for g4beamline) 
     
 # '''''''''' PDGid beam  '''''''''''' 
-Z_beam = int(Z0)
-A_beam = int(A0)
+Z_beam = int(ZB)
+A_beam = int(AB)
 PDGid_beam = funcs.define_PDGid(Z_beam, A_beam)
 
 # '''''''''' PDGid ejectile ''''''''''''
@@ -248,10 +251,10 @@ Nreaction = 1                     # current reaction event number
 Nbeam = 1                         # current ion beam event number (Nbeam >= Nreaction as not each beam ion will interact with the target)
 
 # /!\ Ncounter is updated/defined at bottom of while loop /!\
-while Ncounter < Nions+1:
+while Ncounter < Nions:
 
     # '''''''''' Excitation energy ''''''''''''
-    Eex = excit_En      # excitation energy defined by input
+    Eex = np.random.uniform(excit_En, excit_En + excEn_bin)      # excitation energy defined by input
     Eex_min_2sol = 0.4   
 
     # '''''''''' Interaction coordinates  ''''''''''''
@@ -308,7 +311,7 @@ while Ncounter < Nions+1:
         # Checks and file updates        
         # print("ptot eject : ",math.sqrt(math.pow(pX_3,2)+math.pow(pY_3,2)+math.pow(pZ_3,2)))      
         # print("pX_eject : ",pX_3," pY_eject : ",pY_3," pZ_eject : ",pZ_3)        
-        if writeBeamFile: file_recoil.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" % (x,y,z,-FV4[1],FV4[2],FV4[3],0,int(PDGid_recoil),Nreaction,1,0,1))
+        if writeBeamFile: file_recoil.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" % (x,y,z,FV4[1],FV4[2],FV4[3],0,int(PDGid_recoil),Nreaction,1,0,1))
         
         # '''''''''' Gamma emission recoil function ''''''''''''
         if(HR_type == "HRg"):            
@@ -316,8 +319,8 @@ while Ncounter < Nions+1:
             mHR_final = mHRg  # final heavy residue mass after deexcitation
 
             # write to output files
-            file_eject.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" % (x,y,z,-FV3[1],FV3[2],FV3[3],0,int(PDGid_eject),Nreaction,1,0,1))
-            file_HR_gamma.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" % (x,y,z,-FV4_deexc[1],FV4_deexc[2],FV4_deexc[3],0,int(PDGid_HR_g),Nreaction,1,0,1))
+            file_eject.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" % (x,y,z,FV3[1],FV3[2],FV3[3],0,int(PDGid_eject),Nreaction,1,0,1))
+            file_HR_gamma.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" % (x,y,z,FV4_deexc[1],FV4_deexc[2],FV4_deexc[3],0,int(PDGid_HR_g),Nreaction,1,0,1))
 
         # '''''''''' 1 neutron emission recoil function ''''''''''''
         elif(HR_type == "HR1n"):         
@@ -327,8 +330,8 @@ while Ncounter < Nions+1:
             mHR_final = mHR1n  # final heavy residue mass after deexcitation
 
             # write to output files
-            file_eject.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" % (x,y,z,-FV3[1],FV3[2],FV3[3],0,int(PDGid_eject),Nreaction,1,0,1))
-            file_HR_neutron.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" %(x,y,z,-FV4_deexc[1],FV4_deexc[2],FV4_deexc[3],0,int(PDGid_HR_n),Nreaction,1,0,1))
+            file_eject.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" % (x,y,z,FV3[1],FV3[2],FV3[3],0,int(PDGid_eject),Nreaction,1,0,1))
+            file_HR_neutron.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" %(x,y,z,FV4_deexc[1],FV4_deexc[2],FV4_deexc[3],0,int(PDGid_HR_n),Nreaction,1,0,1))
 
         # '''''''''' 2 neutron emission recoil function ''''''''''''
         elif(HR_type == "HR2n"):
@@ -338,8 +341,8 @@ while Ncounter < Nions+1:
             mHR_final = mHR2n  # final heavy residue mass after deexcitation
 
             # write to output files
-            file_eject.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" % (x,y,z,-FV3[1],FV3[2],FV3[3],0,int(PDGid_eject),Nreaction,1,0,1))
-            file_HR_neutron_double.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" %(x,y,z,-FV4_deexc[1],FV4_deexc[2],FV4_deexc[3],0,int(PDGid_HR_2n),Nreaction,1,0,1))
+            file_eject.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" % (x,y,z,FV3[1],FV3[2],FV3[3],0,int(PDGid_eject),Nreaction,1,0,1))
+            file_HR_neutron_double.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" %(x,y,z,FV4_deexc[1],FV4_deexc[2],FV4_deexc[3],0,int(PDGid_HR_2n),Nreaction,1,0,1))
                
         # '''''''''' 3 neutron emission recoil function ''''''''''''
         elif(HR_type == "HR3n"):
@@ -349,8 +352,8 @@ while Ncounter < Nions+1:
             mHR_final = mHR3n  # final heavy residue mass after deexcitation
                
             # write to output files
-            file_eject.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" % (x,y,z,-FV3[1],FV3[2],FV3[3],0,int(PDGid_eject),Nreaction,1,0,1))
-            file_HR_neutron_triple.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" %(x,y,z,-FV4_deexc[1],FV4_deexc[2],FV4_deexc[3],0,int(PDGid_HR_3n),Nreaction,1,0,1))
+            file_eject.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" % (x,y,z,FV3[1],FV3[2],FV3[3],0,int(PDGid_eject),Nreaction,1,0,1))
+            file_HR_neutron_triple.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" %(x,y,z,FV4_deexc[1],FV4_deexc[2],FV4_deexc[3],0,int(PDGid_HR_3n),Nreaction,1,0,1))
         
         # '''''''''' 4 neutron emission recoil function ''''''''''''
         elif(HR_type == "HR4n"):
@@ -359,8 +362,8 @@ while Ncounter < Nions+1:
                 FV4_deexc = nuc_reaction.deexec_gamma(AR_4n, FV4_deexc, Eex_resid)     # execute an additional gamma decay
             mHR_final = mHR4n  # final heavy residue mass after deexcitation
             # write to output files
-            file_eject.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" % (x,y,z,-FV3[1],FV3[2],FV3[3],0,int(PDGid_eject),Nreaction,1,0,1))
-            file_HR_neutron_quadruple.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" %(x,y,z,-FV4_deexc[1],FV4_deexc[2],FV4_deexc[3],0,int(PDGid_HR_4n),Nreaction,1,0,1))
+            file_eject.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" % (x,y,z,FV3[1],FV3[2],FV3[3],0,int(PDGid_eject),Nreaction,1,0,1))
+            file_HR_neutron_quadruple.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" %(x,y,z,FV4_deexc[1],FV4_deexc[2],FV4_deexc[3],0,int(PDGid_HR_4n),Nreaction,1,0,1))
         
         else:
             raise ValueError("event_generator: HR_type not recognised: ", HR_type)
@@ -374,10 +377,11 @@ while Ncounter < Nions+1:
         plot_ejectile_energy.append(FV3[0] - mEjec)  # kinetic energy of ejectile
         
         # '''''''''' Execution percentage  ''''''''''''
-        stride = int(Nions * 10 / 100)
-        if Ncounter % stride == 0 and verbose:
-            percent=int(100 * Ncounter / Nions)
-            print("Events completed : {",percent,"} %") 
+        if Ncounter >= 10:
+            stride = int(Nions * 10 / 100)
+            if Ncounter % stride == 0 and verbose:
+                percent=int(100 * Ncounter / Nions)
+                print("Events completed : {",percent,"} %") 
 
         Ncounter += 1
         Nreaction += 1

@@ -111,15 +111,15 @@ def two_body_col(E1, m1, m2, m3, m4, Eex, particle, Eex_min_2sol):
     P4_lab = math.sqrt(P4x_lab**2 + P4z_lab**2)
     theta4_lab = math.atan2(P4x_lab, P4z_lab)                   # recoil angle (robust, correct quadrant)
 
-    E4_lab = Etot - E3_lab - m3 - m4_new                  # Recoil kinetic energy in lab frame
-    P4_lab_check = funcs.momentum_rel(E4_lab, m4_new)     # Recoil momentum in lab frame
+    E4_lab = Etot - E3_lab - m3 - m4_new                        # Recoil kinetic energy in lab frame
+    P4_lab_check = funcs.momentum_rel(E4_lab, m4_new)           # Recoil momentum in lab frame
     if abs(P4_lab - P4_lab_check) > 1e-6*P4_lab:
         raise ValueError("Recoil momentum mismatch: P4_lab = ", P4_lab, " P4_lab_check = ", P4_lab_check)
     
     # set random phi angles
-    #phi3 = np.random.uniform(-math.pi, math.pi)     # Ejectile lab phi angle
-    phi3 = np.random.uniform(-math.pi/20, math.pi/20)   # sample for PoP telescope acceptance
-    phi4 = -phi3                                    # Recoil lab phi angle
+    #phi3 = np.random.uniform(0, 2*math.pi)                     # Ejectile lab phi angle 
+    phi3 = math.pi + np.random.uniform(-math.pi/20, math.pi/20) # sample for PoP telescope acceptance - sampled around detector position at phi = 180 degrees
+    phi4 = -phi3                                                # Recoil lab phi angle
     if(phi4 < 0):
         phi4 = phi4 + 2 * math.pi
     
@@ -167,7 +167,7 @@ def deexec_gamma(A_recoil, FV4, Eex):
             Eex_new = Eex_new - E_gamma             # update the excitation energy for the next iteration
 
             # Heavy residue momentum (after gamma emission) in the CM frame
-            P_gamma_CM = E_gamma                                                  # HR recoil kick is just gamma momentumn from relativity
+            P_gamma_CM = E_gamma                                               # HR recoil kick is just gamma momentumn from relativity
             theta_gamma_CM = math.acos(np.random.uniform(-1., 1.))             # CM theta isotropic
             phi_gamma_CM = np.random.uniform(0., 2 * math.pi)                  # CM phi isotropic
             FV4_gamma_CM = np.concatenate(([E_gamma], funcs.spherical_to_cartesian(P_gamma_CM, theta_gamma_CM, phi_gamma_CM)))    # construct gamma four-vector in CM frame

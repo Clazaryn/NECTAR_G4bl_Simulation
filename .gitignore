@@ -5,3 +5,6 @@ NuclideDataMaster/nuclide_data.py.bak
 GEF/
 Camille_scripts/
 .nfs*
+g4bl*.out
+Detectors*.root
+lib*.so

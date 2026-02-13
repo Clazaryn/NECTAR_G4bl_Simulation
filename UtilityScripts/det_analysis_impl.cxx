@@ -1,5 +1,5 @@
 // Implementation file for det_analysis.h
-#include "UtilityScripts/det_analysis.h"
+#include "det_analysis.h"
 
 // ========= Utility Functions Implementation =========
 
@@ -16,17 +16,20 @@ Int_t getA(Int_t PDGid) {
     return (PDGid - 1000000000 - Z * 10000) / 10;
 }
 
-Float_t getEres(Float_t EnergyMeV, Float_t Res_Percent) {
+Float_t getEnResolution(Float_t EnergyMeV, Float_t Res_Percent) {
+    // Add Gaussian smearing to energy values
     return gRandom->Gaus(EnergyMeV, Res_Percent / 100 * EnergyMeV);
 }
 
-double GAGG_resolution(double E) {
+double CsI_resolution(double E) {
+    // Constants come from power law fit to two points from Furano et al (2021) JINST 16:P10012
     const double a = 11.2262, b = -0.573112;
     if (E <= 0) return -1.0;
     else if (E <= 1) return 10.0 / 2.355;
     else return (a * pow(E, b)) / 2.355;
 }
 
+// Reads ejectile event file to recover true ejectile properties
 std::unordered_map<int, std::tuple<double, double, double, int, int>> readEjectileFile(
     const char* reaction, const char* recType, Int_t excLabel, Double_t excEn,
     const ReactionInfo& reactionInfo) {
@@ -45,21 +48,21 @@ std::unordered_map<int, std::tuple<double, double, double, int, int>> readEjecti
     Double_t Ek_beam = mass_beam / amu * EuA_beam;
     Double_t P_beam = sqrt(pow(Ek_beam + mass_beam, 2.0) - pow(mass_beam, 2.0));
     
-    // Format label to match bash script: excEnXXMeV
-    TString lbl = Form("%02dMeV", (Int_t)(excEn + 0.5));  // Format: XXMeV (2 sig figs with leading zero, rounded)
-    TString filename = Form("../%s_sim/Event_output/output_event_generator_%s_%s_excEn%s_ejectile.txt",
-                           reaction, reaction, recType, lbl.Data());
+    // Format label to match bash script: excEnXX.XMeV
+    TString lbl = Form("%04.1fMeV", excEn);  // Format: XX.XMeV (1 decimal place with leading zero)
+    TString eject_evnt_filename = Form("../%s_sim/Event_output/output_event_generator_%s_%s_excEn%s_ejectile.txt",
+                                       reaction, reaction, recType, lbl.Data());
     
-    std::ifstream file(filename.Data());
-    if (!file.is_open()) {
-        std::cerr << "Warning: Could not open ejectile file: " << filename << std::endl;
+    std::ifstream eject_evnt_file(eject_evnt_filename.Data());
+    if (!eject_evnt_file.is_open()) {
+        std::cerr << "Warning: Could not open ejectile event file: " << eject_evnt_filename << std::endl;
         return eventMap;
     }
     
     std::string line;
-    std::getline(file, line); // Skip header
+    std::getline(eject_evnt_file, line); // Skip header
     
-    while (std::getline(file, line)) {
+    while (std::getline(eject_evnt_file, line)) {
         std::istringstream iss(line);
         double x, y, z, px, py, pz, t;
         int pdgid, eventid, trackid, parentid;
@@ -81,19 +84,23 @@ std::unordered_map<int, std::tuple<double, double, double, int, int>> readEjecti
         }
     }
     
-    file.close();
-    std::cout << "Loaded " << eventMap.size() << " events from ejectile file" << std::endl;
+    eject_evnt_file.close();
+    std::cout << "Loaded " << eventMap.size() << " events from ejectile event file" << std::endl;
     return eventMap;
 }
 
 // ========= Data Classes Implementation =========
+// Data classes give ROOT tree the correct class-based structure
 
-LightEjectile::LightEjectile() : Z(0), A(0), true_Eexc(0), true_Eejc(0), true_theta(0),
-                                  recon_Eexc(0), recon_Eejc(0), recon_theta(0), vert_strip(0), detector_id(0) {}
+LightEjectile::LightEjectile() : Z(0), A(0), detector_id(0), vert_strip(0), hor_strip(0),
+                                  true_Eexc(0), true_Eejc(0), true_theta(0),
+                                  recon_Eexc(0), recon_Eejc(0), recon_theta(0),
+                                  meas_dE(0), meas_E1(0), meas_Eres(0),
+                                  meas_E2(0), meas_E3(0), meas_E4(0), meas_E5(0), meas_E6(0) {}
 
-HeavyResidue::HeavyResidue() : Z(0), A(0), MagSept_x(0), MagSept_y(0), hit_MagSept(kFALSE),
-                                HRplane_x(0), HRplane_y(0), hit_HRplane(kFALSE),
-                                QuadWall_x(0), QuadWall_y(0), hit_QuadWall(kFALSE) {}
+HeavyResidue::HeavyResidue() : Z(0), A(0), hit_MagSept(kFALSE), MagSept_x(0), MagSept_y(0),
+                                hit_HRplane(kFALSE), HRplane_x(0), HRplane_y(0),
+                                hit_QuadWall(kFALSE), QuadWall_x(0), QuadWall_y(0) {}
 
 // ========= Telescope Analyzer Implementation =========
 
@@ -103,6 +110,8 @@ TelescopeAnalyzer::TelescopeAnalyzer(const char* r, const char* rt, Int_t el,
       mass_recoil(mr), mass_ejectile(me), Ek_beam(ek), P_beam(p) {}
 
 // ========= New Detector Telescope Analyzer Implementation =========
+// Telescope analyser class implements specific telescope design.
+// For new telescope, detector details are hardcoded but positions/rotations are passed as arguments.
 
 NewTelescopeAnalyzer::NewTelescopeAnalyzer(const char* r, const char* rt, Int_t el,
                         Double_t mb, Double_t mt, Double_t mr, Double_t me, Double_t ek, Double_t p,
@@ -113,7 +122,7 @@ NewTelescopeAnalyzer::NewTelescopeAnalyzer(const char* r, const char* rt, Int_t 
       Tel_VSTRIP_WIDTH(1.0), Tel_HSTRIP_WIDTH(1.0) {}
 
 bool NewTelescopeAnalyzer::analyzeEvent(Int_t eventID, Float_t x_DE, Float_t y_DE, Float_t z_DE,
-                      Float_t Edep_DE, Float_t Edep_E1, Float_t Edep_Eres,
+                      const std::vector<Float_t>& Edep_vec,
                       LightEjectile& ejectile) {
     
     // Calculate vertical strip number
@@ -139,19 +148,24 @@ bool NewTelescopeAnalyzer::analyzeEvent(Int_t eventID, Float_t x_DE, Float_t y_D
     TVector3 abs_vec(x_DE_abs, y_DE_abs, z_DE_abs);
     Float_t theta_calc = abs_vec.Theta() * 180.0 / M_PI;
     
+    // Extract deposited energies from vector: [dE, E1, Eres, 0, 0, 0, 0]
+    Float_t Edep_DE = Edep_vec[0];
+    Float_t Edep_E1 = Edep_vec[1];
+    Float_t Edep_Eres = Edep_vec[2];
+    
     // Apply energy resolution
-    Float_t Erec_DE = getEres(Edep_DE, 0.8);
-    Float_t Erec_E1 = getEres(Edep_E1, 1.1);
-    Float_t Erec_Eres = getEres(Edep_Eres, GAGG_resolution(Edep_Eres));
+    Float_t Emeas_DE = getEnResolution(Edep_DE, 0.8);
+    Float_t Emeas_E1 = getEnResolution(Edep_E1, 1.1);
+    Float_t Emeas_Eres = getEnResolution(Edep_Eres, CsI_resolution(Edep_Eres));
     
     // Calculate total energy
     Float_t En_tot = 0;
     if (Edep_DE != 0 && Edep_E1 == 0 && Edep_Eres == 0) {
-        En_tot = Erec_DE;
+        En_tot = Emeas_DE;
     } else if (Edep_DE != 0 && Edep_E1 != 0 && Edep_Eres == 0) {
-        En_tot = Erec_DE + Erec_E1;
+        En_tot = Emeas_DE + Emeas_E1;
     } else if (Edep_DE != 0 && Edep_E1 != 0 && Edep_Eres != 0) {
-        En_tot = Erec_DE + Erec_E1 + Erec_Eres;
+        En_tot = Emeas_DE + Emeas_E1 + Emeas_Eres;
     } else {
         return false;
     }
@@ -163,20 +177,27 @@ bool NewTelescopeAnalyzer::analyzeEvent(Int_t eventID, Float_t x_DE, Float_t y_D
     
     // Fill ejectile structure
     ejectile.vert_strip = vert_strip;
+    ejectile.hor_strip = hor_strip;
     ejectile.recon_Eexc = Exc_en;
     ejectile.recon_Eejc = En_tot;
     ejectile.recon_theta = theta_calc;
+    
+    // Set measured energies (raw detector values)
+    ejectile.meas_dE = Emeas_DE;
+    ejectile.meas_E1 = Emeas_E1;
+    ejectile.meas_Eres = Emeas_Eres;
     
     return true;
 }
 
 // ========= PoP Detector Telescope Analyzer Implementation =========
+// For PoP detector, all details match 2024 analysis implemented by Camille.
 
 void PoPTelescopeAnalyzer::initializeEnergyReconstructionFunctions() {
     // Initialize total energy reconstruction functions for each vertical strip (1-16)
-    // These functions reconstruct the true total energy Etot from measured E_DE_E (E1 + DE)
+    // These functions reconstruct the true total energy Etot from measured Eloss_sum (E1 + DE)
     // Separate functions for low energy (events stopping in E1) and high energy (events reaching E2)
-    // Valid range: 3-18 MeV for E_DE_E
+    // Valid range: 3-18 MeV for Eloss_sum
     // Coefficients from calibration fits to simulation data
     
     // Strip 1 (V01)
@@ -256,7 +277,7 @@ PoPTelescopeAnalyzer::PoPTelescopeAnalyzer(const char* r, const char* rt, Int_t 
     
     initializeEnergyReconstructionFunctions();
     
-    // Build E2 lookup map
+    // Build E2 lookup map (needed for energy reconstruction)
     if (tree_E2) {
         Float_t EventID_E2, Edep_E2;
         tree_E2->SetBranchAddress("EventID", &EventID_E2);
@@ -276,12 +297,11 @@ PoPTelescopeAnalyzer::~PoPTelescopeAnalyzer() {
 }
 
 bool PoPTelescopeAnalyzer::analyzeEvent(Int_t eventID, Float_t x_DE, Float_t y_DE, Float_t z_DE,
-                      Float_t Edep_DE, Float_t Edep_E1, Float_t Edep_Eres,
+                      const std::vector<Float_t>& Edep_vec,
                       LightEjectile& ejectile) {
     
     // Calculate strip numbers (PoP geometry)
     // Strip numbering is inverted: strip 1 is at x=10 (rightmost), strip 16 is at x=-10 (leftmost)
-    // Original formula: Tel_VSTRIP = 17 - ceil((x_DE + 10) / 1.25)
     Int_t vert_strip = 17 - ceil((x_DE + Tel_STRIP_OFFSET) / Tel_STRIP_WIDTH);
     Int_t hor_strip = ceil((y_DE + Tel_STRIP_OFFSET) / Tel_STRIP_WIDTH);
     
@@ -301,23 +321,23 @@ bool PoPTelescopeAnalyzer::analyzeEvent(Int_t eventID, Float_t x_DE, Float_t y_D
     Float_t rho = sqrt(pow(xx, 2.0) + pow(y_DE_pix, 2.0) + pow(zz, 2.0));
     Float_t theta_DE_pix = acos(zz / rho);
     
-    // Check if in E2
-    bool isInE2 = (E2_map.count(eventID) > 0 && E2_map[eventID] > 0);
-    
-    // Energy reconstruction with resolution
-    // Apply detector resolution to measured energies
-    Float_t DSSSD = getEres(Edep_DE, 1.0);
-    Float_t Etot_E = getEres(Edep_E1, 1.1);
-    Float_t E_DE_E = Etot_E + DSSSD;  // Measured energy: E1 + DE
-    
+    // Apply energy resolution to all detectors
+    std::vector<Float_t> Emeas_vec;
+    Emeas_vec.push_back(getEnResolution(Edep_vec[0], 1.0));         // dE resolution is 1.0%
+    for (int i = 1; i < Edep_vec.size(); ++i) {
+        Emeas_vec.push_back(getEnResolution(Edep_vec[i], 1.1));     // E1-E6 resolution is 1.1%
+    }
+
     // Reconstruct true total energy using strip-specific and energy-dependent functions
     // Low energy: events that stop in E1 (not reaching E2)
     // High energy: events that reach E2 (penetrating through E1)
+    bool isInE2 = (Edep_vec.size() > 2 && Edep_vec[2] > 0);     // Check particle reaches E2
     Float_t Etot_tel_res;
+    Float_t Eloss_sum = Emeas_vec[0] + Emeas_vec[1];
     if (isInE2) {
-        Etot_tel_res = Etot_recon_strip_highE[vert_strip-1]->Eval(E_DE_E);
+        Etot_tel_res = Etot_recon_strip_highE[vert_strip-1]->Eval(Eloss_sum);
     } else {
-        Etot_tel_res = Etot_recon_strip_lowE[vert_strip-1]->Eval(E_DE_E);
+        Etot_tel_res = Etot_recon_strip_lowE[vert_strip-1]->Eval(Eloss_sum);
     }
     
     // Calculate excitation energy
@@ -327,6 +347,17 @@ bool PoPTelescopeAnalyzer::analyzeEvent(Int_t eventID, Float_t x_DE, Float_t y_D
     
     // Fill ejectile structure
     ejectile.vert_strip = vert_strip;
+    ejectile.hor_strip = hor_strip;
+
+    ejectile.meas_dE = Emeas_vec[0];
+    ejectile.meas_E1 = Emeas_vec[1];
+    ejectile.meas_E2 = Emeas_vec[2];
+    ejectile.meas_E3 = Emeas_vec[3];
+    ejectile.meas_E4 = Emeas_vec[4];
+    ejectile.meas_E5 = Emeas_vec[5];
+    ejectile.meas_E6 = Emeas_vec[6];
+    ejectile.meas_Eres = std::accumulate(Emeas_vec.begin() + 2, Emeas_vec.end(), 0.0);
+    
     ejectile.recon_theta = theta_DE_pix * 180.0 / M_PI;
     ejectile.recon_Eejc = Etot_tel_res;
     ejectile.recon_Eexc = Exc_en;
@@ -334,26 +365,27 @@ bool PoPTelescopeAnalyzer::analyzeEvent(Int_t eventID, Float_t x_DE, Float_t y_D
     return true;
 }
 
-// ========= Helper Functions Implementation =========
+// ========= Virtual Detector Data Implementation =========
+// VirtualDetectorData class stores position and PDGid data for heavy residues to avoid duplicated code.
 
-VirtualDetectorData loadVirtualDetector(TFile* recoil_file, const char* tree_path,
+VirtualDetectorData loadVirtualDetector(TFile* recoil_det_output, const char* tree_path,
                                         const char* reaction, const char* recType, 
                                         Int_t excLabel, Double_t excEn) {
     VirtualDetectorData data;
     
     // First, read PDGid from Event_output text file (where it's stored as integer, avoiding precision loss)
-    TString lbl = Form("%02dMeV", (Int_t)(excEn + 0.5));  // Format: XXMeV (2 sig figs with leading zero, rounded)
-    TString recoil_event_filename = Form("../%s_sim/Event_output/output_event_generator_%s_%s_excEn%s_recoil.txt",
+    TString lbl = Form("%04.1fMeV", excEn);  // Format: XX.XMeV (1 decimal place with leading zero)
+    TString recoil_evnt_filename = Form("../%s_sim/Event_output/output_event_generator_%s_%s_excEn%s_recoil.txt",
                                          reaction, reaction, recType, lbl.Data());
     
     std::unordered_map<int, Int_t> eventid_to_pdgid;  // Map EventID -> PDGid from text file
     
-    std::ifstream event_file(recoil_event_filename.Data());
-    if (event_file.is_open()) {
+    std::ifstream recoil_evnt_file(recoil_evnt_filename.Data());
+    if (recoil_evnt_file.is_open()) {
         std::string line;
-        std::getline(event_file, line); // Skip header
+        std::getline(recoil_evnt_file, line); // Skip header
         
-        while (std::getline(event_file, line)) {
+        while (std::getline(recoil_evnt_file, line)) {
             std::istringstream iss(line);
             double x, y, z, px, py, pz, t;
             int pdgid, eventid, trackid, parentid;
@@ -363,15 +395,15 @@ VirtualDetectorData loadVirtualDetector(TFile* recoil_file, const char* tree_pat
                 eventid_to_pdgid[eventid] = pdgid;  // Store PDGid as integer from text file
             }
         }
-        event_file.close();
+        recoil_evnt_file.close();
         std::cout << "Loaded " << eventid_to_pdgid.size() << " PDGid values from recoil event file: " 
-                  << recoil_event_filename << std::endl;
+                  << recoil_evnt_filename << std::endl;
     } else {
-        std::cerr << "Warning: Could not open recoil event file: " << recoil_event_filename << std::endl;
+        std::cerr << "Warning: Could not open recoil event file: " << recoil_evnt_filename << std::endl;
     }
     
     // Now read position data from ROOT tree
-    TTree* tree = (TTree*)recoil_file->Get(tree_path);
+    TTree* tree = (TTree*)recoil_det_output->Get(tree_path);
     if (!tree) {
         std::cerr << "Warning: Could not find tree: " << tree_path << std::endl;
         return data;  // Return data with PDGid map even if tree not found
@@ -399,6 +431,7 @@ VirtualDetectorData loadVirtualDetector(TFile* recoil_file, const char* tree_pat
     return data;
 }
 
+// used to fill heavy residue object if in coincidence with telescope
 void fillResidueFromMaps(Int_t eventID, 
                          const VirtualDetectorData& magsept_data,
                          const VirtualDetectorData& hrplane_data,
@@ -407,9 +440,9 @@ void fillResidueFromMaps(Int_t eventID,
     // Fill MagSept data if available
     if (magsept_data.pos_map.count(eventID) > 0) {
         auto mag_pos = magsept_data.pos_map.at(eventID);
+        residue->hit_MagSept = kTRUE;
         residue->MagSept_x = std::get<0>(mag_pos);
         residue->MagSept_y = std::get<1>(mag_pos);
-        residue->hit_MagSept = kTRUE;
         
         // Extract Z and A from PDGid if available
         if (magsept_data.pdgid_map.count(eventID) > 0) {
@@ -418,34 +451,34 @@ void fillResidueFromMaps(Int_t eventID,
             residue->A = getA(pdgid_int);
         }
     } else {
+        residue->hit_MagSept = kFALSE;
         residue->MagSept_x = -9999;
         residue->MagSept_y = -9999;
-        residue->hit_MagSept = kFALSE;
     }
     
     // Fill HRplane data if available
     if (hrplane_data.pos_map.count(eventID) > 0) {
         auto hr_pos = hrplane_data.pos_map.at(eventID);
+        residue->hit_HRplane = kTRUE;
         residue->HRplane_x = std::get<0>(hr_pos);
         residue->HRplane_y = std::get<1>(hr_pos);
-        residue->hit_HRplane = kTRUE;
     } else {
         // Event hit wall before reaching HRplane
+        residue->hit_HRplane = kFALSE;
         residue->HRplane_x = -9999;
         residue->HRplane_y = -9999;
-        residue->hit_HRplane = kFALSE;
     }
     
     // Fill QuadWall data if available
     if (quadwall_data.pos_map.count(eventID) > 0) {
         auto qw_pos = quadwall_data.pos_map.at(eventID);
+        residue->hit_QuadWall = kTRUE;
         residue->QuadWall_x = std::get<0>(qw_pos);
         residue->QuadWall_y = std::get<1>(qw_pos);
-        residue->hit_QuadWall = kTRUE;
     } else {
         // Event did not hit QuadWall
+        residue->hit_QuadWall = kFALSE;
         residue->QuadWall_x = -9999;
         residue->QuadWall_y = -9999;
-        residue->hit_QuadWall = kFALSE;
     }
 }

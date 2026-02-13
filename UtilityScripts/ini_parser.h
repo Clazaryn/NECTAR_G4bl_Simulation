@@ -35,7 +35,7 @@ public:
     bool loadFile(const std::string& filename) {
         std::ifstream file(filename);
         if (!file.is_open()) {
-            std::cerr << "Error: Could not open file " << filename << std::endl;
+            std::cerr << "ini_parser.h:" << __LINE__ << ": Error: Could not open file " << filename << std::endl;
             return false;
         }
         

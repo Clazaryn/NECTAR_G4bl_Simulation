@@ -11,7 +11,7 @@
 ## ===== define parallel operation + output file =====
 param -unset histoFile="Detectors_238U_dp_HRg_excEn00MeV_ejectile.root"
 param -unset outFile="g4bl_238U_dp_HRg_excEn00MeV_ejectile.out"
-param -unset eventFile="../238U_dp_sim/Event_output/output_event_generator_238U_dp_HRg_excEn00MeV_ejectile.txt"
+param -unset eventFile="../238U_dp_sim/Event_output/output_event_generator_238U_dp_HRg_excEn00MeV_recoil.txt"
 #output $outFile        # this line sends output to file, but we now do this in the bash script for cleaner output
 
 # to run g4bl in the cmd line, use the template below or edit the defaults above
@@ -21,7 +21,7 @@ param -unset eventFile="../238U_dp_sim/Event_output/output_event_generator_238U_
 # PHYSICS LIST, INPUT PARAMETERS, VISUALIZATION SETTINGS ----
 
 ## ====== Import physics list for highly full stripped charged ions ======
-physics QGSP_BIC_EMY fluct=0
+physics QGSP_BIC_EMY
 
 ## -- Visualization settings --
 #g4ui when=4 "/vis/viewer/set/background 1 1 1"
@@ -176,37 +176,37 @@ place E1_DL_Al_2 z=($DEdistance+0.025+3+$DEthickness+3.01+1.5+0.0005+0.0003/2)*c
 # E2
 place E2_DL_Al_1 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4-0.0005-0.0003/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4-0.0005-0.0003/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
 place E2_DL_Si_1 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4-0.0005/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4-0.0005/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
-place Telescope_E2 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+0.75)*cos($DEthetarad) x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+0.75)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place Telescope_E2 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+0.75)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+0.75)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
 place E2_DL_Si_2 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.5+0.0005/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.5+0.0005/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
 place E2_DL_Al_2 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.5+0.0005+0.0003/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.5+0.0005+0.0003/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
 	
-## E3					 
-#place E3_DL_Al_1 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6-0.0005-0.0003/2)*cos($DEthetarad) #x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6-0.0005-0.0003/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
-#place E3_DL_Si_1 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6-0.0005/2)*cos($DEthetarad) #x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6-0.0005/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg		
-#place Telescope_E3 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+0.75)*cos($DEthetarad) #x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+0.75)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
-#place E3_DL_Si_2 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.0005/2)*cos($DEthetarad) #x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.0005/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
-#place E3_DL_Al_2 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.0005+0.0003/2)*cos($DEthetarad) #x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.0005+0.0003/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
-#
-## E4
-#place E4_DL_Al_1 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.50+0.4-0.0005-0.0003/2)*cos($DEthetarad) #x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.50+0.4-0.0005-0.0003/2)*sin($DEthetarad) y=0 #rotation=y$DEthetadeg
-#place E4_DL_Si_1 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.50+0.4-0.0005/2)*cos($DEthetarad) #x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.50+0.4-0.0005/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg#	
-#place Telescope_E4 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.50+0.4+0.75)*cos($DEthetarad) #x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+0.75)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
-#place E4_DL_Si_2 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.50+0.4+1.5+0.0005/2)*cos($DEthetarad) #x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.50+0.4+1.5+0.0005/2)*sin($DEthetarad) y=0 #rotation=y$DEthetadeg
-#place E4_DL_Al_2 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.50+0.4+1.5+0.0005+0.0003/#2)*cos($DEthetarad) x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.50+0.4+1.5+0.0005+0.0003/#2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg		
-#
-## E5
-#place E5_DL_Al_1 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6-0.0005-0.0003/#2)*cos($DEthetarad) x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6-0.0005-0.0003/#2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
-#place E5_DL_Si_1 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6-0.0005/2)*cos($DEthetarad) #x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6-0.0005/2)*sin($DEthetarad) y=0 #rotation=y$DEthetadeg
-#place Telescope_E5 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+0.75)*cos($DEthetarad) #x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+0.75)*sin($DEthetarad) y=0 #rotation=y$DEthetadeg
-#place E5_DL_Si_2 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.5+0.0005/#2)*cos($DEthetarad) x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.5+0.0005/#2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
-#place E5_DL_Al_2 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.5+0.0005+0.0003/#2)*cos($DEthetarad) x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.5+0.0005+0.0003/#2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg	
-#
-## E6
-#place E6_DL_Al_1 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4-0.0005-0.0003/#2)*cos($DEthetarad) x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4-0.0005-0.0003/#2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
-#place E6_DL_Si_1 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4-0.0005/#2)*cos($DEthetarad) x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4-0.0005/#2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
-#place Telescope_E6 #z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4+0.75)*cos($DEthetarad) #x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4+0.75)*sin($DEthetarad) y=0 #rotation=y$DEthetadeg
-#place E6_DL_Si_2 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4+1.5+0.0005/#2)*cos($DEthetarad) x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4+1.5+0.0005/#2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
-#place E6_DL_Al_2 z=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4+1.5+0.0005+0.0003/#2)*cos($DEthetarad) x=($DEdistance+0.025+3.0+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4+1.5+0.0005+0.0003/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg	
+# E3
+place E3_DL_Al_1 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6-0.0005-0.0003/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6-0.0005-0.0003/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place E3_DL_Si_1 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6-0.0005/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6-0.0005/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place Telescope_E3 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+0.75)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+0.75)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place E3_DL_Si_2 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.0005/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.0005/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place E3_DL_Al_2 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.0005+0.0003/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.0005+0.0003/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+
+# E4
+place E4_DL_Al_1 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.50+0.4-0.0005-0.0003/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.50+0.4-0.0005-0.0003/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place E4_DL_Si_1 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.50+0.4-0.0005/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.50+0.4-0.0005/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place Telescope_E4 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.50+0.4+0.75)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.50+0.4+0.75)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place E4_DL_Si_2 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.50+0.4+1.5+0.0005/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.50+0.4+1.5+0.0005/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place E4_DL_Al_2 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.50+0.4+1.5+0.0005+0.0003/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.50+0.4+1.5+0.0005+0.0003/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg		
+
+# E5
+place E5_DL_Al_1 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6-0.0005-0.0003/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6-0.0005-0.0003/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place E5_DL_Si_1 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6-0.0005/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6-0.0005/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place Telescope_E5 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+0.75)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+0.75)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place E5_DL_Si_2 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.5+0.0005/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.5+0.0005/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place E5_DL_Al_2 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.5+0.0005+0.0003/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.5+0.0005+0.0003/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg	
+
+# E6
+place E6_DL_Al_1 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4-0.0005-0.0003/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4-0.0005-0.0003/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place E6_DL_Si_1 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4-0.0005/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4-0.0005/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place Telescope_E6 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4+0.75)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4+0.75)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place E6_DL_Si_2 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4+1.5+0.0005/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4+1.5+0.0005/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
+place E6_DL_Al_2 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4+1.5+0.0005+0.0003/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4+1.5+0.0005+0.0003/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg	
 
 
 # __________________________________________________________

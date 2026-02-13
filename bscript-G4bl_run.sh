@@ -1,4 +1,6 @@
 #!/bin/bash
+### --------------------------------------------------------------------------- ###
+### ================= Setup for script and parallel analysis ================== ###
 
 # get reaction from info file
 reaction=$(grep '^reaction' reac_info.txt | awk -F'=' '{gsub(/^ +| +$/,"",$2); print $2}' | awk '{print $1}')
@@ -18,7 +20,7 @@ loop_list=("ejectile" "recoil")
 
 # RUNS IN PARALLEL over the excitation energy range defined in reac_info.txt
 # Choose the range i and number of cores N to run over
-N=15  # number of concurrent jobs
+N=14  # number of concurrent jobs
 
 # get ring parameters from info file
 det_setup=$(grep '^det_setup' reac_info.txt | awk -F'=' '{gsub(/^ +| +$/,"",$2); print $2}' | awk '{print $1}')
@@ -42,35 +44,53 @@ else
   exit 1
 fi
 
-# Read excitation energies from reac_info.txt
-excitation_Ens=($(grep '^recoil_excEns' reac_info.txt | awk -F'=' '{print $2}' | tr ',' ' '))
-echo "Excitation energies: ${excitation_Ens[@]}"
-
-# Calculate HR channel ranges based on separation energies (3 MeV beyond next channel opening)
+# Calculate HR channel ranges and get excitation energies from calc_hr_ranges.py
 eval $(python3 UtilityScripts/calc_hr_ranges.py)
+echo "Excitation energies: ${excitation_Ens[@]}"
+echo "Running HR modes: ${run_HR_modes[@]}"
+
+# Build arrays to store mode information for reuse (prevents calculation inconsistencies)
+declare -a mode_names=()
+declare -a mode_start_indices=()
+declare -a mode_stop_indices=()
+
+# Process each mode once and store the information
+for mode in "${run_HR_modes[@]}"; do
+    mode_clean=$(echo "$mode" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    start_var="${mode_clean}_start"
+    stop_var="${mode_clean}_stop"
+    if [ -n "${!start_var}" ] && [ -n "${!stop_var}" ]; then
+        start_idx=${!start_var}
+        stop_idx=${!stop_var}
+        mode_names+=("$mode_clean")
+        mode_start_indices+=("$start_idx")
+        mode_stop_indices+=("$stop_idx")
+    fi
+done
+
+# Display HR channel ranges using stored information
 echo "HR channel ranges:"
-echo "  HRg: indices $HRg_start to $HRg_stop (${excitation_Ens[$HRg_start]} to ${excitation_Ens[$HRg_stop]} MeV)"
-echo "  HR1n: indices $HR1n_start to $HR1n_stop (${excitation_Ens[$HR1n_start]} to ${excitation_Ens[$HR1n_stop]} MeV)"
-echo "  HR2n: indices $HR2n_start to $HR2n_stop (${excitation_Ens[$HR2n_start]} to ${excitation_Ens[$HR2n_stop]} MeV)"
-echo "  HR3n: indices $HR3n_start to $HR3n_stop (${excitation_Ens[$HR3n_start]} to ${excitation_Ens[$HR3n_stop]} MeV)"
-echo "  HR4n: indices $HR4n_start to $HR4n_stop (${excitation_Ens[$HR4n_start]} to ${excitation_Ens[$HR4n_stop]} MeV)"
+for i in "${!mode_names[@]}"; do
+    mode_clean=${mode_names[$i]}
+    start_idx=${mode_start_indices[$i]}
+    stop_idx=${mode_stop_indices[$i]}
+    start_energy=${excitation_Ens[$start_idx]}
+    stop_energy=${excitation_Ens[$stop_idx]}
+    echo "  $mode_clean: indices $start_idx to $stop_idx ($start_energy to $stop_energy MeV)"
+done
 
 jobs_running=0	# Initialize job count	
 job_pids=()		# Track job PIDs
 
 # Calculate total number of iterations per particle type across all channels
 iterations_per_particle=0
-iterations_per_particle=$((iterations_per_particle + HRg_stop - HRg_start + 1))
-iterations_per_particle=$((iterations_per_particle + HR1n_stop - HR1n_start + 1))
-if [ "$HR2n_start" -le "$HR2n_stop" ] && [ "$HR2n_stop" -ge 0 ]; then
-  iterations_per_particle=$((iterations_per_particle + HR2n_stop - HR2n_start + 1))
-fi
-if [ "$HR3n_start" -le "$HR3n_stop" ] && [ "$HR3n_stop" -ge 0 ]; then
-  iterations_per_particle=$((iterations_per_particle + HR3n_stop - HR3n_start + 1))
-fi
-if [ "$HR4n_start" -le "$HR4n_stop" ] && [ "$HR4n_stop" -ge 0 ]; then
-  iterations_per_particle=$((iterations_per_particle + HR4n_stop - HR4n_start + 1))
-fi
+for i in "${!mode_names[@]}"; do
+    start_idx=${mode_start_indices[$i]}
+    stop_idx=${mode_stop_indices[$i]}
+    if [ "$start_idx" -le "$stop_idx" ] && [ "$stop_idx" -ge 0 ]; then
+        iterations_per_particle=$((iterations_per_particle + stop_idx - start_idx + 1))
+    fi
+done
 
 # Total iterations = iterations per particle type × number of particle types
 num_particle_types=${#loop_list[@]}
@@ -79,6 +99,9 @@ total_iterations=$((iterations_per_particle * num_particle_types))
 # Separate counters for each particle type
 completed_ejectile=0
 completed_recoil=0
+
+### --------------------------------------------------------------------------- ###
+### =============== Function definitions for parallel analysis ================ ###
 
 # Function to display progress bar for a specific particle type
 show_progress() {
@@ -156,7 +179,7 @@ run_G4bl_sim() {
   local particle=$3
   
   en=${excitation_Ens[$exc_index]}
-  lbl=$(echo "$en" | awk '{printf "%02dMeV", int($1 + 0.5)}')  # Format: XXMeV (2 sig figs with leading zero, rounded to nearest integer)
+  lbl=$(echo "$en" | awk '{printf "%04.1fMeV", $1}')  # Format: XX.XMeV (1 decimal place with leading zero)
   
   # Format the file names in bash (outside subshell for HRg so they're available for Python script)
   histoFile="Detectors_${reaction}_${rec_type}_excEn${lbl}_${particle}.root"
@@ -196,6 +219,9 @@ run_G4bl_sim() {
   wait_for_jobs "$particle"
 }
 
+### --------------------------------------------------------------------------- ###
+### ========== Main script execution - executed jobs run in parallel ========== ###
+
 # Loop over all particle types in loop_list
 for particle in ${loop_list[@]}; do
 
@@ -222,36 +248,17 @@ elif [ ${particle} == "recoil" ]; then
   recoil_remaining=$iterations_per_particle
 fi
 
-# HRg block
-for i in $(seq $HRg_start $HRg_stop); do
-  run_G4bl_sim $i "HRg" "$particle"
+# Loop over each HR mode using stored information
+for i in "${!mode_names[@]}"; do
+    mode_clean=${mode_names[$i]}
+    start_idx=${mode_start_indices[$i]}
+    stop_idx=${mode_stop_indices[$i]}
+    if [ "$start_idx" -le "$stop_idx" ] && [ "$stop_idx" -ge 0 ]; then
+        for j in $(seq $start_idx $stop_idx); do
+            run_G4bl_sim $j "$mode_clean" "$particle"
+        done
+    fi
 done
-
-# HR1n block
-for i in $(seq $HR1n_start $HR1n_stop); do
-  run_G4bl_sim $i "HR1n" "$particle"
-done
-
-# HR2n block (only if range is valid)
-if [ "$HR2n_start" -le "$HR2n_stop" ] && [ "$HR2n_stop" -ge 0 ]; then
-  for i in $(seq $HR2n_start $HR2n_stop); do
-    run_G4bl_sim $i "HR2n" "$particle"
-  done
-fi
-
-# HR3n block (only if range is valid)
-if [ "$HR3n_start" -le "$HR3n_stop" ] && [ "$HR3n_stop" -ge 0 ]; then
-  for i in $(seq $HR3n_start $HR3n_stop); do
-    run_G4bl_sim $i "HR3n" "$particle"
-  done
-fi
-
-# HR4n block (only if range is valid)
-if [ "$HR4n_start" -le "$HR4n_stop" ] && [ "$HR4n_stop" -ge 0 ]; then
-  for i in $(seq $HR4n_start $HR4n_stop); do
-    run_G4bl_sim $i "HR4n" "$particle"
-  done
-fi
 
 # Wait for all remaining jobs for this particle type to finish and update progress
 wait_for_jobs "$particle" 0  # Wait until 0 jobs running (i.e., all done)
