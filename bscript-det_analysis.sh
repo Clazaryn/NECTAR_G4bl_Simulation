@@ -2,6 +2,8 @@
 ### --------------------------------------------------------------------------- ###
 ### ================= Setup for script and parallel analysis ================== ###
 
+module load root/6.28.00    # Load ROOT 6.28.00
+
 reaction=$(grep '^reaction' reac_info.txt | awk -F'=' '{gsub(/^ +| +$/,"",$2); print $2}' | awk '{print $1}')
 
 echo "   ####################################################   "

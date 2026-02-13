@@ -2,6 +2,8 @@
 ### --------------------------------------------------------------------------- ###
 ### ================= Setup for script and parallel analysis ================== ###
 
+module load python/3.5.2    # Load Python 3.5.2
+
 # Read reaction from reac_info.txt
 reaction=$(grep '^reaction' reac_info.txt | awk -F'=' '{gsub(/^ +| +$/,"",$2); print $2}' | awk '{print $1}')
 
@@ -26,7 +28,7 @@ if grep -q "verbose\s*=\s*True" event_generator.py; then
 fi
 
 # Calculate HR channel ranges and get excitation energies from calc_hr_ranges.py
-eval $(python3 UtilityScripts/calc_hr_ranges.py)
+eval $(python3.5 UtilityScripts/calc_hr_ranges.py)
 echo "Excitation energies: ${excitation_Ens[@]}"
 echo "Running HR modes: ${run_HR_modes[@]}"
 

@@ -2,6 +2,8 @@
 ### --------------------------------------------------------------------------- ###
 ### ================= Setup for script and parallel analysis ================== ###
 
+module load g4beamline/2.16   # Load G4beamline 2.16
+
 # get reaction from info file
 reaction=$(grep '^reaction' reac_info.txt | awk -F'=' '{gsub(/^ +| +$/,"",$2); print $2}' | awk '{print $1}')
 
