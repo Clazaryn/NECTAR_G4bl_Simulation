@@ -27,7 +27,7 @@ void make_plots() {
     
     // Create one chain with ALL files (all channels, all excitation energies)
     TChain* fChain = new TChain("events");
-    TString pattern = Form("../%s_sim/Det_analysis/events_%s_*.root", reaction, reaction);
+    TString pattern = Form("./%s_results/Det_analysis/events_%s_*.root", reaction, reaction);
     Int_t nAdded = fChain->Add(pattern.Data());
     
     if (nAdded == 0) {

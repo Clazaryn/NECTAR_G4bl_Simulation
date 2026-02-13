@@ -8,3 +8,4 @@ Camille_scripts/
 g4bl*.out
 Detectors*.root
 lib*.so
+*_results/

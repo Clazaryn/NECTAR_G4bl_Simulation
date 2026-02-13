@@ -12,11 +12,11 @@
 ## ===== define parallel operation + output file =====
 param -unset histoFile="Detectors_238U_dp_HRg_excEn00MeV_ejectile.root"
 param -unset outFile="g4bl_238U_dp_HRg_excEn00MeV_ejectile.out"
-param -unset eventFile="../238U_dp_sim/Event_output/output_event_generator_238U_dp_HRg_excEn00MeV_ejectile.txt"
+param -unset eventFile="./238U_dp_results/Event_output/output_event_generator_238U_dp_HRg_excEn00MeV_ejectile.txt"
 #output $outFile        # this line sends output to file, but we now do this in the bash script for cleaner output
 
 # to run g4bl in the cmd line, use the template below or edit the defaults above
-# g4bl ESR_ring-New_Detectors.in viewer=best eventFile="../238U_dp_sim/Event_output/output_event_generator_238U_dp_HRg_excEn00MeV_ejectile.txt"
+# g4bl ESR_ring-New_Detectors.in viewer=best eventFile="./238U_dp_results/Event_output/output_event_generator_238U_dp_HRg_excEn00MeV_ejectile.txt"
 
 # __________________________________________________________
 # PHYSICS LIST, INPUT PARAMETERS, VISUALIZATION SETTINGS ----

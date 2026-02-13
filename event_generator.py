@@ -79,43 +79,43 @@ start = time.perf_counter()
 
 # '''''''''' Creating and formatting output events files ''''''''''''
 # Create Event_output directory if it doesn't exist
-os.makedirs("../{}_sim/Event_output".format(reaction), exist_ok=True)
+os.makedirs("./{}_results/Event_output".format(reaction), exist_ok=True)
 
 # Recoil nucleus & beam
 if writeBeamFile:
-    file_recoil = open("../{}_sim/Event_output/output_event_generator_recoil_excEn{}.txt".format(reaction, ex_label), "w")
+    file_recoil = open("./{}_results/Event_output/output_event_generator_recoil_excEn{}.txt".format(reaction, ex_label), "w")
     file_recoil.write("%s %s %s %s %s %s %s %s %s %s %s %s\n" % ('#x','y','z','px','py','pz','t','PDGid','EventID','TrackID','ParentID','Weight'))
-    file_beam = open("../{}_sim/Event_output/output_event_generator_beam_excEn{}.txt".format(reaction, ex_label), "w")
+    file_beam = open("./{}_results/Event_output/output_event_generator_beam_excEn{}.txt".format(reaction, ex_label), "w")
     file_beam.write("%s %s %s %s %s %s %s %s %s %s %s %s\n" % ('#x','y','z','px','py','pz','t','PDGid','EventID','TrackID','ParentID','Weight'))
 
 # Gamma emission nucleus
 # Ejectile is now created with recoil to ensure pairing in separate files for correlation
 if(HR_type == "HRg"):
-    file_eject = open("../{}_sim/Event_output/output_event_generator_{}_HRg_excEn{}_ejectile.txt".format(reaction, reaction, ex_label), "w")
+    file_eject = open("./{}_results/Event_output/output_event_generator_{}_HRg_excEn{}_ejectile.txt".format(reaction, reaction, ex_label), "w")
     file_eject.write("%s %s %s %s %s %s %s %s %s %s %s %s\n" % ('#x','y','z','px','py','pz','t','PDGid','EventID','TrackID','ParentID','Weight'))
-    file_HR_gamma = open("../{}_sim/Event_output/output_event_generator_{}_HRg_excEn{}_recoil.txt".format(reaction, reaction, ex_label), "w")
+    file_HR_gamma = open("./{}_results/Event_output/output_event_generator_{}_HRg_excEn{}_recoil.txt".format(reaction, reaction, ex_label), "w")
     file_HR_gamma.write("%s %s %s %s %s %s %s %s %s %s %s %s\n" % ('#x','y','z','px','py','pz','t','PDGid','EventID','TrackID','ParentID','Weight'))    
 
 # Neutron emission
 elif(HR_type == "HR1n"):
-    file_eject = open("../{}_sim/Event_output/output_event_generator_{}_HR1n_excEn{}_ejectile.txt".format(reaction, reaction, ex_label), "w")
+    file_eject = open("./{}_results/Event_output/output_event_generator_{}_HR1n_excEn{}_ejectile.txt".format(reaction, reaction, ex_label), "w")
     file_eject.write("%s %s %s %s %s %s %s %s %s %s %s %s\n" % ('#x','y','z','px','py','pz','t','PDGid','EventID','TrackID','ParentID','Weight'))
-    file_HR_neutron = open("../{}_sim/Event_output/output_event_generator_{}_HR1n_excEn{}_recoil.txt".format(reaction, reaction, ex_label), "w")
+    file_HR_neutron = open("./{}_results/Event_output/output_event_generator_{}_HR1n_excEn{}_recoil.txt".format(reaction, reaction, ex_label), "w")
     file_HR_neutron.write("%s %s %s %s %s %s %s %s %s %s %s %s\n" % ('#x','y','z','px','py','pz','t','PDGid','EventID','TrackID','ParentID','Weight'))
 elif(HR_type == "HR2n"):
-    file_eject = open("../{}_sim/Event_output/output_event_generator_{}_HR2n_excEn{}_ejectile.txt".format(reaction, reaction, ex_label), "w")
+    file_eject = open("./{}_results/Event_output/output_event_generator_{}_HR2n_excEn{}_ejectile.txt".format(reaction, reaction, ex_label), "w")
     file_eject.write("%s %s %s %s %s %s %s %s %s %s %s %s\n" % ('#x','y','z','px','py','pz','t','PDGid','EventID','TrackID','ParentID','Weight'))
-    file_HR_neutron_double = open("../{}_sim/Event_output/output_event_generator_{}_HR2n_excEn{}_recoil.txt".format(reaction, reaction, ex_label),"w")
+    file_HR_neutron_double = open("./{}_results/Event_output/output_event_generator_{}_HR2n_excEn{}_recoil.txt".format(reaction, reaction, ex_label),"w")
     file_HR_neutron_double.write("%s %s %s %s %s %s %s %s %s %s %s %s\n" % ('#x','y','z','px','py','pz','t','PDGid','EventID','TrackID','ParentID','Weight'))
 elif(HR_type == "HR3n"):
-    file_eject = open("../{}_sim/Event_output/output_event_generator_{}_HR3n_excEn{}_ejectile.txt".format(reaction, reaction, ex_label), "w")
+    file_eject = open("./{}_results/Event_output/output_event_generator_{}_HR3n_excEn{}_ejectile.txt".format(reaction, reaction, ex_label), "w")
     file_eject.write("%s %s %s %s %s %s %s %s %s %s %s %s\n" % ('#x','y','z','px','py','pz','t','PDGid','EventID','TrackID','ParentID','Weight'))
-    file_HR_neutron_triple = open("../{}_sim/Event_output/output_event_generator_{}_HR3n_excEn{}_recoil.txt".format(reaction, reaction, ex_label),"w")
+    file_HR_neutron_triple = open("./{}_results/Event_output/output_event_generator_{}_HR3n_excEn{}_recoil.txt".format(reaction, reaction, ex_label),"w")
     file_HR_neutron_triple.write("%s %s %s %s %s %s %s %s %s %s %s %s\n" % ('#x','y','z','px','py','pz','t','PDGid','EventID','TrackID','ParentID','Weight'))
 elif(HR_type == "HR4n"):
-    file_eject = open("../{}_sim/Event_output/output_event_generator_{}_HR4n_excEn{}_ejectile.txt".format(reaction, reaction, ex_label), "w")
+    file_eject = open("./{}_results/Event_output/output_event_generator_{}_HR4n_excEn{}_ejectile.txt".format(reaction, reaction, ex_label), "w")
     file_eject.write("%s %s %s %s %s %s %s %s %s %s %s %s\n" % ('#x','y','z','px','py','pz','t','PDGid','EventID','TrackID','ParentID','Weight'))
-    file_HR_neutron_quadruple = open("../{}_sim/Event_output/output_event_generator_{}_HR4n_excEn{}_recoil.txt".format(reaction, reaction, ex_label),"w")
+    file_HR_neutron_quadruple = open("./{}_results/Event_output/output_event_generator_{}_HR4n_excEn{}_recoil.txt".format(reaction, reaction, ex_label),"w")
     file_HR_neutron_quadruple.write("%s %s %s %s %s %s %s %s %s %s %s %s\n" % ('#x','y','z','px','py','pz','t','PDGid','EventID','TrackID','ParentID','Weight')) 
 
 # _______________________________________________________________________________________________

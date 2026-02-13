@@ -2,6 +2,13 @@
 ### --------------------------------------------------------------------------- ###
 ### ================= Setup for script and parallel analysis ================== ###
 
+# Check if running on correct machine
+if [ "$(hostname)" != "borlin305.cenbg.in2p3.fr" ]; then
+    echo "###\!/\!/\!/\!/\!/\!/ Caution \!/\!/\!/\!/\!/\!###"
+    echo "Error: This script was designed to run on borlin305.cenbg.in2p3.fr. Current hostname: $(hostname)"
+    echo "###\!/\!/\!/\!/\!/\!/ Caution \!/\!/\!/\!/\!/\!###"
+fi
+source /usr/local/Modules/3.2.10/init/bash  # Initialize environment modules for bash
 module load python/3.5.2    # Load Python 3.5.2
 
 # Read reaction from reac_info.txt
@@ -169,7 +176,7 @@ echo ""  # New line before progress bar starts
 ### ========== Main script execution - executed jobs run in parallel ========== ###
 
 # Create reaction directory structure
-mkdir -p ../${reaction}_sim/Event_output
+mkdir -p ./${reaction}_results/Event_output
 
 # Loop over each HR mode using stored information
 for i in "${!mode_names[@]}"; do

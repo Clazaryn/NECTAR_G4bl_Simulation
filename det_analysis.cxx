@@ -174,9 +174,9 @@ void det_analysis(Int_t excLabel, const char* recType) {
     auto eventMap = readEjectileFile(reaction, recType, excLabel, excEn, reactionInfo);
     
     // Open input files from G4bl (format matches bash script: excEnXX.XMeV)
-    TString eject_det_output_filename = Form("../%s_sim/Detector_output/Detectors_%s_%s_excEn%s_ejectile.root",
+    TString eject_det_output_filename = Form("./%s_results/Detector_output/Detectors_%s_%s_excEn%s_ejectile.root",
                                              reaction, reaction, recType, lbl.Data());
-    TString recoil_det_output_filename = Form("../%s_sim/Detector_output/Detectors_%s_%s_excEn%s_recoil.root",
+    TString recoil_det_output_filename = Form("./%s_results/Detector_output/Detectors_%s_%s_excEn%s_recoil.root",
                                                 reaction, reaction, recType, lbl.Data());
     
     TFile* eject_det_output = TFile::Open(eject_det_output_filename.Data());
@@ -188,7 +188,7 @@ void det_analysis(Int_t excLabel, const char* recType) {
     }
     
     // Create output file (use same label format for consistency)
-    TString output_filename = Form("../%s_sim/Det_analysis/events_%s_%s_excEn%s.root",
+    TString output_filename = Form("./%s_results/Det_analysis/events_%s_%s_excEn%s.root",
                                    reaction, reaction, recType, lbl.Data());
     TFile* output_file = new TFile(output_filename.Data(), "RECREATE");
     

@@ -137,7 +137,7 @@ def estimate_recoil_timing(output_file, input_file, total_iterations, N_parallel
     
     Args:
         output_file: Path to G4bl output file (e.g., g4bl_238U_dp_HRg_excEn00MeV_recoil.out)
-        input_file: Path to input event file (e.g., ../238U_dp_sim/Event_output/...recoil.txt)
+        input_file: Path to input event file (e.g., ./238U_dp_results/Event_output/...recoil.txt)
         total_iterations: Total number of iterations (excitation energies) remaining
         N_parallel: Number of parallel jobs
     """

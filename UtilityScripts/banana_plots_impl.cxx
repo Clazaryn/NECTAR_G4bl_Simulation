@@ -207,7 +207,7 @@ Int_t BananaPlotManager::getThetaBin(Double_t theta) const {
 
 void BananaPlotManager::writePlots(const char* reaction_name) {
     // Create single output file for all channels combined
-    TString output_filename = Form("../%s_sim/plots_%s.root", reaction_name, reaction_name);
+    TString output_filename = Form("./%s_results/plots_%s.root", reaction_name, reaction_name);
     TFile* output_file = new TFile(output_filename.Data(), "RECREATE");
     
     if (!output_file || !output_file->IsOpen()) {

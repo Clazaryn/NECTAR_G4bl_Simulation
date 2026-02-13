@@ -2,7 +2,14 @@
 ### --------------------------------------------------------------------------- ###
 ### ================= Setup for script and parallel analysis ================== ###
 
-module load root/6.28.00    # Load ROOT 6.28.00
+# Check if running on correct machine
+if [ "$(hostname)" != "borlin305.cenbg.in2p3.fr" ]; then
+    echo "###\!/\!/\!/\!/\!/\!/ Caution \!/\!/\!/\!/\!/\!###"
+    echo "Error: This script was designed to run on borlin305.cenbg.in2p3.fr. Current hostname: $(hostname)"
+    echo "###\!/\!/\!/\!/\!/\!/ Caution \!/\!/\!/\!/\!/\!###"
+fi
+source /usr/local/Modules/3.2.10/init/bash  # Initialize environment modules for bash
+module load root/6.24.00    # Load ROOT 6.24.00
 
 reaction=$(grep '^reaction' reac_info.txt | awk -F'=' '{gsub(/^ +| +$/,"",$2); print $2}' | awk '{print $1}')
 
@@ -196,7 +203,7 @@ run_analysis() {
   (
     # Change to script directory so relative paths work correctly
     # Run ROOT - redirect both stdout and stderr to single log file
-    root -l -b <<ROOT_EOF &>../${reaction}_sim/Det_analysis/root_output_excEn${lbl}_${rec_type}.log
+    root -l -b <<ROOT_EOF &>./${reaction}_results/Det_analysis/root_output_excEn${lbl}_${rec_type}.log
 gSystem->Load("libDetAnalysis.so");
 .L UtilityScripts/det_analysis.h
 det_analysis($exc_index,"$rec_type");
@@ -218,7 +225,7 @@ ROOT_EOF
 ### ========== Main script execution - executed jobs run in parallel ========== ###
 
 # Create output directory
-mkdir -p ../${reaction}_sim/Det_analysis
+mkdir -p ./${reaction}_results/Det_analysis
 
 # Precompile the analysis library
 compile_library_if_needed "libDetAnalysis.so" \

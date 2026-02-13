@@ -2,6 +2,14 @@
 ### --------------------------------------------------------------------------- ###
 ### ================= Setup for script and parallel analysis ================== ###
 
+# Check if running on correct machine
+if [ "$(hostname)" != "borlin305.cenbg.in2p3.fr" ]; then
+    echo "###\!/\!/\!/\!/\!/\!/ Caution \!/\!/\!/\!/\!/\!###"
+    echo "Error: This script was designed to run on borlin305.cenbg.in2p3.fr. Current hostname: $(hostname)"
+    echo "###\!/\!/\!/\!/\!/\!/ Caution \!/\!/\!/\!/\!/\!###"
+fi
+source /usr/local/Modules/3.2.10/init/bash  # Initialize environment modules for bash
+module load python/3.5.2      # Load Python 3.5.2
 module load g4beamline/2.16   # Load G4beamline 2.16
 
 # get reaction from info file
@@ -18,7 +26,7 @@ echo "   ####################################################   "
 # --------------- Choose particle type ---------------
 #loop_list=("ejectile")
 #loop_list=("recoil")
-loop_list=("ejectile" "recoil")
+loop_list=("recoil" "ejectile")
 
 # RUNS IN PARALLEL over the excitation energy range defined in reac_info.txt
 # Choose the range i and number of cores N to run over
@@ -47,7 +55,7 @@ else
 fi
 
 # Calculate HR channel ranges and get excitation energies from calc_hr_ranges.py
-eval $(python3 UtilityScripts/calc_hr_ranges.py)
+eval $(python3.5 UtilityScripts/calc_hr_ranges.py)
 echo "Excitation energies: ${excitation_Ens[@]}"
 echo "Running HR modes: ${run_HR_modes[@]}"
 
@@ -186,7 +194,7 @@ run_G4bl_sim() {
   # Format the file names in bash (outside subshell for HRg so they're available for Python script)
   histoFile="Detectors_${reaction}_${rec_type}_excEn${lbl}_${particle}.root"
   outFile="g4bl_${reaction}_${rec_type}_excEn${lbl}_${particle}.out"
-  eventFile="../${reaction}_sim/Event_output/output_event_generator_${reaction}_${rec_type}_excEn${lbl}_${particle}.txt"
+  eventFile="./${reaction}_results/Event_output/output_event_generator_${reaction}_${rec_type}_excEn${lbl}_${particle}.txt"
   
   (
     # run G4beamline simulation
@@ -277,7 +285,7 @@ done  # End of particle type loop
 echo ""  # New line after progress bar completes
 
 # Create output directory if it doesn't exist
-mkdir -p ../${reaction}_sim/Detector_output/
+mkdir -p ./${reaction}_results/Detector_output/
 
 # Moves the output of G4beamline to the right folder and renames it
 # Use shopt to handle cases where no files match the pattern
@@ -288,10 +296,10 @@ shopt -u nullglob
 
 # Move .out files if any exist
 if [ ${#out_files[@]} -gt 0 ]; then
-  mv "${out_files[@]}" ../${reaction}_sim/Detector_output/ 2>/dev/null || true
+  mv "${out_files[@]}" ./${reaction}_results/Detector_output/ 2>/dev/null || true
 fi
 
 # Move .root files if any exist
 if [ ${#root_files[@]} -gt 0 ]; then
-  mv "${root_files[@]}" ../${reaction}_sim/Detector_output/ 2>/dev/null || true
+  mv "${root_files[@]}" ./${reaction}_results/Detector_output/ 2>/dev/null || true
 fi

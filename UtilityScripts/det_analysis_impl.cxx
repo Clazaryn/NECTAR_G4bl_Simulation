@@ -50,7 +50,7 @@ std::unordered_map<int, std::tuple<double, double, double, int, int>> readEjecti
     
     // Format label to match bash script: excEnXX.XMeV
     TString lbl = Form("%04.1fMeV", excEn);  // Format: XX.XMeV (1 decimal place with leading zero)
-    TString eject_evnt_filename = Form("../%s_sim/Event_output/output_event_generator_%s_%s_excEn%s_ejectile.txt",
+    TString eject_evnt_filename = Form("./%s_results/Event_output/output_event_generator_%s_%s_excEn%s_ejectile.txt",
                                        reaction, reaction, recType, lbl.Data());
     
     std::ifstream eject_evnt_file(eject_evnt_filename.Data());
@@ -375,7 +375,7 @@ VirtualDetectorData loadVirtualDetector(TFile* recoil_det_output, const char* tr
     
     // First, read PDGid from Event_output text file (where it's stored as integer, avoiding precision loss)
     TString lbl = Form("%04.1fMeV", excEn);  // Format: XX.XMeV (1 decimal place with leading zero)
-    TString recoil_evnt_filename = Form("../%s_sim/Event_output/output_event_generator_%s_%s_excEn%s_recoil.txt",
+    TString recoil_evnt_filename = Form("./%s_results/Event_output/output_event_generator_%s_%s_excEn%s_recoil.txt",
                                          reaction, reaction, recType, lbl.Data());
     
     std::unordered_map<int, Int_t> eventid_to_pdgid;  // Map EventID -> PDGid from text file
