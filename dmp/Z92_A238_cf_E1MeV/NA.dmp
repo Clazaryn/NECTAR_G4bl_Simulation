@@ -1,0 +1,53 @@
+GEF analyzer dump: neutron multiplicity vs. fragment mass
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(NmultiApre)
+S: TITLE(Mean prompt neutron multiplicity (from CN) as a function of pre-neutron mass)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Prompt-neutron multiplicity (from CN) vs. pre-neutron mass, 100000 fission events)
+X: Mass number, pre-neutron
+Y: Mean neutron multiplicity
+A: (X = 0 TO 1 BY 1) Y,LTR11
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(NmultiApost)
+S: TITLE(Mean prompt neutron multiplicity (from CN) as a function of post-neutron mass)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Prompt-neutron multiplicity (from CN) vs. post-neutron mass, 100000 fission events)
+X: Mass number, post-neutron
+Y: Mean neutron multiplicity
+A: (X = 0 TO 1 BY 1) Y,LTR11
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(NApre)
+S: TITLE(Mean prompt neutron multiplicity (from fragments) as a function of pre-neutron mass)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Prompt-neutron multiplicity (from fragments) vs. pre-neutron mass, 100000 fission events)
+X: Mass number, pre-neutron
+Y: Mean neutron multiplicity
+A: (X = 80 TO 159 BY 1) Y,LTR11
+1,0.6666667,0.5217391,0.5945946,0.7019231,0.6781609,0.9409158,0.8743017,0.9961588,0.9862148,1.125698,1.11982,1.26968,1.203643,1.326524,
+1.318089,1.485539,1.439213,1.557033,1.484444,1.602589,1.566606,1.664813,1.610381,1.716818,1.701798,1.825666,1.811235,1.935549,2.058021,
+2.131868,2.137931,2.666667,0,0,0,0,0,0,0,0,0,0,0,0,0,0.5,0.03448276,0.03846154,0.05460751,0.06037992,0.07338057,0.1012833,0.160482,
+0.256377,0.3743945,0.4715841,0.4792427,0.5914084,0.765848,0.6499574,0.6748453,0.7472642,0.7711382,0.8295792,0.8650428,0.9559706,
+0.9290074,0.9824022,1.053992,1.056338,1.128492,1.183161,1.281609,1.5,1.513514,1.869565,1.666667,2.5,2,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(NApost)
+S: TITLE(Mean prompt neutron multiplicity (from fragments) as a function of post-neutron mass)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Prompt-neutron multiplicity (from fragments) vs. post-neutron mass, 100000 fission events)
+X: Mass number, post-neutron
+Y: Mean neutron multiplicity
+A: (X = 79 TO 157 BY 1) Y,LTR11
+0.6666667,1,0.9333333,0.9210526,0.988764,1.394834,1.104205,1.27907,1.247586,1.359966,1.28841,1.401784,1.317843,1.327093,1.408808,
+1.490628,1.411078,1.44918,1.516303,1.612458,1.661595,1.743313,1.63359,1.637683,1.583291,1.520825,1.32852,1.278443,1.114202,1.091633,
+1,0.6842105,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0.1666667,0.2,0.08376963,0.2431694,0.09725849,0.2175214,0.1657754,0.2867635,0.3118251,
+0.5184087,0.3519891,0.6231992,0.6243724,0.7558486,0.6879307,0.798189,0.6815992,0.8364121,0.8946192,0.8795667,0.862024,0.9042454,
+0.825057,0.9487365,0.9078947,0.9329609,0.6926407,1.020833,1.0625,1.133333,1,1,
+ 

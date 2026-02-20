@@ -2,6 +2,10 @@
 
 # Read reaction from reac_info.txt
 reaction=$(grep '^reaction' reac_info.txt | awk -F'=' '{gsub(/^ +| +$/,"",$2); print $2}' | awk '{print $1}')
+# Read recoil Z and A too, needed for GEF input
+recoil_A=$(grep '^recoil_A' reac_info.txt | awk -F'=' '{gsub(/^ +| +$/,"",$2); print $2}' | awk '{print $1}')
+recoil_Z=$(grep '^recoil_Z' reac_info.txt | awk -F'=' '{gsub(/^ +| +$/,"",$2); print $2}' | awk '{print $1}')
+
 
 echo "   ####################################################   "
 echo "                                                          "
@@ -27,14 +31,20 @@ fi
 excitation_Ens=($(grep '^recoil_excEns' reac_info.txt | awk -F'=' '{print $2}' | tr ',' ' '))
 echo "Excitation energies: ${excitation_Ens[@]}"
 
+#Get the path to the fission barrier
+export BJORNHOLM_BARRIER_FILE="NuclideDataMaster/Bjornholm_Fission_Barrier.txt"
+
 # Calculate HR channel ranges based on separation energies (3 MeV beyond next channel opening)
-eval $(python3 UtilityScripts/calc_hr_ranges.py)
+hr_vars="$(python3 UtilityScripts/calc_hr_ranges.py)" || exit 1
+eval "$hr_vars"
 echo "HR channel ranges:"
 echo "  HRg: indices $HRg_start to $HRg_stop (${excitation_Ens[$HRg_start]} to ${excitation_Ens[$HRg_stop]} MeV)"
 echo "  HR1n: indices $HR1n_start to $HR1n_stop (${excitation_Ens[$HR1n_start]} to ${excitation_Ens[$HR1n_stop]} MeV)"
 echo "  HR2n: indices $HR2n_start to $HR2n_stop (${excitation_Ens[$HR2n_start]} to ${excitation_Ens[$HR2n_stop]} MeV)"
 echo "  HR3n: indices $HR3n_start to $HR3n_stop (${excitation_Ens[$HR3n_start]} to ${excitation_Ens[$HR3n_stop]} MeV)"
 echo "  HR4n: indices $HR4n_start to $HR4n_stop (${excitation_Ens[$HR4n_start]} to ${excitation_Ens[$HR4n_stop]} MeV)"
+echo "  Z = $recoil_Z and A = $recoil_A,  Fission barrier Ua: $Ua MeV"
+echo "  HRf: indices $HRf_start to $HRf_stop (${excitation_Ens[$HRf_start]} to ${excitation_Ens[$HRf_stop]} MeV)"
 echo "  Max excitation energy: $max_excEn MeV"
 
 jobs_running=0	# Initialize job count	
@@ -83,11 +93,49 @@ echo ""  # New line before progress bar starts
 # Create reaction directory structure
 mkdir -p ../${reaction}_sim/Event_output
 
+# HERE COMES THE FISSION BLOCK ____ 
+# TEST___BLOCK__SO__FAR____________
+
+#for i in $(seq $HRf_start $HRf_start); do		# HRf block
+for i in $(seq 6 6); do		# HRf block
+  (
+    en=${excitation_Ens[$i]}
+    lbl=$(echo "$en" | awk '{printf "%02dMeV", int($1 + 0.5)}')  # Format: XXMeV (2 sig figs with leading zero, rounded to nearest integer)
+    
+    #__FIRST__Make__the_GEF_.lmd_file
+    #__(SECOND__Make the GEF_tree)__if_one_want_to_investigate_it
+    enhancement_factor=$(( (nevents + 99999) / 100000 ))
+    ./GEFbashscript.sh "$recoil_Z" "$recoil_A" "$en" "$enhancement_factor"
+
+    #__THIRD___generate events !!___
+    python3 event_generator.py "$nevents" "HRf" "$en" "$lbl" "$enhancement_factor"
+  ) &  # Background job
+  
+  job_pids+=($!)		# Capture the PID of the current background job
+
+  jobs_running=$((jobs_running + 1))		# Throttle the number of parallel jobs
+
+  # Wait for a job to finish if we've reached the limit
+  while [ "$jobs_running" -ge "$N" ]; do
+    # Wait for the oldest job (first in array) to finish
+    wait ${job_pids[0]} 2>/dev/null
+    # Remove the finished job from the array
+    job_pids=("${job_pids[@]:1}")
+    jobs_running=$((jobs_running - 1))
+    completed_iterations=$((completed_iterations + 1))
+    show_progress $completed_iterations $total_iterations
+  done
+done
+
+
+# END__OF_THE_TEST_BLOCK____________
+
+
 for i in $(seq $HRg_start $HRg_stop); do		# HRg block
   (
     en=${excitation_Ens[$i]}
     lbl=$(echo "$en" | awk '{printf "%02dMeV", int($1 + 0.5)}')  # Format: XXMeV (2 sig figs with leading zero, rounded to nearest integer)
-    python3.5 event_generator.py "$nevents" "HRg" "$en" "$lbl"
+    python3 event_generator.py "$nevents" "HRg" "$en" "$lbl"
   ) &  # Background job
   
   job_pids+=($!)		# Capture the PID of the current background job
@@ -110,7 +158,7 @@ for i in $(seq $HR1n_start $HR1n_stop); do		# HR1n block
   (
     en=${excitation_Ens[$i]}
     lbl=$(echo "$en" | awk '{printf "%02dMeV", int($1 + 0.5)}')  # Format: XXMeV (2 sig figs with leading zero, rounded to nearest integer)
-	  python3.5 event_generator.py "$nevents" "HR1n" "$en" "$lbl"
+	  python3 event_generator.py "$nevents" "HR1n" "$en" "$lbl"
   ) &  # Background job
   
   job_pids+=($!)		# Capture the PID of the current background job
@@ -135,7 +183,7 @@ if [ "$HR2n_start" -le "$HR2n_stop" ] && [ "$HR2n_stop" -ge 0 ]; then
     (
       en=${excitation_Ens[$i]}
       lbl=$(echo "$en" | awk '{printf "%02dMeV", int($1 + 0.5)}')  # Format: XXMeV (2 sig figs with leading zero, rounded to nearest integer)
-  	  python3.5 event_generator.py "$nevents" "HR2n" "$en" "$lbl"
+  	  python3 event_generator.py "$nevents" "HR2n" "$en" "$lbl"
     ) &  # Background job
 
     job_pids+=($!)		# Capture the PID of the current background job
@@ -161,7 +209,7 @@ if [ "$HR3n_start" -le "$HR3n_stop" ] && [ "$HR3n_stop" -ge 0 ]; then
     (
       en=${excitation_Ens[$i]}
       lbl=$(echo "$en" | awk '{printf "%02dMeV", int($1 + 0.5)}')  # Format: XXMeV (2 sig figs with leading zero, rounded to nearest integer)
-      python3.5 event_generator.py "$nevents" "HR3n" "$en" "$lbl"
+      python3 event_generator.py "$nevents" "HR3n" "$en" "$lbl"
     ) &  # Background job
 
     job_pids+=($!)		# Capture the PID of the current background job
@@ -187,7 +235,7 @@ if [ "$HR4n_start" -le "$HR4n_stop" ] && [ "$HR4n_stop" -ge 0 ]; then
     (
       en=${excitation_Ens[$i]}
       lbl=$(echo "$en" | awk '{printf "%02dMeV", int($1 + 0.5)}')  # Format: XXMeV (2 sig figs with leading zero, rounded to nearest integer)
-      python3.5 event_generator.py "$nevents" "HR4n" "$en" "$lbl"
+      python3 event_generator.py "$nevents" "HR4n" "$en" "$lbl"
     ) &  # Background job
 
     job_pids+=($!)		# Capture the PID of the current background job

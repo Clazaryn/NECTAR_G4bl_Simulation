@@ -1,0 +1,12 @@
+GEF analyzer dump: gamma multiplicity per fission
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(Ngammatot)
+S: TITLE(Gamma multiplicity per fission (from fragments))
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Gamma multiplicity per fission, 100000 fission events)
+X: Gamma multiplicity
+Y: Counts
+A: (X = 0 TO 21 BY 1) Y,LTB11
+56,492,2192,5978,11467,15699,16724,15111,12051,8554,5354,3085,1697,882,366,193,53,29,9,5,2,1,
+ 

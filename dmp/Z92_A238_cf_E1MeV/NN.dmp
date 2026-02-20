@@ -1,0 +1,12 @@
+GEF analyzer dump: multiplicity of prompt neutrons
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(NN)
+S: TITLE(Neutron multiplicity)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Multiplicity distribution of prompt protons, 100000 fission events)
+X: Number of neutrons
+Y: Probability
+A: (X = 0 TO 6 BY 1) Y,LTR11
+0.05167,0.2387,0.37366,0.24941,0.07575,0.0102,0.00061,
+ 
