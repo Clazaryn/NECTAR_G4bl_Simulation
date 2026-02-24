@@ -1,0 +1,113 @@
+' GEF-Y2023/V2.2
+ 
+'************************************************
+' This update was written on 16.02.2026, 16:14:36
+'************************************************
+ 
+'  Emax_valid = 100      /' Maximum allowed excitation energy '/
+'  Eexc_min_multi = 3            /' Threshold for calc. of multi-chance fission '/
+' _Delta_S0 = 0         /' Shell effect for SL, for individual systems '/
+'  EOscale = 1.0  /' Scaling factor for even-odd structure in yields '/
+'  Emode = 1      /' 0: E over BF_B; 1: E over gs; 2: E_neutron; 12: E_proton '/
+    _P_DZ_Mean_S1 = -0.35
+    _P_corr_S1 = -0.05
+    _P_DZ_Mean_S2 =-0.75
+    _P_DZ_Mean_S3 = 0.3411598   /' Shift of mean Z of Mode 3 '/
+    _P_DZ_Mean_S4 =-0.01264502   /' Shell around Z=82 '/
+    _P_DZ_Mean_SL5 = 0.004502542
+    _P_DZ_Mean_S5 = 0.04706105   /' Shell around Z=36 '/
+    ZC_Mode_SL5 = 44.4   /' Maximum at Pu, higher ZC_Mode_SL5 -> towards Am etc. '/
+    _P_Z_Curv_S1 = 0.3685676
+    P_Z_Curvmod_S1 = 1.75   /' Scales energy-dependent shift '/
+    _P_Z_Curv_S2 = 0.08923166
+    _S2leftmod = 0.789517   /' Asymmetry in diffuseness of S2 mass peak '/
+    P_Z_Curvmod_S2 = 10   /' Scales energy-dependent shift '/
+    _P_A_Width_S2 = 11.7771   /' A width of Mode 2 (box) '/
+    Fmod_slope_S2 =  1   /' Slope modification of linear part of potential '/
+    _P_Z_Curv_S3 = 0.072
+    P_Z_Curvmod_S3 = 10   /' Scales energy-dependent shift '/
+    _P_Z_Curv_S4 = 0.3791057   /' assumed to be equal to S1 '/
+    P_Z_Curvmod_S4 = 1.75   /' assumed to be equal to S1 '/
+    _P_Z_Curv_SL5 = 0.01
+    _P_Z_Curv_S5 = 0.053108
+    P_Z_Curvmod_S5 = 10   /' Scales energy-dependent shift '/
+    _P_Shell_S1 =-2.3   /' Shell effect for Mode 1 (S1) '/
+    _P_Shell_S2 =-3.7   /' Shell effect for Mode 2 (S2) '/
+    _P_Shell_S3 =-4.6   /' Shell effect for Mode 3 (SA) '/
+    _P_Shell_S4 =-5.166961   /' Shell near Z = 84, deduced from S1 '/
+    _P_Shell_SL5 =-0.45
+    _P_Shell_S5 =-1.161867
+    P_S5_mod =-0.035
+    _PZ_S3_olap_pos = 39.6806   /' Pos. of S3 shell in light fragment (in Z) '/
+    _PZ_S3_olap_curv = 0.004088318
+    ETHRESHSUPPS1 = 10.85
+    ESIGSUPPS1 = 1
+    Level_S11 =-0.1   /' Level for mode S11 (higher values means more symmetric fission) '/
+    Shell_fading = 50   /' fading of shell effect with E* '/
+    _T_low_S1 = 0.31   /' Slope parameter for tunneling '/
+    _T_low_S2 = 0.330564   /' Slope parameter for tunneling '/
+    _T_low_S3 = 0.33   /' Slope parameter for tunneling '/
+    _T_low_S4 = 0.248264   /' Slope parameter for tunneling '/
+    _T_low_S5 = 0.3039935
+    _T_low_SL = 0.2999285   /' Slope parameter for tunneling '/
+    T_low_S11 = 0.25   /' Slope parameter for tunneling '/
+    T_low_S22 = 0.3
+    _P_att_pol = 1.5
+    P_att_pol2  = 0
+    P_att_pol3 = 0
+    _P_att_rel = 1   /' Relative portion of attenuation '/
+    _dE_Defo_S1 =-4.052881   /' Deformation energy expense for Mode 1 '/
+    _dE_Defo_S2 =-0.8115684   /' Deformation energy expense for Mode 2 '/
+    _dE_Defo_S3 = 0.8146552   /' Deformation energy expense for Mode 3 '/
+    _dE_Defo_S4 =-5.153027   /' Deformation energy expense for Mode 4, deduced from S1 '/
+    _dE_Defo_S5 =-0.7072742   /' Deformation energy expense for Mode 5 '/
+    _betaL0 = 22.2
+    _betaL1 = 0.63
+    _betaH0 = 48.2   /' Offset for deformation of heavy fragment '/
+    ' _betaH0 = 48.2      ' This value in combination with EDISSFRAC = 0.35 gets nu-bar correct for U235T and Cf252SF
+    _betaH1 = 0.7
+    _dbeta_S3 = 0
+    kappa = 0   /' N/Z dedendence of A-asym. potential '/
+    TCOLLFRAC = 0.04   /' Tcoll per energy gain from saddle to scission '/
+    _ECOLLFRAC = 0.01   /' Fraction of pot. energy gain from saddle to scission, going into coll. excitations '/
+    TFCOLL = 0.034
+    TCOLLMIN = 0.12
+    ESHIFTSASCI_intr =-67   /' Shift of saddle-scission energy '/
+    ESHIFTSASCI_coll =-90   /' Shift of saddle-scission energy '/
+    _EDISSFRAC = 0.4107642
+    Epot_shift = 0
+    SIGDEFO = 0.165
+    SIGDEFO_0 = 0.165
+    SIGDEFO_slope = 0
+    SIGENECK = 5   /' Width of TXE by fluctuation of neck length '/
+    EexcSIGrel = 0.7
+    DNECK = 1   /' Tip distance at scission / fm '/
+    FTRUNC50 = 1   /' Truncation near Z = 50 '/
+    ZTRUNC50 = 50   /' Z value for truncation '/
+    FTRUNC28 = 0.56   /' Truncation near Z = 28 '/
+    ZTRUNC28 = 30.5   /' Z value for truncation '/
+    ZMAX_S2 = 60   /' Maximum Z of S2 channel in light fragment '/
+    NTRANSFEREO = 6   /' Steps for E sorting for even-odd effect '/
+    NTRANSFERE = 12    /' Steps for E sorting for energy division '/
+    Csort = 0.5   /' Smoothing of energy sorting '/
+    PZ_EO_symm = 2.6   /' Even-odd effect in Z at symmetry '/
+    PN_EO_symm = 2.6   /' Even-odd effect in N at symmetry '/
+    R_EO_THRESH = 0.398   /' Threshold for asymmetry-driven even-odd effect'/
+    R_EO_SIGMA = 2
+    R_EO_Max = 0.6
+    _POLARadd = 0.4165792   /' Offset for enhanced polarization '/
+    POLARfac = 1   /' Enhancement of polarization of liqu. drop '/
+    T_POL_RED = 0.01   /' Reduction of temperature for sigma(Z) '/
+    _HOMPOL = 1.61765   /' hbar omega of polarization oscillation '/
+    ZPOL1 = 0   /' Extra charge polarization of S1 '/
+    P_n_x = 0   /' Enhanced inverse neutron x section '/
+    Tscale = 1
+    Econd = 2   /' Pairing condenstation energy '/
+    Etrans = 9.5   /' Matching energy (const. temp to Fermi gas level density '/
+    T_orbital = 0   /' From orbital ang. momentum '/
+    _Jscaling = 1.002303   /' General scaling of fragment angular momenta '/
+    Spin_odd = 0.4   /' RMS Spin enhancement for odd Z '/
+                                         /' Value of 0.4 adjusted to data. In conflict with Naik! '/
+    Esort_extend = 1.5   /' Extension of energy range for E-sorting '/
+    Esort_slope = 0.04   /' Onset of E-sorting around symmetry '/
+    Esort_slope_S0 = 0.2   /' Onset of E-sorting around symmetry for S0 channel '/

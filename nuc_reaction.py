@@ -19,6 +19,7 @@ import numpy as np
 import math
 from scipy.stats import gamma
 import sys
+#import ROOT # problem not solved the IT don't want to help on this we are force to use old python and that's all
 sys.path.insert(0, 'UtilityScripts')
 import phys_functions as funcs
 
@@ -246,3 +247,34 @@ def deexec_neutron(A_recoil, FV4, Eex, mass_neutron, mult, Sn_CN, mass_HR1n, Sn_
     FV4_new = funcs.lorentz_boost(FV4_CM, Beta_CM_vec, Gamma_CM)    # new four-vector after neutron emission
 
     return FV4_new, Eex_new
+
+# ___________________________________________________________________________________________
+# FISSION FUNCTION : A relativistic function for fission fragment lorentz vector calculation 
+
+def fission(FV4, m_light, m_heavy, T_light_post, T_heavy_post, theta_light, theta_heavy, phi_light, phi_heavy):
+
+    # First we got to set things up for the kinematic of both light and heavy fragment  in the Center of Mass
+    
+    # Let's get Etot_light, Etot_heavy
+    Etot_light = T_light_post + m_light 
+    Etot_heavy = T_heavy_post + m_heavy 
+
+    #Let's get P_light P_heavy
+    Pmag_light_CM = math.sqrt((T_light_post*T_light_post) + 2.0*m_light*T_light_post); 
+    Pmag_heavy_CM = math.sqrt((T_heavy_post*T_heavy_post) + 2.0*m_heavy*T_heavy_post);
+
+    # Now Four Vector note that we did not integrate any anisotropy yet, angle are straight forward from GEF
+    FVlight_CM = np.concatenate(([Etot_light], funcs.spherical_to_cartesian(Pmag_light_CM, theta_light,phi_light))) 
+    FVheavy_CM = np.concatenate(([Etot_heavy], funcs.spherical_to_cartesian(Pmag_heavy_CM, theta_heavy,phi_heavy))) 
+
+    #Now we got to boost to the lab !! 
+    # we got to boost on recoil frame 
+    Beta4_vec = funcs.GetBetaVec(FV4)
+    Gamma4 = funcs.GetGamma(FV4)
+
+    FVlight = funcs.lorentz_boost(FVlight_CM, Beta4_vec, Gamma4)
+    FVheavy = funcs.lorentz_boost(FVheavy_CM, Beta4_vec, Gamma4)
+
+
+
+    return FVlight, FVheavy

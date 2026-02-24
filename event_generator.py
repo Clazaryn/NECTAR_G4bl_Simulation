@@ -25,6 +25,7 @@ import os
 import scipy.constants as const     # this package is for obtaining physical constants
 import configparser
 
+from UtilityScripts.gef_lmd_reader import GEFLmdReader
 from NuclideDataMaster import nuclide_data #this requires the nuclidedatamaster directory
 import nuc_reaction          # to import file containing deexcitation modes
 sys.path.insert(0, 'UtilityScripts')
@@ -35,13 +36,17 @@ writeBeamFile = False   # boolean for if to write Beam + Recoil before deexcitat
 
 # '''''''''' Input parameters ''''''''''''
 # These inputs parameters are passed as command line arguments when running the script
-if len(sys.argv) != 5:
+if len(sys.argv) < 5:
     print("Insufficient arguments. Usage: python event_generator.py <number of ions> <heavy recoil type> <excitation energy> <excitation energy label>")
     sys.exit(1)
-Nions = int(sys.argv[1])          # number of ions to simulate
-HR_type = sys.argv[2]             # heavy recoil type to simulate
-excit_En = float(sys.argv[3])     # excitation energy in MeV
-ex_label = sys.argv[4]            # excitation energy label
+
+Nions    = int(sys.argv[1])
+HR_type  = sys.argv[2]
+excit_En = float(sys.argv[3])
+ex_label = sys.argv[4]
+
+# optional integer argument
+enhance_factor = int(sys.argv[5]) if len(sys.argv) > 5 else 1
 
 # '''''''''' Reaction parameters ''''''''''''
 # These reaction parameters are read from the reac_info.txt file
@@ -96,8 +101,15 @@ if writeBeamFile:
     file_beam = open("./{}_results/Event_output/output_event_generator_beam_excEn{}.txt".format(reaction, ex_label), "w")
     file_beam.write("%s %s %s %s %s %s %s %s %s %s %s %s\n" % ('#x','y','z','px','py','pz','t','PDGid','EventID','TrackID','ParentID','Weight'))
 
-# Gamma emission nucleus
+# Fission decay
 # Ejectile is now created with recoil to ensure pairing in separate files for correlation
+if(HR_type == "HRf"):
+    file_eject = open("../{}_sim/Event_output/output_event_generator_{}_HRf_excEn{}_ejectile.txt".format(reaction, reaction, ex_label), "w")
+    file_eject.write("%s %s %s %s %s %s %s %s %s %s %s %s\n" % ('#x','y','z','px','py','pz','t','PDGid','EventID','TrackID','ParentID','Weight'))
+    file_HR_fission = open("../{}_sim/Event_output/output_event_generator_{}_HRf_excEn{}_recoil.txt".format(reaction, reaction, ex_label), "w")
+    file_HR_fission.write("%s %s %s %s %s %s %s %s %s %s %s %s\n" % ('#x','y','z','px','py','pz','t','PDGid','EventID','TrackID','ParentID','Weight')) 
+
+# Gamma emission nucleus
 if(HR_type == "HRg"):
     file_eject = open("./{}_results/Event_output/output_event_generator_{}_HRg_excEn{}_ejectile.txt".format(reaction, reaction, ex_label), "w")
     file_eject.write("%s %s %s %s %s %s %s %s %s %s %s %s\n" % ('#x','y','z','px','py','pz','t','PDGid','EventID','TrackID','ParentID','Weight'))
@@ -260,6 +272,10 @@ Nbeam = 1                         # current ion beam event number (Nbeam >= Nrea
 Nattempts_in_target = 0           # number of times beam was in target (kinematic attempts)
 max_attempts = max(5000000, 500 * Nions)   # safety cap to avoid near-infinite loop when kinematic acceptance is very low
 
+if(HR_type == "HRf"):
+    GEFfile = GEFLmdReader(Z_recoil, A_recoil, excit_En, enhance_factor, Nions+1, base_dir=".")
+    GEFfile.open()  # keep file open
+
 # /!\ Ncounter is updated/defined at bottom of while loop /!\
 while Ncounter < Nions:
 
@@ -382,9 +398,40 @@ while Ncounter < Nions:
                 FV4_deexc = nuc_reaction.deexec_gamma(AR_4n, FV4_deexc, Eex_resid)     # execute an additional gamma decay
             mHR_final = mHR4n  # final heavy residue mass after deexcitation
             # write to output files
-            file_eject.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" % (x,y,z,FV3[1],FV3[2],FV3[3],0,int(PDGid_eject),Nreaction,1,0,1))
-            file_HR_neutron_quadruple.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" %(x,y,z,FV4_deexc[1],FV4_deexc[2],FV4_deexc[3],0,int(PDGid_HR_4n),Nreaction,1,0,1))
+            file_eject.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" % (x,y,z,-FV3[1],FV3[2],FV3[3],0,int(PDGid_eject),Nreaction,1,0,1))
+            file_HR_neutron_quadruple.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" %(x,y,z,-FV4_deexc[1],FV4_deexc[2],FV4_deexc[3],0,int(PDGid_HR_4n),Nreaction,1,0,1))
         
+        # '''''''''' Fission recoil function ''''''''''''
+        elif(HR_type == "HRf"):
+            FV4_deexc = FV4 #test
+            mHR_final = 0.0  # final heavy residue mass after deexcitation ;)
+
+            # Let's get what we want from the GEF file to compute the kinematic
+            Z_light, Z_heavy = GEFfile.GetZ_pair(Nreaction)
+            A_light, A_heavy = GEFfile.GetApost_pair(Nreaction)
+            T_light_post, T_heavy_post = GEFfile.GetKEpost_pair(Nreaction)
+            cos_light, cos_heavy = GEFfile.GetCosTheta_pair(Nreaction)
+            phi_light_deg, phi_heavy_deg = GEFfile.GetPhi_pair(Nreaction)
+            theta_light = math.acos(cos_light)   # radians
+            theta_heavy = math.acos(cos_heavy)   # radians
+            phi_light = phi_light_deg * math.pi / 180.0;
+            phi_heavy = phi_heavy_deg * math.pi / 180.0;
+            #print("For event_", Nreaction, "__T_light___", T_light_post, "__T_heavy___", T_heavy_post)
+            m_light = funcs.atomic_to_nuclear_mass(nuclide_data.weight(Z_light,A_light), Z_light) * amu     # Light Fragment Mass 
+            m_heavy = funcs.atomic_to_nuclear_mass(nuclide_data.weight(Z_heavy,A_heavy), Z_heavy) * amu     # Heavy Fragment Mass
+
+            PDGid_HR_f_light = funcs.define_PDGid(Z_light, A_light)
+            PDGid_HR_f_heavy = funcs.define_PDGid(Z_heavy, A_heavy)
+
+            
+            FVlight, FVheavy = nuc_reaction.fission(FV4, m_light, m_heavy, T_light_post, T_heavy_post, theta_light, theta_heavy, phi_light, phi_heavy)
+
+            file_eject.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" % (x,y,z,-FV3[1],FV3[2],FV3[3],0,int(PDGid_eject),Nreaction,1,0,1))
+
+            file_HR_fission.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" %(x,y,z,-FVlight[1],FVlight[2],FVlight[3],0,int(PDGid_HR_f_light),Nreaction,1,0,1))
+            file_HR_fission.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" %(x,y,z,-FVheavy[1],FVheavy[2],FVheavy[3],0,int(PDGid_HR_f_heavy),Nreaction,1,0,1))
+
+
         else:
             raise ValueError("event_generator: HR_type not recognised: ", HR_type)
 
@@ -406,6 +453,9 @@ while Ncounter < Nions:
         Ncounter += 1
         Nreaction += 1
 
+if(HR_type == "HRf"):
+    GEFfile.close()
+
 # Closing the outputfile
 if writeBeamFile: 
     file_beam.close()
@@ -416,6 +466,7 @@ elif(HR_type == "HR1n"): file_HR_neutron.close()
 elif(HR_type == "HR2n"): file_HR_neutron_double.close()
 elif(HR_type == "HR3n"): file_HR_neutron_triple.close()
 elif(HR_type == "HR4n"): file_HR_neutron_quadruple.close()
+elif(HR_type == "HRf"): file_HR_fission.close()
 else: print("HR_type not recognised: files not closed")
 
 if verbose:

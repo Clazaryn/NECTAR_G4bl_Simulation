@@ -1,0 +1,105 @@
+GEF analyzer dump: post-neutron neutron-number distributions
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(NPOST)
+S: TITLE(Neutron-number distribution, post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Fragment neutron distribution after prompt-neutron emission, 100000 fission events)
+X: Neutron number
+Y: Yield
+A: (X = 47 TO 97 BY 1) Y,RT11
+0.001,0.017,0.086,0.434,1.034,2.587,4.532,7.114,8.523001,10.231,9.165,9.305,8.177,10.294,9.896001,9.061001,5.627,2.63,0.9030001,
+0.292,0.06500001,0.023,0.002,0.001,0,0,0,0,0.002,0.009000001,0.032,0.228,0.367,2.118,3.4,12.812,11.098,10.192,9.275001,8.014,10.408,
+9.063001,9.134001,5.926,4.236,2.299,0.951,0.325,0.09200001,0.016,0.003,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(NMPOST(0))
+S: TITLE(Neutron-number distribution, post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Fragment neutron distribution after prompt-neutron emission per mode, 100000 fission events)
+X: Neutron number
+Y: Yield
+A: (X = 66 TO 75 BY 1) Y,RBT1
+0.001,0,0,0,0,0,0,0,0,0.001,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(NMPOST(1))
+S: TITLE(Neutron-number distribution, post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Fragment neutron distribution after prompt-neutron emission per mode, 100000 fission events)
+X: Neutron number
+Y: Yield
+A: (X = 55 TO 88 BY 1) Y,RBT1
+0.002,0.029,0.142,0.7460001,2.009,5.111,6.915,7.382,5.015,2.414,0.853,0.278,0.063,0.022,0.002,0.001,0,0,0,0,0.001,0.009000001,0.032,
+0.223,0.335,1.982,2.892,10.957,7.354001,5.059,1.522,0.558,0.054,0.006,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(NMPOST(2))
+S: TITLE(Neutron-number distribution, post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Fragment neutron distribution after prompt-neutron emission per mode, 100000 fission events)
+X: Neutron number
+Y: Yield
+A: (X = 47 TO 97 BY 1) Y,RBT1
+0.001,0.017,0.086,0.434,1.034,2.587,4.532,7.114,8.521001,10.202,9.023001,8.559,6.168,5.183,2.981,1.679,0.612,0.216,0.05,0.013,0.002,
+0.001,0,0,0,0,0,0,0,0,0,0.005,0.032,0.136,0.508,1.855,3.744,5.133,7.753,7.456,10.354,9.057,9.134001,5.926,4.236,2.299,0.951,0.325,
+0.09200001,0.016,0.003,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(NMPOST(3))
+S: TITLE(Neutron-number distribution, post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Fragment neutron distribution after prompt-neutron emission per mode, 100000 fission events)
+X: Neutron number
+Y: Yield
+A: (X = 0 TO 1 BY 1) Y,RBT1
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(NMPOST(4))
+S: TITLE(Neutron-number distribution, post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Fragment neutron distribution after prompt-neutron emission per mode, 100000 fission events)
+X: Neutron number
+Y: Yield
+A: (X = 0 TO 1 BY 1) Y,RBT1
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(NMPOST(5))
+S: TITLE(Neutron-number distribution, post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Fragment neutron distribution after prompt-neutron emission per mode, 100000 fission events)
+X: Neutron number
+Y: Yield
+A: (X = 0 TO 1 BY 1) Y,RBT1
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(NMPOST(6))
+S: TITLE(Neutron-number distribution, post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Fragment neutron distribution after prompt-neutron emission per mode, 100000 fission events)
+X: Neutron number
+Y: Yield
+A: (X = 0 TO 1 BY 1) Y,RBT1
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(NMPOST(7))
+S: TITLE(Neutron-number distribution, post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Fragment neutron distribution after prompt-neutron emission per mode, 100000 fission events)
+X: Neutron number
+Y: Yield
+A: (X = 0 TO 1 BY 1) Y,RBT1
+0,0,
+ 

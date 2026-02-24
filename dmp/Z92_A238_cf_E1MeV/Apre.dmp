@@ -1,0 +1,107 @@
+GEF analyzer dump: pre-neutron mass distributions
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(APRE)
+S: TITLE(Mass distribution, pre-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Pre-neutron mass distribution,100000 fission events)
+X: Mass number
+Y: Yield
+A: (X = 79 TO 159 BY 1) Y,GT11
+0.001,0.002,0.006,0.023,0.037,0.104,0.174,0.677,0.716,1.562,1.741,3.58,3.113,5.996,4.557,5.727,4.92,7.676001,4.524,5.865,4.275,5.098,
+4.384,8.27,5.78,6.939,5.228,5.065,1.976,1.474,0.293,0.182,0.029,0.006,0,0,0,0,0,0,0,0,0,0,0,0,0,0.006,0.029,0.182,0.293,1.474,1.976,
+5.065,5.228,6.939,5.78,8.27,4.384,5.098,4.275,5.865,4.524,7.676001,4.92,5.727,4.557,5.996,3.113,3.58,1.741,1.562,0.716,0.677,0.174,
+0.104,0.037,0.023,0.006,0.002,0.001,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(AMPRE(0))
+S: TITLE(Mass distribution, pre-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Pre-neutron mass distribution per mode,100000 fission events)
+X: Mass number
+Y: Yield
+A: (X = 112 TO 126 BY 1) Y,GT1
+0.001,0,0,0,0,0,0,0,0,0,0,0,0,0,0.001,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(AMPRE(1))
+S: TITLE(Mass distribution, pre-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Pre-neutron mass distribution per mode,100000 fission events)
+X: Mass number
+Y: Yield
+A: (X = 96 TO 142 BY 1) Y,GT1
+0.002,0.019,0.134,0.341,1.019,1.629,4.851,4.308,5.741,4.607,4.624,1.828,1.396,0.279,0.173,0.028,0.005,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0.005,0.028,0.173,0.279,1.396,1.828,4.624,4.607,5.741,4.308,4.851,1.629,1.019,0.341,0.134,0.019,0.002,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(AMPRE(2))
+S: TITLE(Mass distribution, pre-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Pre-neutron mass distribution per mode,100000 fission events)
+X: Mass number
+Y: Yield
+A: (X = 79 TO 159 BY 1) Y,GT1
+0.001,0.002,0.006,0.023,0.037,0.104,0.174,0.677,0.716,1.562,1.741,3.58,3.113,5.996,4.557,5.727,4.92,7.674,4.505,5.731,3.934,4.079,
+2.755,3.419,1.472,1.198,0.6210001,0.441,0.148,0.078,0.014,0.009000001,0.001,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.001,0.009000001,0.014,
+0.078,0.148,0.441,0.6210001,1.198,1.472,3.419,2.755,4.079,3.934,5.731,4.505,7.674,4.92,5.727,4.557,5.996,3.113,3.58,1.741,1.562,
+0.716,0.677,0.174,0.104,0.037,0.023,0.006,0.002,0.001,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(AMPRE(3))
+S: TITLE(Mass distribution, pre-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Pre-neutron mass distribution per mode,100000 fission events)
+X: Mass number
+Y: Yield
+A: (X = 0 TO 1 BY 1) Y,GT1
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(AMPRE(4))
+S: TITLE(Mass distribution, pre-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Pre-neutron mass distribution per mode,100000 fission events)
+X: Mass number
+Y: Yield
+A: (X = 0 TO 1 BY 1) Y,GT1
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(AMPRE(5))
+S: TITLE(Mass distribution, pre-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Pre-neutron mass distribution per mode,100000 fission events)
+X: Mass number
+Y: Yield
+A: (X = 0 TO 1 BY 1) Y,GT1
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(AMPRE(6))
+S: TITLE(Mass distribution, pre-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Pre-neutron mass distribution per mode,100000 fission events)
+X: Mass number
+Y: Yield
+A: (X = 0 TO 1 BY 1) Y,GT1
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(AMPRE(7))
+S: TITLE(Mass distribution, pre-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Pre-neutron mass distribution per mode,100000 fission events)
+X: Mass number
+Y: Yield
+A: (X = 0 TO 1 BY 1) Y,GT1
+0,0,
+ 

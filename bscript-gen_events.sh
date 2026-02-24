@@ -13,6 +13,10 @@ module load python/3.5.2    # Load Python 3.5.2
 
 # Read reaction from reac_info.txt
 reaction=$(grep '^reaction' reac_info.txt | awk -F'=' '{gsub(/^ +| +$/,"",$2); print $2}' | awk '{print $1}')
+# Read recoil Z and A too, needed for GEF input
+recoil_A=$(grep '^recoil_A' reac_info.txt | awk -F'=' '{gsub(/^ +| +$/,"",$2); print $2}' | awk '{print $1}')
+recoil_Z=$(grep '^recoil_Z' reac_info.txt | awk -F'=' '{gsub(/^ +| +$/,"",$2); print $2}' | awk '{print $1}')
+
 
 echo "   ####################################################   "
 echo "                                                          "
@@ -162,7 +166,17 @@ run_event_generation() {
         events_to_use=$((nevents / 2))
     fi
     
-    python3.5 event_generator.py "$events_to_use" "$rec_type" "$en" "$lbl"
+    if [ "$rec_type" == "HRf" ]; then
+      #__FIRST__Make__the_GEF_.lmd_file
+      #__(SECOND__Make the GEF_tree)__if_one_want_to_investigate_it
+      enhancement_factor=$(( (nevents + 99999) / 100000 ))
+      ./GEFbashscript.sh "$recoil_Z" "$recoil_A" "$en" "$enhancement_factor"
+
+      #__THIRD___generate events !!___
+      python3.5 event_generator.py "$nevents" "HRf" "$en" "$lbl" "$enhancement_factor" 
+    else
+      python3.5 event_generator.py "$events_to_use" "$rec_type" "$en" "$lbl"
+    fi
   ) &  # Background job
   
   job_pids+=($!)  # Capture the PID of the current background job

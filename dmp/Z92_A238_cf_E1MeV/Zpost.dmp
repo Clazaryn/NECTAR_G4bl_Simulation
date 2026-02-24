@@ -1,0 +1,102 @@
+GEF analyzer dump: element distributions
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(ZPOST)
+S: TITLE(Element distribution, post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Fragment element distribution, 100000 fission events,)
+X: Atomic number
+Y: Yield
+A: (X = 30 TO 62 BY 1) Y,RT11
+0.001,0.002,0.058,0.182,2.609,2.916,14.748,8.588,20.711,8.305,21.846,9.38,10.128,0.481,0.045,0,0,0,0.045,0.481,10.128,9.38,21.846,
+8.305,20.711,8.588,14.748,2.916,2.609,0.182,0.058,0.002,0.001,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(ZMPOST(0))
+S: TITLE(Element distribution, post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Fragment element distribution per mode, 100000 fission events)
+X: Atomic number
+Y: Yield
+A: (X = 44 TO 48 BY 1) Y,RBT1
+0.001,0,0,0,0.001,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(ZMPOST(1))
+S: TITLE(Element distribution, post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Fragment element distribution per mode, 100000 fission events)
+X: Atomic number
+Y: Yield
+A: (X = 37 TO 55 BY 1) Y,RBT1
+0.004,0.429,1.327,12.023,7.626,9.099,0.439,0.037,0,0,0,0.037,0.439,9.099,7.626,12.023,1.327,0.429,0.004,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(ZMPOST(2))
+S: TITLE(Element distribution, post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Fragment element distribution per mode, 100000 fission events)
+X: Atomic number
+Y: Yield
+A: (X = 30 TO 62 BY 1) Y,RBT1
+0.001,0.002,0.058,0.182,2.609,2.916,14.748,8.584001,20.282,6.978,9.823001,1.754,1.029,0.042,0.007,0,0,0,0.007,0.042,1.029,1.754,
+9.823001,6.978,20.282,8.584001,14.748,2.916,2.609,0.182,0.058,0.002,0.001,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(ZMPOST(3))
+S: TITLE(Element distribution, post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Fragment element distribution per mode, 100000 fission events)
+X: Atomic number
+Y: Yield
+A: (X = 0 TO 1 BY 1) Y,RBT1
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(ZMPOST(4))
+S: TITLE(Element distribution, post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Fragment element distribution per mode, 100000 fission events)
+X: Atomic number
+Y: Yield
+A: (X = 0 TO 1 BY 1) Y,RBT1
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(ZMPOST(5))
+S: TITLE(Element distribution, post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Fragment element distribution per mode, 100000 fission events)
+X: Atomic number
+Y: Yield
+A: (X = 0 TO 1 BY 1) Y,RBT1
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(ZMPOST(6))
+S: TITLE(Element distribution, post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Fragment element distribution per mode, 100000 fission events)
+X: Atomic number
+Y: Yield
+A: (X = 0 TO 1 BY 1) Y,RBT1
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(ZMPOST(7))
+S: TITLE(Element distribution, post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Fragment element distribution per mode, 100000 fission events)
+X: Atomic number
+Y: Yield
+A: (X = 0 TO 1 BY 1) Y,RBT1
+0,0,
+ 

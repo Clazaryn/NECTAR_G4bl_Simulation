@@ -1,0 +1,516 @@
+GEF analyzer dump: Energies of fission fragments
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(Ekinpre)
+S: TITLE(Fragment kinetic energy, pre-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Pre-neutron fragment kinetic energy, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: Ek$i$n$ / MeV
+Y: Counts
+A: (X = 43 TO 110 BY 1) Y,HTR0
+1,0,0,0,3,5,9,15,47,65,150,224,442,723,1165,1741,2201,2928,3429,4122,4632,4943,5059,4973,4852,4801,4519,4268,4252,4314,4113,4274,
+4135,4303,4083,3749,3239,2682,2010,1442,1062,640,405,302,332,499,779,1226,1883,2710,3649,4680,5900,7240,8268,9191,9433,9542,9063,
+7994,6637,4961,3212,1719,624,122,12,2,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(EkinpreM(0))
+S: TITLE(Fragment kinetic energy, pre-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Pre-neutron fragment kinetic energy per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: Ek$i$n$ / MeV
+Y: Counts
+A: (X = 72 TO 81 BY 1) Y,HTRB0
+1,0,0,0,0,0,0,0,0,1,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(EkinpreM(1))
+S: TITLE(Fragment kinetic energy, pre-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Pre-neutron fragment kinetic energy per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: Ek$i$n$ / MeV
+Y: Counts
+A: (X = 62 TO 109 BY 1) Y,HTRB0
+3,5,20,45,87,160,283,446,681,1013,1553,1936,2470,2722,3159,3201,3067,2738,2341,1817,1302,951,560,311,178,133,138,227,332,551,822,
+1104,1405,1768,2188,2495,2733,3016,3001,2894,2576,2210,1563,1018,553,168,22,2,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(EkinpreM(2))
+S: TITLE(Fragment kinetic energy, pre-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Pre-neutron fragment kinetic energy per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: Ek$i$n$ / MeV
+Y: Counts
+A: (X = 43 TO 110 BY 1) Y,HTRB0
+1,0,0,0,3,5,9,15,47,65,150,224,442,723,1165,1741,2201,2928,3429,4119,4627,4923,5014,4886,4692,4518,4073,3587,3239,2760,2177,1804,
+1413,1144,882,682,501,341,192,140,111,80,94,124,199,361,552,894,1332,1888,2545,3275,4132,5052,5773,6458,6417,6541,6169,5418,4427,
+3398,2194,1166,456,100,10,2,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(EkinpreM(3))
+S: TITLE(Fragment kinetic energy, pre-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Pre-neutron fragment kinetic energy per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: Ek$i$n$ / MeV
+Y: Counts
+A: (X = 0 TO 1 BY 1) Y,HTRB0
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(EkinpreM(4))
+S: TITLE(Fragment kinetic energy, pre-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Pre-neutron fragment kinetic energy per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: Ek$i$n$ / MeV
+Y: Counts
+A: (X = 0 TO 1 BY 1) Y,HTRB0
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(EkinpreM(5))
+S: TITLE(Fragment kinetic energy, pre-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Pre-neutron fragment kinetic energy per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: Ek$i$n$ / MeV
+Y: Counts
+A: (X = 0 TO 1 BY 1) Y,HTRB0
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(EkinpreM(6))
+S: TITLE(Fragment kinetic energy, pre-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Pre-neutron fragment kinetic energy per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: Ek$i$n$ / MeV
+Y: Counts
+A: (X = 0 TO 1 BY 1) Y,HTRB0
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(EkinpreM(7))
+S: TITLE(Fragment kinetic energy, pre-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Pre-neutron fragment kinetic energy per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: Ek$i$n$ / MeV
+Y: Counts
+A: (X = 0 TO 1 BY 1) Y,HTRB0
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(EkinApre)
+S: TITLE(Mean Ekin versus A, pre-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Pre-neutron mean Ekin vs Apre, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: Mass number
+Y: <Ek$i$n$> / MeV
+A: (X = 79 TO 159 BY 1) Y,HT0
+101.5,92.5,99.16666,99.67391,99.98649,100.5096,100.4195,101.2061,100.0237,99.76952,99.40235,100.1089,99.50835,99.69563,99.10478,
+98.94997,98.84411,99.32204,98.64722,98.76411,98.16573,98.60318,98.8157,99.56977,99.20848,99.23973,99.13255,99.1154,97.56174,96.93962,
+94.40785,93.89011,91.67242,88.33334,0,0,0,0,0,0,0,0,0,0,0,0,0,78.83334,80.22414,80.73077,79.84812,80.62008,79.78442,79.68894,78.36649,
+77.13438,75.8064,74.80193,72.98837,71.5865,70.06094,69.27289,68.02055,67.31371,65.82581,64.76402,63.74665,63.00784,61.79457,61.06508,
+59.56203,58.7388,57.82682,57.46012,56.04598,55.03846,53.74324,52.45652,51.5,46.5,50.5,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(Ekinpost)
+S: TITLE(Fragment kinetic energy, post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Post-neutron fragment kinetic energy,100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: Ek$i$n$ / MeV
+Y: Counts
+A: (X = 42 TO 110 BY 1) Y,HTB0
+1,0,0,0,2,9,10,15,37,73,121,200,322,597,961,1373,1937,2483,3018,3655,4227,4767,4756,4911,4967,4718,4730,4388,4194,4170,4172,4059,
+4171,3988,4238,3971,3638,3160,2712,2075,1594,1277,999,905,1029,1222,1577,2106,2647,3452,4121,5010,5778,6405,6935,7585,7739,7759,
+7539,7109,6115,5171,3938,2760,1654,613,121,12,2,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(EkinpostM(0))
+S: TITLE(Fragment kinetic energy, post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Post-neutron fragment kinetic energy per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: Ek$i$n$ / MeV
+Y: Counts
+A: (X = 68 TO 81 BY 1) Y,HTRB0
+1,0,0,0,0,0,0,0,0,0,0,0,0,1,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(EkinpostM(1))
+S: TITLE(Fragment kinetic energy, post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Post-neutron fragment kinetic energy per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: Ek$i$n$ / MeV
+Y: Counts
+A: (X = 62 TO 109 BY 1) Y,HTRB0
+5,11,27,61,110,169,347,512,747,1115,1592,1993,2484,2673,3133,3118,2981,2669,2313,1818,1351,1017,661,474,392,376,502,635,863,1053,
+1283,1498,1800,1950,2179,2358,2383,2354,2438,2268,1910,1618,1167,838,530,168,22,2,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(EkinpostM(2))
+S: TITLE(Fragment kinetic energy, post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Post-neutron fragment kinetic energy per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: Ek$i$n$ / MeV
+Y: Counts
+A: (X = 42 TO 110 BY 1) Y,HTRB0
+1,0,0,0,2,9,10,15,37,73,121,200,322,597,961,1373,1937,2483,3018,3655,4222,4756,4729,4850,4857,4549,4382,3876,3447,3055,2580,2066,
+1687,1315,1105,853,657,491,399,256,243,260,338,431,637,846,1075,1471,1784,2399,2838,3512,3978,4455,4756,5227,5356,5405,5101,4841,
+4205,3553,2771,1922,1124,445,99,10,2,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(EkinpostM(3))
+S: TITLE(Fragment kinetic energy, post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Post-neutron fragment kinetic energy per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: Ek$i$n$ / MeV
+Y: Counts
+A: (X = 0 TO 1 BY 1) Y,HTRB0
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(EkinpostM(4))
+S: TITLE(Fragment kinetic energy, post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Post-neutron fragment kinetic energy per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: Ek$i$n$ / MeV
+Y: Counts
+A: (X = 0 TO 1 BY 1) Y,HTRB0
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(EkinpostM(5))
+S: TITLE(Fragment kinetic energy, post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Post-neutron fragment kinetic energy per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: Ek$i$n$ / MeV
+Y: Counts
+A: (X = 0 TO 1 BY 1) Y,HTRB0
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(EkinpostM(6))
+S: TITLE(Fragment kinetic energy, post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Post-neutron fragment kinetic energy per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: Ek$i$n$ / MeV
+Y: Counts
+A: (X = 0 TO 1 BY 1) Y,HTRB0
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(EkinpostM(7))
+S: TITLE(Fragment kinetic energy, post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Post-neutron fragment kinetic energy per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: Ek$i$n$ / MeV
+Y: Counts
+A: (X = 0 TO 1 BY 1) Y,HTRB0
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(EkinApost)
+S: TITLE(Mean Ekin versus A, post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Post-neutron mean Ekin vs Apost, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: Mass number
+Y: <Ek$i$n$> / MeV
+A: (X = 79 TO 157 BY 1) Y,HT0
+95.83334,97.75,96.36667,98.31579,97.73595,97.38561,98.84003,97.53236,97.49793,97.24222,97.83662,97.44344,97.75266,97.5198,97.21959,
+97.35185,97.83317,97.55956,97.04091,96.80711,96.98235,97.21702,97.87263,97.84271,98.24025,98.57269,99.1787,98.58563,98.61859,97.31275,
+96.59091,96.44736,0,97.5,0,0,0,0,0,0,0,0,0,0,68.5,0,0,79.16666,79.84286,80.47382,79.58197,80.43603,79.40171,79.34068,77.61572,76.60529,
+74.91254,74.11625,71.73349,70.43395,68.90238,68.14252,66.97882,66.13568,64.55791,63.47282,62.73481,61.88393,60.77673,59.9041,58.64079,
+57.96601,57.58566,57.40476,55.53125,54.5,52.76667,52.5,52.5,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(TKEpre)
+S: TITLE(TKE pre-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Pre-neutron total-kinetic-energy distribution,100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: TKE / MeV
+Y: Counts
+A: (X = 129 TO 197 BY 1) Y,HTR0
+1,1,0,1,1,2,7,6,6,18,11,32,50,64,72,99,140,209,279,361,502,622,735,946,1131,1349,1614,1977,2149,2532,2829,3092,3369,3638,3755,3973,
+4070,4094,4089,4160,4020,4092,3812,3603,3549,3495,3109,2991,2784,2537,2295,2059,1965,1652,1380,1127,983,800,615,433,279,197,124,
+62,30,15,2,3,1,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(TKEpreM(0))
+S: TITLE(TKE pre-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Pre-neutron TKE distribution per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: TKE / MeV
+Y: Counts
+A: (X = 152 TO 152 BY 1) Y,HTBR0
+1,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(TKEpreM(1))
+S: TITLE(TKE pre-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Pre-neutron TKE distribution per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: TKE / MeV
+Y: Counts
+A: (X = 147 TO 197 BY 1) Y,HTBR0
+3,2,6,13,3,23,28,36,51,77,95,125,165,177,241,319,376,517,599,692,777,977,1044,1198,1307,1389,1543,1679,1591,1635,1718,1666,1534,
+1507,1499,1296,1132,901,821,684,531,374,257,165,110,57,29,11,1,2,1,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(TKEpreM(2))
+S: TITLE(TKE pre-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Pre-neutron TKE distribution per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: TKE / MeV
+Y: Counts
+A: (X = 129 TO 196 BY 1) Y,HTBR0
+1,1,0,1,1,2,7,6,6,18,11,32,50,64,72,99,140,209,276,359,496,609,732,922,1103,1313,1563,1900,2054,2407,2664,2915,3128,3319,3379,3456,
+3471,3402,3312,3183,2976,2894,2505,2214,2006,1816,1518,1356,1066,871,761,552,466,356,248,226,162,116,84,59,22,32,14,5,1,4,1,1,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(TKEpreM(3))
+S: TITLE(TKE pre-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Pre-neutron TKE distribution per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: TKE / MeV
+Y: Counts
+A: (X = 0 TO 1 BY 1) Y,HTBR0
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(TKEpreM(4))
+S: TITLE(TKE pre-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Pre-neutron TKE distribution per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: TKE / MeV
+Y: Counts
+A: (X = 0 TO 1 BY 1) Y,HTBR0
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(TKEpreM(5))
+S: TITLE(TKE pre-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Pre-neutron TKE distribution per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: TKE / MeV
+Y: Counts
+A: (X = 0 TO 1 BY 1) Y,HTBR0
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(TKEpreM(6))
+S: TITLE(TKE pre-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Pre-neutron TKE distribution per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: TKE / MeV
+Y: Counts
+A: (X = 0 TO 1 BY 1) Y,HTBR0
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(TKEpreM(7))
+S: TITLE(TKE pre-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Pre-neutron TKE distribution per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: TKE / MeV
+Y: Counts
+A: (X = 0 TO 1 BY 1) Y,HTBR0
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(TKEpost)
+S: TITLE(TKE post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Post-neutron fragment total-kinetic-energy distribution,100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: TKE / MeV
+Y: Counts
+A: (X = 125 TO 197 BY 1) Y,HTR0
+1,2,1,2,1,3,8,6,8,16,26,37,42,51,56,116,135,178,219,289,379,509,554,721,915,1014,1197,1460,1621,1904,2126,2341,2572,2945,3046,3334,
+3594,3588,3769,3871,3834,4017,3879,3752,3702,3643,3366,3253,3190,3011,2871,2492,2392,2116,2019,1818,1578,1354,1092,962,815,667,512,
+363,238,178,120,58,31,14,2,3,1,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(TKEpostM(0))
+S: TITLE(TKE post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Post-neutron TKE distribution per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: TKE / MeV
+Y: Counts
+A: (X = 149 TO 149 BY 1) Y,HTBR0
+1,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(TKEpostM(1))
+S: TITLE(TKE post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Post-neutron TKE distribution per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: TKE / MeV
+Y: Counts
+A: (X = 141 TO 197 BY 1) Y,HTBR0
+3,3,3,3,7,11,11,21,35,35,51,78,65,97,132,164,211,249,300,364,425,519,590,702,782,907,1036,1034,1163,1282,1304,1356,1506,1513,1570,
+1374,1510,1388,1384,1307,1204,1069,872,781,678,559,447,314,216,145,107,53,29,11,1,2,1,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(TKEpostM(2))
+S: TITLE(TKE post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Post-neutron TKE distribution per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: TKE / MeV
+Y: Counts
+A: (X = 125 TO 196 BY 1) Y,HTBR0
+1,2,1,2,1,3,8,6,8,16,26,37,42,51,56,116,132,175,216,286,372,498,543,700,879,979,1146,1382,1556,1807,1994,2177,2361,2696,2746,2970,
+3169,3069,3179,3169,3052,3110,2843,2718,2539,2361,2062,1897,1684,1498,1301,1118,882,728,635,511,374,285,220,181,137,108,65,49,22,
+33,13,5,2,3,1,1,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(TKEpostM(3))
+S: TITLE(TKE post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Post-neutron TKE distribution per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: TKE / MeV
+Y: Counts
+A: (X = 0 TO 1 BY 1) Y,HTBR0
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(TKEpostM(4))
+S: TITLE(TKE post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Post-neutron TKE distribution per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: TKE / MeV
+Y: Counts
+A: (X = 0 TO 1 BY 1) Y,HTBR0
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(TKEpostM(5))
+S: TITLE(TKE post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Post-neutron TKE distribution per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: TKE / MeV
+Y: Counts
+A: (X = 0 TO 1 BY 1) Y,HTBR0
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(TKEpostM(6))
+S: TITLE(TKE post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Post-neutron TKE distribution per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: TKE / MeV
+Y: Counts
+A: (X = 0 TO 1 BY 1) Y,HTBR0
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(TKEpostM(7))
+S: TITLE(TKE post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Post-neutron TKE distribution per mode, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: TKE / MeV
+Y: Counts
+A: (X = 0 TO 1 BY 1) Y,HTBR0
+0,0,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(TKEApre)
+S: TITLE(Mean TKE versus A, pre-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Mean TKE versus Af, pre-neutron, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: Mass number
+Y: <TKE> / MeV
+A: (X = 79 TO 159 BY 1) Y,HTB0
+151.5,138.5,150,151.8913,153.2838,155.1154,155.9253,158.2001,157.3673,158.025,158.4793,160.6785,160.7904,162.208,162.3602,163.2175,
+164.1831,166.1347,166.1627,167.5295,167.7168,169.6899,171.2867,173.8727,174.5296,175.8786,177.0113,178.3028,176.8406,177.057,173.7696,
+174.1923,171.4655,166.5,0,0,0,0,0,0,0,0,0,0,0,0,0,166.5,171.4655,174.1923,173.7696,177.057,176.8406,178.3028,177.0113,175.8786,174.5296,
+173.8727,171.2867,169.6899,167.7168,167.5295,166.1627,166.1347,164.1831,163.2175,162.3602,162.208,160.7904,160.6785,158.4793,158.025,
+157.3673,158.2001,155.9253,155.1154,153.2838,151.8913,150,138.5,151.5,
+ 
+C: Written on 16.02.2026, 16:14:51
+C: Calculation performed with GEF2025/1.2
+S: ANALYZER(TKEApost)
+S: TITLE(Mean TKE versus A, post-neutron)
+S: COMMENT(Z92_A238_cf_E1MeV)
+S: COMMENT(Mean TKE versus Af, post-neutron, 100000 fission events)
+C: Y_{i}(X_{i}) contains the integral over the spectrum between X_{i} and X_{i+1}.
+X: Mass number
+Y: <TKE> / MeV
+A: (X = 79 TO 157 BY 1) Y,HTB0
+141.8333,148.5,146.7,150.4211,150.6573,152.035,154.8675,154.0683,155.0331,155.8217,157.7573,158.4212,159.8394,160.5526,161.3439,
+162.8729,164.6946,165.49,165.9023,166.8345,168.5183,170.377,172.6297,173.8945,175.8308,177.6595,179.7455,179.8778,180.9773,179.9382,
+179.9182,180.5,0,184.5,0,0,0,0,0,0,0,0,0,0,149.5,0,0,165.3333,169.2714,171.8351,172.0383,175.2983,174.9359,176.2535,174.4388,173.8221,
+172.1414,171.5296,168.3187,166.9604,165.1419,164.9579,164.0769,163.3971,161.6382,160.7573,160.5586,160.0811,159.1077,158.4549,157.1404,
+157.1721,157.973,158.6385,156.1458,155.25,152.3667,154.8333,155,
+ 

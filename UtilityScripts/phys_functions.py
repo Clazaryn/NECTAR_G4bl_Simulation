@@ -28,6 +28,34 @@ def momentum_rel(Ek, m):
         return 0.0
     return math.sqrt(Ek * (Ek + 2.0 * m))
 
+def GetBetaVec(FV):
+    """
+    Return beta vector (v/c) from a four-vector FV = (E, px, py, pz)
+    """
+    E = FV[0]
+    p = FV[1:4]
+
+    if E == 0:
+        raise ValueError("Energy is zero, cannot compute beta.")
+
+    return p / E
+
+
+def GetGamma(FV):
+    """
+    Return Lorentz gamma from a four-vector FV = (E, px, py, pz)
+    """
+    E = FV[0]
+    p = FV[1:4]
+
+    p2 = np.dot(p, p)
+    m2 = E*E - p2
+
+    if m2 <= 0:
+        raise ValueError("Invariant mass squared <= 0 (check units or FV).")
+
+    m = math.sqrt(m2)
+    return E / m
 
 def lorentz_boost(FV, beta_vec, gamma):     # lorentz boost from CM to LAB frame
     if np.linalg.norm(beta_vec) == 0:       # if beta vector is zero, return the four-vector unchanged
