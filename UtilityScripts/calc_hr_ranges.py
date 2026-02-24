@@ -49,6 +49,9 @@ while current <= excEn_stop + 1e-6:  # Add small epsilon to handle floating poin
     exc_ens.append(current)
     current += excEn_bin
 
+exc_ens_str = ' '.join(str(e) for e in exc_ens)
+max_index = len(exc_ens) - 1
+
 # Read overlap range parameter (3.0 MeV)
 overlap_range = 3.0
 
@@ -127,38 +130,40 @@ if 'HR4n' in run_HR_modes:
     HR4n_stop_E = Sn_CN + Sn_1nDght + Sn_2nDght + Sn_3nDght + Sn_4nDght + overlap_range
     HR_ranges['HR4n'] = (find_start_index(HR4n_start_E), find_stop_index(HR4n_stop_E))
 
-# HRf (fission window)
-barrier_file = os.environ.get(
-    "BJORNHOLM_BARRIER_FILE",
-    "Bjornholm_Fission_Barrier.txt"
-)
+# HRf (fission window) - only compute and print when HRf is in run_HR_modes
+if 'HRf' in run_HR_modes:
+    # Default: look in NuclideDataMaster (relative to project root, one level up from this script)
+    _script_dir = os.path.dirname(os.path.abspath(__file__))
+    _default_barrier = os.path.join(os.path.dirname(_script_dir), "NuclideDataMaster", "Bjornholm_Fission_Barrier.txt")
+    barrier_file = os.environ.get("BJORNHOLM_BARRIER_FILE", _default_barrier)
 
-if not os.path.exists(barrier_file):
-    sys.stderr.write("ERROR: barrier file not found: {}\n".format(barrier_file))
-    sys.exit(1)
+    if not os.path.exists(barrier_file):
+        sys.stderr.write("ERROR: barrier file not found: {}\n".format(barrier_file))
+        sys.exit(1)
 
-barriers = load_bjornholm_uA(barrier_file)
+    barriers = load_bjornholm_uA(barrier_file)
+    Ua = barriers.get((recoil_Z, recoil_A), None)
 
-Ua = barriers.get((recoil_Z, recoil_A), None)
+    if Ua is None:
+        sys.stderr.write("ERROR: Ua not found for Z={} A={}\n".format(recoil_Z, recoil_A))
+        sys.exit(2)
 
-if Ua is None:
-    sys.stderr.write("ERROR: Ua not found for Z={} A={}\n".format(recoil_Z, recoil_A))
-    sys.exit(2)
+    max_excEn = max(exc_ens)
+    HRf_start_E = Ua - 2.0
+    HRf_stop_E = max_excEn
 
-HRf_start_E = Ua - 2.0
-HRf_stop_E  = max_excEn
+    if HRf_start_E < min(exc_ens):
+        HRf_start_E = min(exc_ens)
 
-if HRf_start_E < min(exc_ens):
-    HRf_start_E = min(exc_ens)
+    HRf_start = find_start_index(HRf_start_E)
+    HRf_stop = find_stop_index(HRf_stop_E)
+    HRf_stop = min(HRf_stop, max_index)
 
-HRf_start = find_start_index(HRf_start_E)
-HRf_stop  = find_stop_index(HRf_stop_E)
+    if HRf_start > HRf_stop:
+        HRf_start = max_index + 1
+        HRf_stop = max_index
 
-HRf_stop = min(HRf_stop, max_index)
-
-if HRf_start > HRf_stop:
-    HRf_start = max_index + 1
-    HRf_stop  = max_index
+    HR_ranges['HRf'] = (HRf_start, HRf_stop)
 
 print("excitation_Ens=(%s)" % exc_ens_str)
 
@@ -166,13 +171,11 @@ print("excitation_Ens=(%s)" % exc_ens_str)
 run_HR_modes_str = ' '.join(run_HR_modes)
 print("run_HR_modes=(%s)" % run_HR_modes_str)
 
-# Output HR mode ranges only for modes in run_HR_modes
+# Output HR mode ranges only for modes in run_HR_modes (including HRf when present)
 for mode in run_HR_modes:
     if mode in HR_ranges:
         start_idx, stop_idx = HR_ranges[mode]
         print("%s_start=%d" % (mode, start_idx))
         print("%s_stop=%d" % (mode, stop_idx))
-        
-print("HRf_start={}".format(HRf_start))
-print("HRf_stop={}".format(HRf_stop))
-print("Ua={}".format(Ua))
+        if mode == 'HRf':
+            print("Z = %d and A = %d, Fission barrier Ua = %.1f MeV" % (recoil_Z, recoil_A, Ua))

@@ -264,8 +264,8 @@ def fission(FV4, m_light, m_heavy, T_light_post, T_heavy_post, theta_light, thet
     Pmag_heavy_CM = math.sqrt((T_heavy_post*T_heavy_post) + 2.0*m_heavy*T_heavy_post);
 
     # Now Four Vector note that we did not integrate any anisotropy yet, angle are straight forward from GEF
-    FVlight_CM = np.concatenate(([Etot_light], funcs.spherical_to_cartesian(Pmag_light_CM, theta_light,phi_light))) 
-    FVheavy_CM = np.concatenate(([Etot_heavy], funcs.spherical_to_cartesian(Pmag_heavy_CM, theta_heavy,phi_heavy))) 
+    FVlight_CM = np.concatenate(([Etot_light], funcs.spherical_to_cartesian(Pmag_light_CM, theta_light, phi_light))) 
+    FVheavy_CM = np.concatenate(([Etot_heavy], funcs.spherical_to_cartesian(Pmag_heavy_CM, theta_heavy, phi_heavy))) 
 
     #Now we got to boost to the lab !! 
     # we got to boost on recoil frame 
