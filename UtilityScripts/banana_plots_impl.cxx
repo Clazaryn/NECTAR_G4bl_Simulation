@@ -9,11 +9,17 @@ BananaPlotManager::BananaPlotManager(TChain* chain, const std::string& setup,
                                      const std::string& reac, const std::string& rec)
     : PlotManager(chain, setup, reac, rec),
       nBins_dE(100), nBins_E1(250), nBins_Eres(1000),
-      dE_max(10), E1_max(25), Eres_max(100) {
+      dE_max(15), E1_max(25), Eres_max(100) {
     
-    // Initialize theta bin edges (0-180 degrees in 10 degree bins)
-    for (Int_t i = 0; i <= nThetaBins; ++i) {
-        thetaBinEdges[i] = i * 10.0;
+    // Primary: 35-45, 45-55, 55-65, 65-75, 75-85 deg
+    thetaBinEdges_primary[0] = 35;
+    for (Int_t i = 1; i <= nThetaBins_primary; ++i) {
+        thetaBinEdges_primary[i] = 35 + i * 10.0;
+    }
+    // Auxillary: 5-15, 15-25 deg (same structure as primary)
+    thetaBinEdges_auxillary[0] = 5;
+    for (Int_t i = 1; i <= nThetaBins_auxillary; ++i) {
+        thetaBinEdges_auxillary[i] = 5 + i * 10.0;
     }
 }
 
@@ -53,40 +59,40 @@ void BananaPlotManager::initializePlots() {
         hDEvEres_auxillary.push_back(new TH2D(name, title, nBins_Eres, 0, Eres_max, 
                                               nBins_dE+nBins_E1, 0, dE_max+E1_max));
         
-        // Theta-binned plots for primary telescope
-        hDEvE1_primary_theta.resize(nThetaBins);
-        hDEvEres_primary_theta.resize(nThetaBins);
-        for (Int_t i = 0; i < nThetaBins; ++i) {
+        // Theta-binned plots for primary telescope (35-45, 45-55, 55-65, 65-75, 75-85 deg)
+        hDEvE1_primary_theta.resize(nThetaBins_primary);
+        hDEvEres_primary_theta.resize(nThetaBins_primary);
+        for (Int_t i = 0; i < nThetaBins_primary; ++i) {
             name = Form("hDEvE1_primary_theta_%02d_%s", 
-                       (Int_t)thetaBinEdges[i], reaction.c_str());
+                       (Int_t)thetaBinEdges_primary[i], reaction.c_str());
             title = Form("dE vs E1 - Primary Telescope, #theta = %.0f#circ - %.0f#circ (%s); E1 (MeV); dE (MeV)", 
-                        thetaBinEdges[i], thetaBinEdges[i+1], reaction.c_str());
+                        thetaBinEdges_primary[i], thetaBinEdges_primary[i+1], reaction.c_str());
             hDEvE1_primary_theta[i].push_back(new TH2D(name, title, nBins_E1, 0, E1_max, 
                                                         nBins_dE, 0, dE_max));
             
             name = Form("hDEvEres_primary_theta_%02d_%s", 
-                       (Int_t)thetaBinEdges[i], reaction.c_str());
+                       (Int_t)thetaBinEdges_primary[i], reaction.c_str());
             title = Form("(dE+E1) vs Eres - Primary Telescope, #theta = %.0f#circ - %.0f#circ (%s); Eres (MeV); dE+E1 (MeV)", 
-                        thetaBinEdges[i], thetaBinEdges[i+1], reaction.c_str());
+                        thetaBinEdges_primary[i], thetaBinEdges_primary[i+1], reaction.c_str());
             hDEvEres_primary_theta[i].push_back(new TH2D(name, title, nBins_Eres, 0, Eres_max, 
                                                          nBins_dE+nBins_E1, 0, dE_max+E1_max));
         }
         
-        // Theta-binned plots for auxillary telescope
-        hDEvE1_auxillary_theta.resize(nThetaBins);
-        hDEvEres_auxillary_theta.resize(nThetaBins);
-        for (Int_t i = 0; i < nThetaBins; ++i) {
+        // Theta-binned plots for auxillary telescope (5-15, 15-25 deg)
+        hDEvE1_auxillary_theta.resize(nThetaBins_auxillary);
+        hDEvEres_auxillary_theta.resize(nThetaBins_auxillary);
+        for (Int_t i = 0; i < nThetaBins_auxillary; ++i) {
             name = Form("hDEvE1_auxillary_theta_%02d_%s", 
-                       (Int_t)thetaBinEdges[i], reaction.c_str());
+                       (Int_t)thetaBinEdges_auxillary[i], reaction.c_str());
             title = Form("dE vs E1 - Auxillary Telescope, #theta = %.0f#circ - %.0f#circ (%s); E1 (MeV); dE (MeV)", 
-                        thetaBinEdges[i], thetaBinEdges[i+1], reaction.c_str());
+                        thetaBinEdges_auxillary[i], thetaBinEdges_auxillary[i+1], reaction.c_str());
             hDEvE1_auxillary_theta[i].push_back(new TH2D(name, title, nBins_E1, 0, E1_max, 
                                                          nBins_dE, 0, dE_max));
             
             name = Form("hDEvEres_auxillary_theta_%02d_%s", 
-                       (Int_t)thetaBinEdges[i], reaction.c_str());
+                       (Int_t)thetaBinEdges_auxillary[i], reaction.c_str());
             title = Form("(dE+E1) vs Eres - Auxillary Telescope, #theta = %.0f#circ - %.0f#circ (%s); Eres (MeV); dE+E1 (MeV)", 
-                        thetaBinEdges[i], thetaBinEdges[i+1], reaction.c_str());
+                        thetaBinEdges_auxillary[i], thetaBinEdges_auxillary[i+1], reaction.c_str());
             hDEvEres_auxillary_theta[i].push_back(new TH2D(name, title, nBins_Eres, 0, Eres_max, 
                                                           nBins_dE+nBins_E1, 0, dE_max+E1_max));
         }
@@ -142,9 +148,9 @@ void BananaPlotManager::fillEvent(LightEjectile* ejectile, HeavyResidue* residue
                 hDEvEres_primary[0]->Fill(Eres, dE + E1);
             }
             
-            // Fill theta-binned plots
-            Int_t thetaBin = getThetaBin(recon_theta);
-            if (thetaBin >= 0 && thetaBin < nThetaBins) {
+            // Fill theta-binned plots (primary: 35-45,...,75-85 deg)
+            Int_t thetaBin = getThetaBinPrimary(recon_theta);
+            if (thetaBin >= 0 && thetaBin < nThetaBins_primary) {
                 size_t thetaBin_size = static_cast<size_t>(thetaBin);
                 if (hDEvE1_primary_theta.size() > thetaBin_size && 
                     hDEvE1_primary_theta[thetaBin_size].size() > 0) {
@@ -152,7 +158,6 @@ void BananaPlotManager::fillEvent(LightEjectile* ejectile, HeavyResidue* residue
                 }
                 if (hDEvEres_primary_theta.size() > thetaBin_size && 
                     hDEvEres_primary_theta[thetaBin_size].size() > 0) {
-                    // For New: (dE+E1) vs Eres
                     hDEvEres_primary_theta[thetaBin_size][0]->Fill(Eres, dE + E1);
                 }
             }
@@ -162,13 +167,12 @@ void BananaPlotManager::fillEvent(LightEjectile* ejectile, HeavyResidue* residue
                 hDEvE1_auxillary[0]->Fill(E1, dE);
             }
             if (hDEvEres_auxillary.size() > 0) {
-                // For New: (dE+E1) vs Eres
                 hDEvEres_auxillary[0]->Fill(Eres, dE + E1);
             }
             
-            // Fill theta-binned plots
-            Int_t thetaBin = getThetaBin(recon_theta);
-            if (thetaBin >= 0 && thetaBin < nThetaBins) {
+            // Fill theta-binned plots (auxillary: 5-15, 15-25 deg)
+            Int_t thetaBin = getThetaBinAuxillary(recon_theta);
+            if (thetaBin >= 0 && thetaBin < nThetaBins_auxillary) {
                 size_t thetaBin_size = static_cast<size_t>(thetaBin);
                 if (hDEvE1_auxillary_theta.size() > thetaBin_size && 
                     hDEvE1_auxillary_theta[thetaBin_size].size() > 0) {
@@ -176,7 +180,6 @@ void BananaPlotManager::fillEvent(LightEjectile* ejectile, HeavyResidue* residue
                 }
                 if (hDEvEres_auxillary_theta.size() > thetaBin_size && 
                     hDEvEres_auxillary_theta[thetaBin_size].size() > 0) {
-                    // For New: (dE+E1) vs Eres
                     hDEvEres_auxillary_theta[thetaBin_size][0]->Fill(Eres, dE + E1);
                 }
             }
@@ -191,18 +194,28 @@ void BananaPlotManager::fillEvent(LightEjectile* ejectile, HeavyResidue* residue
     }
 }
 
-Int_t BananaPlotManager::getThetaBin(Double_t theta) const {
-    if (theta < thetaBinEdges[0] || theta >= thetaBinEdges[nThetaBins]) {
-        return -1;  // Out of range
+Int_t BananaPlotManager::getThetaBinPrimary(Double_t theta) const {
+    if (theta < thetaBinEdges_primary[0] || theta >= thetaBinEdges_primary[nThetaBins_primary]) {
+        return -1;
     }
-    
-    for (Int_t i = 0; i < nThetaBins; ++i) {
-        if (theta >= thetaBinEdges[i] && theta < thetaBinEdges[i+1]) {
+    for (Int_t i = 0; i < nThetaBins_primary; ++i) {
+        if (theta >= thetaBinEdges_primary[i] && theta < thetaBinEdges_primary[i+1]) {
             return i;
         }
     }
-    
-    return -1;  // Should not reach here
+    return -1;
+}
+
+Int_t BananaPlotManager::getThetaBinAuxillary(Double_t theta) const {
+    if (theta < thetaBinEdges_auxillary[0] || theta >= thetaBinEdges_auxillary[nThetaBins_auxillary]) {
+        return -1;
+    }
+    for (Int_t i = 0; i < nThetaBins_auxillary; ++i) {
+        if (theta >= thetaBinEdges_auxillary[i] && theta < thetaBinEdges_auxillary[i+1]) {
+            return i;
+        }
+    }
+    return -1;
 }
 
 void BananaPlotManager::writePlots(const char* reaction_name) {
@@ -238,14 +251,16 @@ void BananaPlotManager::writePlots(const char* reaction_name) {
         TDirectory* thetaDir = output_file->mkdir("theta_binned");
         thetaDir->cd();
         
-        // Write theta-binned plots
-        for (Int_t i = 0; i < nThetaBins; ++i) {
+        // Write theta-binned plots (primary then auxillary)
+        for (Int_t i = 0; i < nThetaBins_primary; ++i) {
             for (auto* hist : hDEvE1_primary_theta[i]) {
                 if (hist) hist->Write();
             }
             for (auto* hist : hDEvEres_primary_theta[i]) {
                 if (hist) hist->Write();
             }
+        }
+        for (Int_t i = 0; i < nThetaBins_auxillary; ++i) {
             for (auto* hist : hDEvE1_auxillary_theta[i]) {
                 if (hist) hist->Write();
             }

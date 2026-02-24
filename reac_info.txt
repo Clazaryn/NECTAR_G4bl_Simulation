@@ -2,11 +2,11 @@
 ; This file is structured for easy reading by both Python and C++
 
 [beam_info]
-reaction = 238U_dp      ; reaction of interest (mostly used for labelling) 
-beam_A = 238            ; Beam mass number A
-beam_q = 92             ; Beam charge state
-beam_Z = 92             ; Beam atomic number Z
-beam_EuA = 17.24        ; Beam energy in MeV/u 
+reaction = 205Pb_dp     ; reaction of interest (mostly used for labelling) 
+beam_A = 205            ; Beam mass number A
+beam_q = 82             ; Beam charge state
+beam_Z = 82             ; Beam atomic number Z
+beam_EuA = 13           ; Beam energy in MeV/u 
 sig_pup = 0.0002        ; Rms value of momentum distribution spread 
 emit_x = 5e-07          ; Horizontal emittance of stored ion beam in m rad 
 emit_y = 5e-07          ; Vertical emittance of stored ion beam in m rad 
@@ -14,7 +14,7 @@ emit_y = 5e-07          ; Vertical emittance of stored ion beam in m rad
 [target_info]
 targ_A = 2              ; Target mass number A
 targ_Z = 1              ; Target atomic number Z
-targ_radius = 2.5       ; Target radius in mm  
+targ_radius = 0.5       ; Target radius in mm  
 targ_x0 = 0             ; Target center position x at z=0 in mm 
 
 [ejectile_info]
@@ -22,42 +22,41 @@ ejec_A = 1              ; Ejectile mass number A
 ejec_Z = 1              ; Ejectile atomic number Z
 
 [recoil_info]
-recoil_A = 239          ; Recoil mass number A
-recoil_Z = 92           ; Recoil atomic number Z
-recoil_q = 92           ; Recoil nucleus charge state
+recoil_A = 206          ; Recoil mass number A
+recoil_Z = 82           ; Recoil atomic number Z
+recoil_q = 82           ; Recoil nucleus charge state
 
 ; ---------- reocil excitation energies ---------- 
-run_HR_modes = HRg, HR1n, HR2n, HR3n, HR4n  ; which deexcitation modes to run
+run_HR_modes = HRg, HR1n, HR2n ; which deexcitation modes to run
 excEn_start = 0.0       ; excitation energy starting bin (MeV)
-excEn_stop = 26.0       ; excitation energy stop bin (MeV)
+excEn_stop = 30.0       ; excitation energy stop bin (MeV)
 excEn_bin = 1.0         ; bin width (MeV)
 
-[separation_energies]   ; 238U(d,p)
-Sn_CN = 4.80638         ; 239U neutron separation energy in MeV
-Sn_1nDght = 6.15372     ; 238U neutron separation energy in MeV
-Sn_2nDght = 5.12577     ; 237U neutron separation energy in MeV
-Sn_3nDght = 6.54552     ; 236U neutron separation energy in MeV
+[separation_energies]   ; for 205Pb(d,p)
+Sn_CN = 8.08666         ; 206Pb neutron separation energy in MeV
+Sn_1nDght = 6.73166     ; 205Pb neutron separation energy in MeV
+Sn_2nDght = 8.39465     ; 204Pb neutron separation energy in MeV
 
 [reaction_masses]       ; Reaction masses (MeV) used by event_gen_nChamb.py
-mass_beam = 221742.90528473252      ; 238U
+mass_beam = 190931.95295829562      ; 205Pb
 mass_target = 1876.1239276943375    ; deuterium
-mass_recoil = 222677.66436713093    ; 239U
+mass_recoil = 191863.4316910629     ; 206Pb
 mass_eject = 938.7830736444523      ; proton
 
 [ring_params]           ; Determined using Q1_dipole-old_ESR_std
-det_setup = PoP         ; choose which detector setup to run with G4bl: PoP = proof of principle setup from 2022/24, new = future telescopes with new reaction chamber
+det_setup = new         ; choose which detector setup to run with G4bl: PoP = proof of principle setup from 2022/24, new = future telescopes with new reaction chamber
 
 beta_x = 11.58          ; Horizontal beta function in m at target position 
 beta_y = 4.709          ; Vertical beta function in m at target position 
 disp_x = 1.79           ; Dispersion x (m) of the beam at z=0
 
 dip_radius = 6.357      ; Radius dipole magnet (m)
-dip_Brho = 1.553947373  ; Beam magnetic rigidity (Tm)
-dip_Bfld = 0.244446653  ; Dipole magnetic field in (T)
+dip_Brho = 1.302126791  ; Beam magnetic rigidity (Tm)
+dip_Bfld = 0.204833536  ; Dipole magnetic field in (T)
 
 quad_Leff = 0.289       ; Quadrupole effectile length (m)
-quad_Q1 = -0.793252578  ; Quadrupole strength Qi  
-quad_Q2 = 0.714113112
-quad_Q3 = 0.523373836
-quad_Q4 = -0.707699367
-quad_Q5 = 0.654639888
+quad_Q1 = -0.664704257  ; Quadrupole strength Qi  
+quad_Q2 = 0.598389515
+quad_Q3 = 0.438559957
+quad_Q4 = -0.593015131
+quad_Q5 = 0.548554058

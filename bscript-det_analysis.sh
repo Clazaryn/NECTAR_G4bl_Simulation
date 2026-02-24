@@ -154,6 +154,15 @@ compile_library_if_needed() {
                 break
             fi
         done
+        # Recompile if INI/reaction headers changed (optional Sn_2nDght/Sn_3nDght loading)
+        if [ $needs_compile -eq 0 ] && [[ "$output_file" == *"DetAnalysis"* ]]; then
+            for h in UtilityScripts/reaction_info.h UtilityScripts/ini_parser.h; do
+                if [ -f "$h" ] && [ "$h" -nt "$output_file" ]; then
+                    needs_compile=1
+                    break
+                fi
+            done
+        fi
         # Check if libDetAnalysis.so is newer (for libMakePlots.so dependency)
         if [[ "$output_file" == *"MakePlots"* ]] && [ -f "libDetAnalysis.so" ] && [ "libDetAnalysis.so" -nt "$output_file" ]; then
             needs_compile=1

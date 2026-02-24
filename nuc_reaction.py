@@ -29,12 +29,15 @@ max_emission_mode = False       # boolean to switch between max recoil cone and 
 # _______________________________________________________________________________________________
 # TWO BODY COLLISION FUNCTION - E1, E3, etc. are kinetic energies
 
-def two_body_col(E1, m1, m2, m3, m4, Eex, particle, Eex_min_2sol):
+def two_body_col(E1, m1, m2, m3, m4, Eex, particle, Eex_min_2sol, det_setup='new'):
     thetaOK = False     # boolean to indicate if the ejectile angle is kinematically allowed
     
-    # Sampling angle in the whole telescope area (taking into account target radius angular resolution)
-    theta3_lab = np.random.uniform(51.0, 69.0) * math.pi / 180     # use for PoP telescope acceptance
-    #theta3_lab = np.arccos(1 - 2 * np.random.uniform(0.0, 1.0))     # isotropic in the lab frame - edit uniform distribution [0,1] -> [0,2pi]
+    # Sampling angle: PoP telescope = 51-69 deg; new setup = 0-90 deg (forward hemisphere)
+    det_setup_lower = det_setup.strip().lower() if isinstance(det_setup, str) else 'new'
+    if det_setup_lower == 'pop':
+        theta3_lab = np.random.uniform(51.0, 69.0) * math.pi / 180      # just sample PoP telescope acceptance
+    else:
+        theta3_lab = np.random.uniform(0.0, 90.0) * math.pi / 180       # new setup covers full forward hemisphere
     
     # Q value       - $$$$ not used in current build $$$$
     # Q = Q_val_proj_targ_ejec(m1, m2, m3, m4)
@@ -117,8 +120,11 @@ def two_body_col(E1, m1, m2, m3, m4, Eex, particle, Eex_min_2sol):
         raise ValueError("Recoil momentum mismatch: P4_lab = ", P4_lab, " P4_lab_check = ", P4_lab_check)
     
     # set random phi angles
-    #phi3 = np.random.uniform(0, 2*math.pi)                     # Ejectile lab phi angle 
-    phi3 = math.pi + np.random.uniform(-math.pi/20, math.pi/20) # sample for PoP telescope acceptance - sampled around detector position at phi = 180 degrees
+    if det_setup_lower == 'pop':
+        phi3 = math.pi + np.random.uniform(-math.pi/20, math.pi/20) # sample for PoP telescope acceptance - sampled around detector position at phi = 180 degrees
+    else:
+        phi3 = np.random.uniform(0, math.pi)                    # new setup is only simulated above the beam since its symmetric
+        
     phi4 = -phi3                                                # Recoil lab phi angle
     if(phi4 < 0):
         phi4 = phi4 + 2 * math.pi

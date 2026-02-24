@@ -10,9 +10,6 @@ beam_EuA = 13           ; Beam energy in MeV/u
 sig_pup = 0.0002        ; Rms value of momentum distribution spread 
 emit_x = 5e-07          ; Horizontal emittance of stored ion beam in m rad 
 emit_y = 5e-07          ; Vertical emittance of stored ion beam in m rad 
-beta_x = 11.58          ; Horizontal beta function in m at target position 
-beta_y = 4.709          ; Vertical beta function in m at target position 
-disp_x = 1.79           ; Dispersion x (m) of the beam at z=0
 
 [target_info]
 targ_A = 2              ; Target mass number A
@@ -30,7 +27,7 @@ recoil_Z = 82           ; Recoil atomic number Z
 recoil_q = 82           ; Recoil nucleus charge state
 
 ; ---------- reocil excitation energies ---------- 
-run_HR_modes = HRg, HR1n, HR2n, HR3n, HR4n  ; which deexcitation modes to run
+run_HR_modes = HRg, HR1n, HR2n ; which deexcitation modes to run
 excEn_start = 0.0       ; excitation energy starting bin (MeV)
 excEn_stop = 30.0       ; excitation energy stop bin (MeV)
 excEn_bin = 1.0         ; bin width (MeV)

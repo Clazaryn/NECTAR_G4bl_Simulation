@@ -25,6 +25,7 @@ struct ReactionInfo {
     
     // Separation energies (matching INI file format)
     double Sn_CN, Sn_1nDght, Sn_2nDght, Sn_3nDght;
+    bool has_Sn_2nDght, has_Sn_3nDght;  // true if defined in INI (required for HR3n / HR4n)
     
     // Reaction masses
     double mass_beam, mass_target, mass_recoil, mass_eject;
@@ -81,10 +82,26 @@ struct ReactionInfo {
             }
             
             // Separation energies (matching INI file format)
+            // Sn_CN and Sn_1nDght are required; Sn_2nDght and Sn_3nDght are optional (required only for HR3n/HR4n)
             Sn_CN = parser.getDouble("separation_energies", "Sn_CN");
             Sn_1nDght = parser.getDouble("separation_energies", "Sn_1nDght");
-            Sn_2nDght = parser.getDouble("separation_energies", "Sn_2nDght");
-            Sn_3nDght = parser.getDouble("separation_energies", "Sn_3nDght");
+            has_Sn_2nDght = parser.hasKey("separation_energies", "Sn_2nDght");
+            Sn_2nDght = parser.getDoubleOptional("separation_energies", "Sn_2nDght", 0.0);
+            has_Sn_3nDght = parser.hasKey("separation_energies", "Sn_3nDght");
+            Sn_3nDght = parser.getDoubleOptional("separation_energies", "Sn_3nDght", 0.0);
+
+            // Validate HR3n/HR4n require corresponding separation energies
+            if (parser.hasKey("recoil_info", "run_HR_modes")) {
+                std::string run_HR_modes = parser.getString("recoil_info", "run_HR_modes");
+                if (run_HR_modes.find("HR3n") != std::string::npos && !has_Sn_2nDght) {
+                    std::cerr << "reaction_info.h: Error: HR3n is requested in run_HR_modes but Sn_2nDght is not defined in [separation_energies]." << std::endl;
+                    return false;
+                }
+                if (run_HR_modes.find("HR4n") != std::string::npos && !has_Sn_3nDght) {
+                    std::cerr << "reaction_info.h: Error: HR4n is requested in run_HR_modes but Sn_3nDght is not defined in [separation_energies]." << std::endl;
+                    return false;
+                }
+            }
             
             // Reaction masses
             mass_beam = parser.getDouble("reaction_masses", "mass_beam");

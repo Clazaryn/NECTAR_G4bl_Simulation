@@ -231,7 +231,7 @@ void det_analysis(Int_t excLabel, const char* recType) {
     // Process detector-specific telescopes
     if (strcmp(detType, "New") == 0) {
         // New detector setup - process both primary and auxillary telescopes
-        std::vector<TString> detector_names = {"primary", "auxillary"};
+        std::vector<TString> detector_names = {"prim", "auxl"};
         std::vector<TVector3> offsets = {
             TVector3(-80.858, 49.802, 31.162),      // primary
             TVector3(0, 49.802, 206.54)             // auxillary

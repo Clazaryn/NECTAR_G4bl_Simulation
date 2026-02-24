@@ -68,11 +68,19 @@ qR = int(config['recoil_info']['recoil_q'])
 excEn_bin = float(config['recoil_info']['excEn_bin'])
 Sn_CN = float(config['separation_energies']['Sn_CN'])
 Sn_1nDght = float(config['separation_energies']['Sn_1nDght'])
-Sn_2nDght = float(config['separation_energies']['Sn_2nDght'])
-Sn_3nDght = float(config['separation_energies']['Sn_3nDght'])
+Sn_2nDght = float(config['separation_energies']['Sn_2nDght']) if 'Sn_2nDght' in config['separation_energies'] else None
+Sn_3nDght = float(config['separation_energies']['Sn_3nDght']) if 'Sn_3nDght' in config['separation_energies'] else None
 beta_x = float(config['ring_params']['beta_x'])
 beta_y = float(config['ring_params']['beta_y'])
 Dispx = float(config['ring_params']['disp_x'])
+det_setup = config['ring_params']['det_setup'].strip()
+
+if HR_type == "HR3n" and Sn_2nDght is None:
+    print("event_generator.py: Error: HR3n requires Sn_2nDght to be defined in reac_info.txt [separation_energies].", file=sys.stderr)
+    sys.exit(1)
+if HR_type == "HR4n" and Sn_3nDght is None:
+    print("event_generator.py: Error: HR4n requires Sn_3nDght to be defined in reac_info.txt [separation_energies].", file=sys.stderr)
+    sys.exit(1)
 
 # Starting time to get execution time at the end 
 start = time.perf_counter()
@@ -249,6 +257,8 @@ if(verbose):
 Ncounter = 0
 Nreaction = 1                     # current reaction event number 
 Nbeam = 1                         # current ion beam event number (Nbeam >= Nreaction as not each beam ion will interact with the target)
+Nattempts_in_target = 0           # number of times beam was in target (kinematic attempts)
+max_attempts = max(5000000, 500 * Nions)   # safety cap to avoid near-infinite loop when kinematic acceptance is very low
 
 # /!\ Ncounter is updated/defined at bottom of while loop /!\
 while Ncounter < Nions:
@@ -291,9 +301,19 @@ while Ncounter < Nions:
     # '''''''''' Two body collision and deexcitation chanels are implemented in nuc_reaction.py  ''''''''''''
     # in 2-body collision: 1 corresponds to beam, 2 to target, 3 to ejectile, 4 to heavy residue
     if((math.pow(x - x0T,2) + math.pow(z,2)) < math.pow(Rt,2)): # if beam event is in target volume
+        Nattempts_in_target += 1
+        if Nattempts_in_target > max_attempts:
+            print("Error: Kinematic acceptance at excitation energy {:.1f} MeV is too low: only {:d} events generated after {:d} in-target attempts. Try a lower excitation energy or increase max_attempts.".format(excit_En, Ncounter, max_attempts), file=sys.stderr)
+            file_eject.close()
+            if HR_type == "HRg": file_HR_gamma.close()
+            elif HR_type == "HR1n": file_HR_neutron.close()
+            elif HR_type == "HR2n": file_HR_neutron_double.close()
+            elif HR_type == "HR3n": file_HR_neutron_triple.close()
+            elif HR_type == "HR4n": file_HR_neutron_quadruple.close()
+            sys.exit(1)
      
         # Calling two body collision function from nuc_reaction.py
-        thetaOK, FV3, theta3, theta3_CM, FV4, theta4, theta4_CM = nuc_reaction.two_body_col(E1, mBeam, mTarg, mEjec, mHRg, Eex, AE, Eex_min_2sol)
+        thetaOK, FV3, theta3, theta3_CM, FV4, theta4, theta4_CM = nuc_reaction.two_body_col(E1, mBeam, mTarg, mEjec, mHRg, Eex, AE, Eex_min_2sol, det_setup)
         # print("theta HR :",theta4," -  theta4 : ",theta4*180/math.pi)
         
         if not thetaOK:     # skip to next event if ejectile angle is not valid (not kinematically allowed)

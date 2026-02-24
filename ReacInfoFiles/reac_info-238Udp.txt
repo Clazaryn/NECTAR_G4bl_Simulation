@@ -10,9 +10,6 @@ beam_EuA = 17.24        ; Beam energy in MeV/u
 sig_pup = 0.0002        ; Rms value of momentum distribution spread 
 emit_x = 5e-07          ; Horizontal emittance of stored ion beam in m rad 
 emit_y = 5e-07          ; Vertical emittance of stored ion beam in m rad 
-beta_x = 11.58          ; Horizontal beta function in m at target position 
-beta_y = 4.709          ; Vertical beta function in m at target position 
-disp_x = 1.79           ; Dispersion x (m) of the beam at z=0
 
 [target_info]
 targ_A = 2              ; Target mass number A
@@ -48,10 +45,17 @@ mass_recoil = 222677.66436713093    ; 239U
 mass_eject = 938.7830736444523      ; proton
 
 [ring_params]           ; Determined using Q1_dipole-old_ESR_std
+det_setup = new         ; choose which detector setup to run with G4bl: PoP = proof of principle setup from 2022/24, new = future telescopes with new reaction chamber
+
+beta_x = 11.58          ; Horizontal beta function in m at target position 
+beta_y = 4.709          ; Vertical beta function in m at target position 
+disp_x = 1.79           ; Dispersion x (m) of the beam at z=0
+
 dip_radius = 6.357      ; Radius dipole magnet (m)
-quad_Leff = 0.289       ; Quadrupole effectile length (m)
 dip_Brho = 1.553947373  ; Beam magnetic rigidity (Tm)
-dip_Bfld = 0.244446653  ; Dipole magnetic field in (T) 
+dip_Bfld = 0.244446653  ; Dipole magnetic field in (T)
+
+quad_Leff = 0.289       ; Quadrupole effectile length (m)
 quad_Q1 = -0.793252578  ; Quadrupole strength Qi  
 quad_Q2 = 0.714113112
 quad_Q3 = 0.523373836

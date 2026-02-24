@@ -63,16 +63,18 @@ private:
     std::vector<std::vector<TH2D*>> hDEvEres_primary_theta;     // [theta_bin]
     std::vector<std::vector<TH2D*>> hDEvEres_auxillary_theta; // [theta_bin]
     
-    // Theta binning parameters
-    static const Int_t nThetaBins = 18;  // 0-180 degrees in 10 degree bins
-    Double_t thetaBinEdges[nThetaBins + 1];
+    // Theta binning: primary 35-45,...,75-85 deg; auxillary 5-15, 15-25 deg (avoid empty bins)
+    static const Int_t nThetaBins_primary = 5;    // 35-45, 45-55, 55-65, 65-75, 75-85
+    static const Int_t nThetaBins_auxillary = 2;  // 5-15, 15-25
+    Double_t thetaBinEdges_primary[nThetaBins_primary + 1];
+    Double_t thetaBinEdges_auxillary[nThetaBins_auxillary + 1];
     
     // Histogram parameters
     Int_t nBins_dE, nBins_E1, nBins_Eres;
     Double_t dE_min, dE_max, E1_min, E1_max, Eres_min, Eres_max;
     
-    // Helper function to get theta bin index
-    Int_t getThetaBin(Double_t theta) const;
+    Int_t getThetaBinPrimary(Double_t theta) const;
+    Int_t getThetaBinAuxillary(Double_t theta) const;
     
 public:
     BananaPlotManager(TChain* chain, const std::string& setup, 

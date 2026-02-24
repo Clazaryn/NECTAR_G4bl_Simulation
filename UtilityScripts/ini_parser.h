@@ -107,7 +107,17 @@ public:
             throw std::runtime_error("Could not parse '" + value + "' as double for key '" + key + "' in section '" + section + "'");
         }
     }
-    
+
+    // Get double value if key exists, otherwise return default_value (does not throw)
+    double getDoubleOptional(const std::string& section, const std::string& key, double default_value) {
+        if (!hasKey(section, key)) return default_value;
+        try {
+            return getDouble(section, key);
+        } catch (...) {
+            return default_value;
+        }
+    }
+
     // Get vector of doubles (for comma-separated values)
     std::vector<double> getDoubleVector(const std::string& section, const std::string& key) {
         std::string value = getString(section, key);
