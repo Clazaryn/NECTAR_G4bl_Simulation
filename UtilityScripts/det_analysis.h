@@ -136,7 +136,8 @@ Float_t getEnResolution(Float_t EnergyMeV, Float_t Res_Percent);
 double GAGG_resolution(double E);
 
 // Read ejectile event file (Event_output text file) to get true values
-std::unordered_map<int, std::tuple<double, double, double, int, int>> readEjectileFile(
+// Tuple: (Z, A, Eexc, Eejc, theta) — Z,A int; Eexc, Eejc, theta double
+std::unordered_map<int, std::tuple<int, int, double, double, double>> readEjectileFile(
     const char* reaction, const char* recType, Int_t excLabel, Double_t excEn,
     const ReactionInfo& reactionInfo);
 

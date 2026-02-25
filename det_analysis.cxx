@@ -12,7 +12,7 @@
 
 void processTelescopeEvents(TTree* tree_DE, TTree* tree_E1, TTree* tree_Eres,
                             TelescopeAnalyzer* analyzer,
-                            const std::unordered_map<int, std::tuple<double, double, double, int, int>>& eventMap,
+                            const std::unordered_map<int, std::tuple<int, int, double, double, double>>& eventMap,
                             const VirtualDetectorData& magsept_data,
                             const VirtualDetectorData& hrplane_data,
                             const VirtualDetectorData& quadwall_data,
@@ -104,7 +104,7 @@ void processTelescopeEvents(TTree* tree_DE, TTree* tree_E1, TTree* tree_Eres,
         }
         
         // analyseEvent function performs the reconstruction analysis
-        // tree is filled if event is successfully reconstructed and if event is hit the MagSept detector
+        // Tree is filled if event is successfully reconstructed and (no recoil data, or event hit MagSept)
         if (analyzer->analyzeEvent(eventID, x_DE, y_DE, z_DE, Edep_vec, *ejectile)) {
             // Fill true values if map provided from ejectile event file (Event_output)
             auto it = eventMap.find(eventID);
@@ -119,10 +119,11 @@ void processTelescopeEvents(TTree* tree_DE, TTree* tree_E1, TTree* tree_Eres,
             
             ejectile->detector_id = detector_id;        // Set detector ID
             
-            // Check for HR coincidence (need at least MagSept)
-            if (magsept_data.pos_map.count(eventID) > 0) {
+            // Fill when: ejectile-only run (no recoil data) or HR coincidence (event hit MagSept)
+            bool has_recoil_data = !magsept_data.pos_map.empty();
+            if (!has_recoil_data || magsept_data.pos_map.count(eventID) > 0) {
                 fillResidueFromMaps(eventID, magsept_data, hrplane_data, quadwall_data, residue);
-                output_tree->Fill();        // Fill tree if event is hit the MagSept detector
+                output_tree->Fill();
             }
         }
     }
@@ -182,8 +183,10 @@ void det_analysis(Int_t excLabel, const char* recType) {
     TFile* eject_det_output = TFile::Open(eject_det_output_filename.Data());
     TFile* recoil_det_output = TFile::Open(recoil_det_output_filename.Data());
     
-    if (!eject_det_output || !recoil_det_output) {
-        std::cerr << "det_analysis.cxx:" << __LINE__ << ": Error: Could not open input files" << std::endl;
+    if (!eject_det_output && !recoil_det_output) {
+        std::cerr << "det_analysis.cxx:" << __LINE__ << ": Error: Could not open any input files (both ejectile and recoil missing)" << std::endl;
+        std::cerr << "  Ejectile: " << eject_det_output_filename.Data() << std::endl;
+        std::cerr << "  Recoil:   " << recoil_det_output_filename.Data() << std::endl;
         std::exit(1);
     }
     
@@ -219,17 +222,20 @@ void det_analysis(Int_t excLabel, const char* recType) {
     tree->Branch("residue", &residue);
     tree->Branch("decay_channel", &decay_channel_id);
     
-    // Load virtual detector data (same names for both detector types)
+    // Load virtual detector data only when recoil file is present (same names for both detector types)
     // Read PDGid from Event_output text file to avoid precision loss from ROOT Float_t storage
-    VirtualDetectorData magsept_data = loadVirtualDetector(recoil_det_output, "VirtualDetector/virt_MagSept",
-                                                            reaction, recType, excLabel, excEn);
-    VirtualDetectorData hrplane_data = loadVirtualDetector(recoil_det_output, "VirtualDetector/virt_HRplane",
-                                                            reaction, recType, excLabel, excEn);
-    VirtualDetectorData quadwall_data = loadVirtualDetector(recoil_det_output, "VirtualDetector/virt_QuadWall",
-                                                            reaction, recType, excLabel, excEn);
+    VirtualDetectorData magsept_data, hrplane_data, quadwall_data;
+    if (recoil_det_output) {
+        magsept_data = loadVirtualDetector(recoil_det_output, "VirtualDetector/virt_MagSept",
+                                           reaction, recType, excLabel, excEn);
+        hrplane_data = loadVirtualDetector(recoil_det_output, "VirtualDetector/virt_HRplane",
+                                           reaction, recType, excLabel, excEn);
+        quadwall_data = loadVirtualDetector(recoil_det_output, "VirtualDetector/virt_QuadWall",
+                                            reaction, recType, excLabel, excEn);
+    }
     
-    // Process detector-specific telescopes
-    if (strcmp(detType, "New") == 0) {
+    // Process ejectile telescopes when ejectile detector file is present
+    if (eject_det_output && strcmp(detType, "New") == 0) {
         // New detector setup - process both primary and auxillary telescopes
         std::vector<TString> detector_names = {"prim", "auxl"};
         std::vector<TVector3> offsets = {
@@ -262,7 +268,7 @@ void det_analysis(Int_t excLabel, const char* recType) {
                                   magsept_data, hrplane_data, quadwall_data, tel_idx, tree, ejectile, residue, eject_det_output);
         }
         
-    } else if (strcmp(detType, "PoP") == 0) {
+    } else if (eject_det_output && strcmp(detType, "PoP") == 0) {
         // PoP detector setup: positions, etc. are hardcoded
         TTree* tree_DE = (TTree*)eject_det_output->Get("Detector/Telescope_DE");
         TTree* tree_E1 = (TTree*)eject_det_output->Get("Detector/Telescope_E1");
@@ -282,13 +288,22 @@ void det_analysis(Int_t excLabel, const char* recType) {
                               magsept_data, hrplane_data, quadwall_data, 0, tree, ejectile, residue, eject_det_output);
     }
     
+    // Recoil-only: fill tree from virtual detector data when no ejectile file
+    if (recoil_det_output && !eject_det_output) {
+        for (const auto& kv : magsept_data.pos_map) {
+            Int_t eventID = kv.first;
+            fillResidueFromMaps(eventID, magsept_data, hrplane_data, quadwall_data, residue);
+            tree->Fill();
+        }
+    }
+    
     // Write and close
     output_file->cd();
     tree->Write();
     output_file->Close();
     
-    eject_det_output->Close();
-    recoil_det_output->Close();
+    if (eject_det_output) eject_det_output->Close();
+    if (recoil_det_output) recoil_det_output->Close();
     
     delete ejectile;
     delete residue;

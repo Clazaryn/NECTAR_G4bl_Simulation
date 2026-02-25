@@ -30,11 +30,11 @@ double CsI_resolution(double E) {
 }
 
 // Reads ejectile event file to recover true ejectile properties
-std::unordered_map<int, std::tuple<double, double, double, int, int>> readEjectileFile(
+std::unordered_map<int, std::tuple<int, int, double, double, double>> readEjectileFile(
     const char* reaction, const char* recType, Int_t excLabel, Double_t excEn,
     const ReactionInfo& reactionInfo) {
     
-    std::unordered_map<int, std::tuple<double, double, double, int, int>> eventMap;
+    std::unordered_map<int, std::tuple<int, int, double, double, double>> eventMap;
     
     // Get masses and beam parameters from ReactionInfo
     Double_t mass_beam = reactionInfo.mass_beam;

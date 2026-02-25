@@ -38,13 +38,16 @@ void make_plots() {
     
     std::cout << "Added " << nAdded << " file(s) to chain. Note all ROOT files in Det_analysis directory will be added to the chain." << std::endl;
     
-    // Create plot manager (no recType needed - it will handle channels internally)
+    // Create plot managers (no recType needed - they handle channels internally)
     BananaPlotManager bananaPlots(fChain, det_setup, reaction, "");
     bananaPlots.initializePlots();
     bananaPlots.fillPlots();
-    
-    // Write plots (plot manager handles channel separation internally)
     bananaPlots.writePlots(reaction);
+
+    AccuracyPlotManager accuracyPlots(fChain, det_setup, reaction, "");
+    accuracyPlots.initializePlots();
+    accuracyPlots.fillPlots();
+    accuracyPlots.writePlots(reaction);
     
     delete fChain;
     

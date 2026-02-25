@@ -8,8 +8,8 @@
 BananaPlotManager::BananaPlotManager(TChain* chain, const std::string& setup, 
                                      const std::string& reac, const std::string& rec)
     : PlotManager(chain, setup, reac, rec),
-      nBins_dE(100), nBins_E1(250), nBins_Eres(1000),
-      dE_max(15), E1_max(25), Eres_max(100) {
+      nBins_dE(150), nBins_E1(250), nBins_Eres(250), nBins_Etot(250),
+      dE_max(15), E1_max(25), Eres_max(100), Etot_max(140) {
     
     // Primary: 35-45, 45-55, 55-65, 65-75, 75-85 deg
     thetaBinEdges_primary[0] = 35;
@@ -40,11 +40,11 @@ void BananaPlotManager::initializePlots() {
         hDEvE1_primary.push_back(new TH2D(name, title, nBins_E1, 0, E1_max, 
                                            nBins_dE, 0, dE_max));
         
-        name = Form("hDEvEres_primary_%s", reaction.c_str());
-        title = Form("(dE+E1) vs Eres - Primary Telescope (%s); Eres (MeV); dE+E1 (MeV)", 
+        name = Form("hDEvEtot_primary_%s", reaction.c_str());
+        title = Form("dE vs E_{tot} - Primary Telescope (%s); E_{tot} (MeV); dE (MeV)", 
                      reaction.c_str());
-        hDEvEres_primary.push_back(new TH2D(name, title, nBins_Eres, 0, Eres_max, 
-                                             nBins_dE+nBins_E1, 0, dE_max+E1_max));
+        hDEvEtot_primary.push_back(new TH2D(name, title, nBins_Etot, 0, Etot_max, 
+                                             nBins_dE, 0, dE_max));
         
         // Auxillary telescope plots
         name = Form("hDEvE1_auxillary_%s", reaction.c_str());
@@ -53,15 +53,15 @@ void BananaPlotManager::initializePlots() {
         hDEvE1_auxillary.push_back(new TH2D(name, title, nBins_E1, 0, E1_max, 
                                             nBins_dE, 0, dE_max));
         
-        name = Form("hDEvEres_auxillary_%s", reaction.c_str());
-        title = Form("(dE+E1) vs Eres - Auxillary Telescope (%s); Eres (MeV); dE+E1 (MeV)", 
+        name = Form("hDEvEtot_auxillary_%s", reaction.c_str());
+        title = Form("dE vs E_{tot} - Auxillary Telescope (%s); E_{tot} (MeV); dE (MeV)", 
                      reaction.c_str());
-        hDEvEres_auxillary.push_back(new TH2D(name, title, nBins_Eres, 0, Eres_max, 
-                                              nBins_dE+nBins_E1, 0, dE_max+E1_max));
+        hDEvEtot_auxillary.push_back(new TH2D(name, title, nBins_Etot, 0, Etot_max, 
+                                              nBins_dE, 0, dE_max));
         
         // Theta-binned plots for primary telescope (35-45, 45-55, 55-65, 65-75, 75-85 deg)
         hDEvE1_primary_theta.resize(nThetaBins_primary);
-        hDEvEres_primary_theta.resize(nThetaBins_primary);
+        hDEvEtot_primary_theta.resize(nThetaBins_primary);
         for (Int_t i = 0; i < nThetaBins_primary; ++i) {
             name = Form("hDEvE1_primary_theta_%02d_%s", 
                        (Int_t)thetaBinEdges_primary[i], reaction.c_str());
@@ -70,17 +70,17 @@ void BananaPlotManager::initializePlots() {
             hDEvE1_primary_theta[i].push_back(new TH2D(name, title, nBins_E1, 0, E1_max, 
                                                         nBins_dE, 0, dE_max));
             
-            name = Form("hDEvEres_primary_theta_%02d_%s", 
+            name = Form("hDEvEtot_primary_theta_%02d_%s", 
                        (Int_t)thetaBinEdges_primary[i], reaction.c_str());
-            title = Form("(dE+E1) vs Eres - Primary Telescope, #theta = %.0f#circ - %.0f#circ (%s); Eres (MeV); dE+E1 (MeV)", 
+            title = Form("dE vs E_{tot} - Primary Telescope, #theta = %.0f#circ - %.0f#circ (%s); E_{tot} (MeV); dE (MeV)", 
                         thetaBinEdges_primary[i], thetaBinEdges_primary[i+1], reaction.c_str());
-            hDEvEres_primary_theta[i].push_back(new TH2D(name, title, nBins_Eres, 0, Eres_max, 
-                                                         nBins_dE+nBins_E1, 0, dE_max+E1_max));
+            hDEvEtot_primary_theta[i].push_back(new TH2D(name, title, nBins_Etot, 0, Etot_max, 
+                                                         nBins_dE, 0, dE_max));
         }
         
         // Theta-binned plots for auxillary telescope (5-15, 15-25 deg)
         hDEvE1_auxillary_theta.resize(nThetaBins_auxillary);
-        hDEvEres_auxillary_theta.resize(nThetaBins_auxillary);
+        hDEvEtot_auxillary_theta.resize(nThetaBins_auxillary);
         for (Int_t i = 0; i < nThetaBins_auxillary; ++i) {
             name = Form("hDEvE1_auxillary_theta_%02d_%s", 
                        (Int_t)thetaBinEdges_auxillary[i], reaction.c_str());
@@ -89,12 +89,12 @@ void BananaPlotManager::initializePlots() {
             hDEvE1_auxillary_theta[i].push_back(new TH2D(name, title, nBins_E1, 0, E1_max, 
                                                          nBins_dE, 0, dE_max));
             
-            name = Form("hDEvEres_auxillary_theta_%02d_%s", 
+            name = Form("hDEvEtot_auxillary_theta_%02d_%s", 
                        (Int_t)thetaBinEdges_auxillary[i], reaction.c_str());
-            title = Form("(dE+E1) vs Eres - Auxillary Telescope, #theta = %.0f#circ - %.0f#circ (%s); Eres (MeV); dE+E1 (MeV)", 
+            title = Form("dE vs E_{tot} - Auxillary Telescope, #theta = %.0f#circ - %.0f#circ (%s); E_{tot} (MeV); dE (MeV)", 
                         thetaBinEdges_auxillary[i], thetaBinEdges_auxillary[i+1], reaction.c_str());
-            hDEvEres_auxillary_theta[i].push_back(new TH2D(name, title, nBins_Eres, 0, Eres_max, 
-                                                          nBins_dE+nBins_E1, 0, dE_max+E1_max));
+            hDEvEtot_auxillary_theta[i].push_back(new TH2D(name, title, nBins_Etot, 0, Etot_max, 
+                                                          nBins_dE, 0, dE_max));
         }
         
     } else if (det_setup == "PoP" || det_setup == "pop") {
@@ -105,11 +105,11 @@ void BananaPlotManager::initializePlots() {
         hDEvE1_PoP.push_back(new TH2D(name, title, nBins_E1, 0, E1_max, 
                                       nBins_dE, 0, dE_max));
         
-        name = Form("hDEvEres_PoP_%s", reaction.c_str());
-        title = Form("(dE+E1) vs Eres - PoP Telescope (%s); Eres (E2+E3+...) (MeV); dE+E1 (MeV)", 
+        name = Form("hDEvEtot_PoP_%s", reaction.c_str());
+        title = Form("dE vs E_{tot} - PoP Telescope (%s); E_{tot} (dE+E1+E2+...) (MeV); dE (MeV)", 
                      reaction.c_str());
-        hDEvEres_PoP.push_back(new TH2D(name, title, nBins_Eres, 0, Eres_max, 
-                                        nBins_dE+nBins_E1, 0, dE_max+E1_max));
+        hDEvEtot_PoP.push_back(new TH2D(name, title, nBins_Etot, 0, Etot_max, 
+                                        nBins_dE, 0, dE_max));
     }
 }
 
@@ -122,16 +122,18 @@ void BananaPlotManager::fillEvent(LightEjectile* ejectile, HeavyResidue* residue
     Int_t detector_id = ejectile->detector_id;
     Double_t recon_theta = ejectile->recon_theta;
     
-    // Calculate Eres based on detector setup
+    // Eres: New = Eres detector; PoP = E2+E3+E4+E5+E6
     if (det_setup == "new" || det_setup == "New") {
-        // New setup: Eres is the Eres detector reading
         Eres = ejectile->meas_Eres;
     } else if (det_setup == "PoP" || det_setup == "pop") {
-        // PoP setup: sum E2 + E3 + E4 + E5 + E6
         Eres = ejectile->meas_E2 + ejectile->meas_E3 + ejectile->meas_E4 + ejectile->meas_E5 + ejectile->meas_E6;
     } else {
-        Eres = ejectile->meas_Eres;  // Fallback
+        Eres = ejectile->meas_Eres;
     }
+    // Punch-through banana: Etot = dE + E1 + Eres (or dE + E1 + E2+... for PoP)
+    Float_t Etot = dE + E1 + Eres;
+    // Only fill dE vs Etot when ion punches through dE and records a signal in E1
+    bool punch_through_dE_E1 = (dE > 0 && E1 > 0);
     
     // Suppress unused parameter warnings
     (void)residue;
@@ -143,9 +145,8 @@ void BananaPlotManager::fillEvent(LightEjectile* ejectile, HeavyResidue* residue
             if (hDEvE1_primary.size() > 0) {
                 hDEvE1_primary[0]->Fill(E1, dE);
             }
-            if (hDEvEres_primary.size() > 0) {
-                // For New: (dE+E1) vs Eres (Eres is the Eres detector reading)
-                hDEvEres_primary[0]->Fill(Eres, dE + E1);
+            if (punch_through_dE_E1 && hDEvEtot_primary.size() > 0) {
+                hDEvEtot_primary[0]->Fill(Etot, dE);
             }
             
             // Fill theta-binned plots (primary: 35-45,...,75-85 deg)
@@ -156,9 +157,9 @@ void BananaPlotManager::fillEvent(LightEjectile* ejectile, HeavyResidue* residue
                     hDEvE1_primary_theta[thetaBin_size].size() > 0) {
                     hDEvE1_primary_theta[thetaBin_size][0]->Fill(E1, dE);
                 }
-                if (hDEvEres_primary_theta.size() > thetaBin_size && 
-                    hDEvEres_primary_theta[thetaBin_size].size() > 0) {
-                    hDEvEres_primary_theta[thetaBin_size][0]->Fill(Eres, dE + E1);
+                if (punch_through_dE_E1 && hDEvEtot_primary_theta.size() > thetaBin_size && 
+                    hDEvEtot_primary_theta[thetaBin_size].size() > 0) {
+                    hDEvEtot_primary_theta[thetaBin_size][0]->Fill(Etot, dE);
                 }
             }
         } else if (detector_id == 1) {
@@ -166,8 +167,8 @@ void BananaPlotManager::fillEvent(LightEjectile* ejectile, HeavyResidue* residue
             if (hDEvE1_auxillary.size() > 0) {
                 hDEvE1_auxillary[0]->Fill(E1, dE);
             }
-            if (hDEvEres_auxillary.size() > 0) {
-                hDEvEres_auxillary[0]->Fill(Eres, dE + E1);
+            if (punch_through_dE_E1 && hDEvEtot_auxillary.size() > 0) {
+                hDEvEtot_auxillary[0]->Fill(Etot, dE);
             }
             
             // Fill theta-binned plots (auxillary: 5-15, 15-25 deg)
@@ -178,9 +179,9 @@ void BananaPlotManager::fillEvent(LightEjectile* ejectile, HeavyResidue* residue
                     hDEvE1_auxillary_theta[thetaBin_size].size() > 0) {
                     hDEvE1_auxillary_theta[thetaBin_size][0]->Fill(E1, dE);
                 }
-                if (hDEvEres_auxillary_theta.size() > thetaBin_size && 
-                    hDEvEres_auxillary_theta[thetaBin_size].size() > 0) {
-                    hDEvEres_auxillary_theta[thetaBin_size][0]->Fill(Eres, dE + E1);
+                if (punch_through_dE_E1 && hDEvEtot_auxillary_theta.size() > thetaBin_size && 
+                    hDEvEtot_auxillary_theta[thetaBin_size].size() > 0) {
+                    hDEvEtot_auxillary_theta[thetaBin_size][0]->Fill(Etot, dE);
                 }
             }
         }
@@ -188,8 +189,8 @@ void BananaPlotManager::fillEvent(LightEjectile* ejectile, HeavyResidue* residue
         if (hDEvE1_PoP.size() > 0) {
             hDEvE1_PoP[0]->Fill(E1, dE);
         }
-        if (hDEvEres_PoP.size() > 0) {
-            hDEvEres_PoP[0]->Fill(Eres, dE + E1);
+        if (punch_through_dE_E1 && hDEvEtot_PoP.size() > 0) {
+            hDEvEtot_PoP[0]->Fill(Etot, dE);
         }
     }
 }
@@ -219,7 +220,6 @@ Int_t BananaPlotManager::getThetaBinAuxillary(Double_t theta) const {
 }
 
 void BananaPlotManager::writePlots(const char* reaction_name) {
-    // Create single output file for all channels combined
     TString output_filename = Form("./%s_results/plots_%s.root", reaction_name, reaction_name);
     TFile* output_file = new TFile(output_filename.Data(), "RECREATE");
     
@@ -228,53 +228,55 @@ void BananaPlotManager::writePlots(const char* reaction_name) {
         return;
     }
     
-    output_file->cd();
+    TDirectory* bananaDir = output_file->mkdir("banana_plots");
+    if (!bananaDir) {
+        std::cerr << "banana_plots_impl.cxx:" << __LINE__ << ": Error: Could not create banana_plots directory" << std::endl;
+        output_file->Close();
+        delete output_file;
+        return;
+    }
+    bananaDir->cd();
     
     if (det_setup == "new" || det_setup == "New") {
-        // Write primary telescope plots
         for (auto* hist : hDEvE1_primary) {
             if (hist) hist->Write();
         }
-        for (auto* hist : hDEvEres_primary) {
+        for (auto* hist : hDEvEtot_primary) {
             if (hist) hist->Write();
         }
-        
-        // Write auxillary telescope plots
         for (auto* hist : hDEvE1_auxillary) {
             if (hist) hist->Write();
         }
-        for (auto* hist : hDEvEres_auxillary) {
+        for (auto* hist : hDEvEtot_auxillary) {
             if (hist) hist->Write();
         }
         
-        // Create directory for theta-binned plots
-        TDirectory* thetaDir = output_file->mkdir("theta_binned");
-        thetaDir->cd();
-        
-        // Write theta-binned plots (primary then auxillary)
-        for (Int_t i = 0; i < nThetaBins_primary; ++i) {
-            for (auto* hist : hDEvE1_primary_theta[i]) {
-                if (hist) hist->Write();
+        TDirectory* thetaDir = bananaDir->mkdir("theta_binned");
+        if (thetaDir) {
+            thetaDir->cd();
+            for (Int_t i = 0; i < nThetaBins_primary; ++i) {
+                for (auto* hist : hDEvE1_primary_theta[i]) {
+                    if (hist) hist->Write();
+                }
+                for (auto* hist : hDEvEtot_primary_theta[i]) {
+                    if (hist) hist->Write();
+                }
             }
-            for (auto* hist : hDEvEres_primary_theta[i]) {
-                if (hist) hist->Write();
-            }
-        }
-        for (Int_t i = 0; i < nThetaBins_auxillary; ++i) {
-            for (auto* hist : hDEvE1_auxillary_theta[i]) {
-                if (hist) hist->Write();
-            }
-            for (auto* hist : hDEvEres_auxillary_theta[i]) {
-                if (hist) hist->Write();
+            for (Int_t i = 0; i < nThetaBins_auxillary; ++i) {
+                for (auto* hist : hDEvE1_auxillary_theta[i]) {
+                    if (hist) hist->Write();
+                }
+                for (auto* hist : hDEvEtot_auxillary_theta[i]) {
+                    if (hist) hist->Write();
+                }
             }
         }
         
     } else if (det_setup == "PoP" || det_setup == "pop") {
-        // Write PoP telescope plots
         for (auto* hist : hDEvE1_PoP) {
             if (hist) hist->Write();
         }
-        for (auto* hist : hDEvEres_PoP) {
+        for (auto* hist : hDEvEtot_PoP) {
             if (hist) hist->Write();
         }
     }
@@ -282,5 +284,5 @@ void BananaPlotManager::writePlots(const char* reaction_name) {
     output_file->Close();
     delete output_file;
     
-    std::cout << "Plots written to: " << output_filename << std::endl;
+    std::cout << "Plots written to: " << output_filename << "/banana_plots" << std::endl;
 }

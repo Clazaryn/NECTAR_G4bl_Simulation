@@ -24,6 +24,9 @@ echo "   ####################################################   "
 ### RUNS IN PARALLEL over the excitation energy range defined in reac_info.txt ###
 N=14  # number of concurrent jobs
 
+# Generate plots (yes/no) - default to yes
+generate_plots="yes"
+
 # Calculate HR channel ranges and get excitation energies from calc_hr_ranges.py
 eval $(python3 UtilityScripts/calc_hr_ranges.py)
 echo "Excitation energies: ${excitation_Ens[@]}"
@@ -260,17 +263,20 @@ wait_for_jobs 0  # Wait until 0 jobs running (i.e., all done)
 
 echo ""  # New line after progress bar completes
 
+### --------------------------------------------------------------------------- ###
+### ======================= Default plots are generated  ====================== ###
+
+if [ "$generate_plots" == "yes" ]; then
+
 ### Now that analysis is complete, run the plotting script ###
 echo ""
-echo "Analysis complete. Running plotting script automatically..."
-
-### --------------------------------------------------------------------------- ###
-### ================ Default plots are generated automatically ================ ###
+echo "Analysis complete. Running plotting script (disable to speed up script execution)"
 
 # Compile plotting library (links against libDetAnalysis.so)
 compile_library_if_needed "libMakePlots.so" \
   "UtilityScripts/make_plots_impl.cxx" \
   "UtilityScripts/banana_plots_impl.cxx" \
+  "UtilityScripts/accuracy_plots_impl.cxx" \
   "make_plots.cxx" \
   -L. -lDetAnalysis
 
@@ -284,7 +290,4 @@ make_plots();
 .q
 ROOT_EOF
 
-# Cleanup compiled libraries (optional - comment out to keep for faster reruns)
-# rm libDetAnalysis.so
-# rm libMakePlots.so
-# echo "Cleaned up compiled libraries"
+fi

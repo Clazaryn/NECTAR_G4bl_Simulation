@@ -24,9 +24,9 @@ echo "                                                          "
 echo "   ####################################################   "
 
 # --------------- Choose particle type ---------------
-#loop_list=("ejectile")
+loop_list=("ejectile")
 #loop_list=("recoil")
-loop_list=("recoil" "ejectile")
+#loop_list=("recoil" "ejectile")
 
 # RUNS IN PARALLEL over the excitation energy range defined in reac_info.txt
 # Choose the range i and number of cores N to run over
