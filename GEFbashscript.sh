@@ -67,24 +67,24 @@ fi
 # ---------------------------------
 # Run ROOT macro only if tree missing
 # ---------------------------------
-
-TREE_FILE="./GEF_tree/GEFResults_Z${Z}_A${A}_E${EEXC_FMT}_factor_${FACTOR}.root"
-
-if [[ -s "$TREE_FILE" ]]; then
-  echo "Skipping ROOT tree (already exists): $TREE_FILE"
-else
-  echo "Building ROOT tree: $TREE_FILE"
-  # Run from SCRIPT_DIR so relative paths inside the macro (like ./out/...) land here
-  (
-    cd "$SCRIPT_DIR"
-    root -l -b -q "./UtilityScripts/GEF_Reader.cpp+($Z, $A, $EEXC_FMT, $FACTOR);"
-  )
-
-  if [[ ! -s "$TREE_FILE" ]]; then
-    echo "WARNING: ROOT finished but tree file not found (or empty): $TREE_FILE" >&2
-    echo "         If your macro writes to a different name/location, update TREE_FILE in this script." >&2
-  fi
-fi
+#
+#TREE_FILE="./GEF_tree/GEFResults_Z${Z}_A${A}_E${EEXC_FMT}_factor_${FACTOR}.root"
+#
+#if [[ -s "$TREE_FILE" ]]; then
+#  echo "Skipping ROOT tree (already exists): $TREE_FILE"
+#else
+#  echo "Building ROOT tree: $TREE_FILE"
+#  # Run from SCRIPT_DIR so relative paths inside the macro (like ./out/...) land here
+#  (
+#    cd "$SCRIPT_DIR"
+#    root -l -b -q "./UtilityScripts/GEF_Reader.cpp+($Z, $A, $EEXC_FMT, $FACTOR);"
+#  )
+#
+#  if [[ ! -s "$TREE_FILE" ]]; then
+#    echo "WARNING: ROOT finished but tree file not found (or empty): $TREE_FILE" >&2
+#    echo "         If your macro writes to a different name/location, update TREE_FILE in this script." >&2
+#  fi
+#fi
 
 
 echo "Done. Wrote: $GEF_DIR/$LMD_FILE"

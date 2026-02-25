@@ -178,4 +178,4 @@ for mode in run_HR_modes:
         print("%s_start=%d" % (mode, start_idx))
         print("%s_stop=%d" % (mode, stop_idx))
         if mode == 'HRf':
-            print("Z = %d and A = %d, Fission barrier Ua = %.1f MeV" % (recoil_Z, recoil_A, Ua))
+            print("Z = %d and A = %d, Fission barrier Ua = %.1f MeV" % (recoil_Z, recoil_A, Ua), file=sys.stderr)

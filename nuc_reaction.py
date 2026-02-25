@@ -145,8 +145,8 @@ def two_body_col(E1, m1, m2, m3, m4, Eex, particle, Eex_min_2sol, det_setup='new
 
 def deexec_gamma(A_recoil, FV4, Eex):
     # determine CM frame velocity from recoil before decay
-    Beta_CM_vec = FV4[1:4] / FV4[0]                                 # beta vector = momentum / total_energy
-    Gamma_CM = 1. / math.sqrt(1 - np.linalg.norm(Beta_CM_vec)**2)   # CM velocity - gamma
+    Beta_CM_vec = funcs.GetBetaVec(FV4)                             # beta vector = momentum / total_energy
+    Gamma_CM = funcs.GetGamma(FV4)                                  # CM velocity - gamma
     FV4_CM = funcs.lorentz_boost(FV4, -Beta_CM_vec, Gamma_CM)       # boost recoil to the CM frame to start the deexcitation process
 
     # de-excitation function chooses mode of emission based on max_emission_mode
@@ -197,8 +197,8 @@ def deexec_neutron(A_recoil, FV4, Eex, mass_neutron, mult, Sn_CN, mass_HR1n, Sn_
     mass_array = [mass_HR1n, mass_HR2n, mass_HR3n, mass_HR4n]
 
     # determine CM frame velocity from recoil before decay
-    Beta_CM_vec = FV4[1:4] / FV4[0]         # beta vector = momentum / total_energy
-    Gamma_CM = 1. / math.sqrt(1 - np.linalg.norm(Beta_CM_vec)**2)   # CM velocity - gamma
+    Beta_CM_vec = funcs.GetBetaVec(FV4)         # beta vector = momentum / total_energy
+    Gamma_CM = funcs.GetGamma(FV4)              # CM velocity - gamma
     FV4_CM = funcs.lorentz_boost(FV4, -Beta_CM_vec, Gamma_CM)       # boost recoil to the CM frame to start the deexcitation process
 
     # assume very basic Maxwellian distribution with a temperature depending on the excitation energy
