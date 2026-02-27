@@ -11,6 +11,10 @@ fi
 source /usr/local/Modules/3.2.10/init/bash  # Initialize environment modules for bash
 module load root/6.24.00    # Load ROOT 6.24.00
 
+# cd to script directory so libraries and relative paths work (especially when run from elsewhere)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR" || exit 1
+
 reaction=$(grep '^reaction' reac_info.txt | awk -F'=' '{gsub(/^ +| +$/,"",$2); print $2}' | awk '{print $1}')
 
 echo "   ####################################################   "
@@ -147,12 +151,12 @@ compile_library_if_needed() {
     
     local needs_compile=0
     
-    if [ ! -f "$output_file" ]; then    # if no source file, compile
+    if [ ! -f "$output_file" ]; then
         needs_compile=1
     else
         # Check if any source file is newer than output
         for source_file in "${source_files[@]}"; do
-            if [ "$source_file" -nt "$output_file" ]; then
+            if [ -f "$source_file" ] && [ "$source_file" -nt "$output_file" ]; then
                 needs_compile=1
                 break
             fi
@@ -277,6 +281,8 @@ compile_library_if_needed "libMakePlots.so" \
   "UtilityScripts/make_plots_impl.cxx" \
   "UtilityScripts/banana_plots_impl.cxx" \
   "UtilityScripts/accuracy_plots_impl.cxx" \
+  "UtilityScripts/exc_resolution_plots_impl.cxx" \
+  "UtilityScripts/transmission_plots_impl.cxx" \
   "make_plots.cxx" \
   -L. -lDetAnalysis
 

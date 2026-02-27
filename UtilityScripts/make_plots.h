@@ -13,6 +13,12 @@
 #include <TH1D.h>
 #include <TH2D.h>
 #include <TDirectory.h>
+#include <TF1.h>
+#include <TGraphErrors.h>
+#include <TCanvas.h>
+#include <TLegend.h>
+#include <TBox.h>
+#include <TMultiGraph.h>
 
 #include "reaction_info.h"
 #include "det_analysis.h"
@@ -113,6 +119,61 @@ public:
     AccuracyPlotManager(TChain* chain, const std::string& setup,
                        const std::string& reac, const std::string& rec);
     virtual ~AccuracyPlotManager();
+
+    void initializePlots() override;
+    void fillEvent(LightEjectile* ejectile, HeavyResidue* residue, Short_t decay_channel) override;
+    void writePlots(const char* reaction) override;
+};
+
+// ========= Excitation Energy Resolution Plot Manager Class =========
+// 2D histogram of (recon_Eexc - true_Eexc) vs true_Eexc; fit Gaussian per E* slice to get sigma(E*).
+// Output: resolution map (2D) and TGraphErrors sigma vs E* in exc_resolution/ folder.
+
+class ExcResolutionPlotManager : public PlotManager {
+private:
+    TH2D* h_dEexc_vs_Eexc_primary;    // New: primary telescope
+    TH2D* h_dEexc_vs_Eexc_auxillary;  // New: auxillary telescope
+    TH2D* h_dEexc_vs_Eexc_PoP;        // PoP: single telescope
+    TGraphErrors* g_resolution_primary;
+    TGraphErrors* g_resolution_auxillary;
+    TGraphErrors* g_resolution_PoP;
+    TCanvas* c_resolution;
+
+public:
+    ExcResolutionPlotManager(TChain* chain, const std::string& setup,
+                            const std::string& reac, const std::string& rec);
+    virtual ~ExcResolutionPlotManager();
+
+    void initializePlots() override;
+    void fillEvent(LightEjectile* ejectile, HeavyResidue* residue, Short_t decay_channel) override;
+    void writePlots(const char* reaction) override;
+};
+
+// ========= Transmission Plot Manager Class =========
+// Coincidence 2D scatter (MagSept, HRplane, QuadWall) and transmission fraction vs E*.
+// New: primary/auxillary folders. PoP: single folder. Channels: gamma(red), 1n(blue), 2n(green), 3n(purple), 4n(cyan).
+
+class TransmissionPlotManager : public PlotManager {
+private:
+    // Coincidence: [virt][channel][Eexc_bin] TH2D. virt: 0=MagSept, 1=HRplane, 2=QuadWall
+    static const Int_t nChannels = 5;
+    static const Int_t nEexcBins = 5;
+    std::vector<std::vector<std::vector<TH2D*>>> h_coinc_primary;
+    std::vector<std::vector<std::vector<TH2D*>>> h_coinc_auxillary;
+    std::vector<std::vector<std::vector<TH2D*>>> h_coinc_PoP;
+    // Transmission: TH1D binned in Eexc per channel for MagSept and HRplane
+    std::vector<TH1D*> h_MagSept_primary, h_HRplane_primary;
+    std::vector<TH1D*> h_MagSept_auxillary, h_HRplane_auxillary;
+    std::vector<TH1D*> h_MagSept_PoP, h_HRplane_PoP;
+    TCanvas* c_MagSept_primary, * c_HRplane_primary, * c_QuadWall_primary;
+    TCanvas* c_MagSept_auxillary, * c_HRplane_auxillary, * c_QuadWall_auxillary;
+    TCanvas* c_MagSept_PoP, * c_HRplane_PoP, * c_QuadWall_PoP;
+    TCanvas* c_transmission_primary, * c_transmission_auxillary, * c_transmission_PoP;
+
+public:
+    TransmissionPlotManager(TChain* chain, const std::string& setup,
+                           const std::string& reac, const std::string& rec);
+    virtual ~TransmissionPlotManager();
 
     void initializePlots() override;
     void fillEvent(LightEjectile* ejectile, HeavyResidue* residue, Short_t decay_channel) override;

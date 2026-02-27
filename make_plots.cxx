@@ -48,6 +48,16 @@ void make_plots() {
     accuracyPlots.initializePlots();
     accuracyPlots.fillPlots();
     accuracyPlots.writePlots(reaction);
+
+    ExcResolutionPlotManager excResPlots(fChain, det_setup, reaction, "");
+    excResPlots.initializePlots();
+    excResPlots.fillPlots();
+    excResPlots.writePlots(reaction);
+
+    TransmissionPlotManager transPlots(fChain, det_setup, reaction, "");
+    transPlots.initializePlots();
+    transPlots.fillPlots();
+    transPlots.writePlots(reaction);
     
     delete fChain;
     
