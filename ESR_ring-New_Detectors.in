@@ -54,12 +54,18 @@ param ntX_RotRad=0.34906585039  # 20deg in rad
 param ntY_RotRad=0.34906585039  # 20deg in rad
 
 ## ESR magnetic element parameters set as a backup if not read from reac_info.txt
-param -unset Bfield=0.205788497
-param -unset Q1=-0.667803196
-param -unset Q2=0.601179286
-param -unset Q3=0.440604581
-param -unset Q4=-0.595779846
-param -unset Q5=0.551111489
+#param -unset Bfield=0.205788497
+#param -unset Q1=-0.667803196
+#param -unset Q2=0.601179286
+#param -unset Q3=0.440604581
+#param -unset Q4=-0.595779846
+#param -unset Q5=0.551111489
+param -unset Bfield=0.204718258
+param -unset Q1=-0.664330168
+param -unset Q2=0.598052748
+param -unset Q3=0.43831314
+param -unset Q4=-0.592681388
+param -unset Q5=0.548245337
 #######################
 
 # __________________________________________________________
@@ -132,7 +138,7 @@ param prim_E1_zCentDisp=(2*-sin($ntX_RotRad)*cos($ntY_RotRad))-(4*-sin(-$ntY_Rot
 param prim_E1_xCentDisp=(2*sin($ntY_RotRad)*sin($ntX_RotRad))-(4*cos($ntY_RotRad))
 param prim_E1_yCentDisp=(2*cos($ntY_RotRad))
 
-#place prim_tele_window  z=$prim_zOffset x=$prim_xOffset y=$prim_yOffset rotation=x$ntX_Rotation,y$ntY_Rotation
+place prim_tele_window  z=$prim_zOffset x=$prim_xOffset y=$prim_yOffset rotation=x$ntX_Rotation,y$ntY_Rotation
 place prim_tele_DE       z=$prim_zOffset+$prim_DE_zDisp x=$prim_xOffset+$prim_DE_xDisp y=$prim_yOffset+$prim_DE_yDisp rotation=x$ntX_Rotation,y$ntY_Rotation
 place prim_tele_E1       z=$prim_zOffset+$prim_E1_zDisp+$prim_E1_zCentDisp x=$prim_xOffset+$prim_E1_xDisp+$prim_E1_xCentDisp y=$prim_yOffset+$prim_E1_yDisp+$prim_E1_yCentDisp rotation=x$ntX_Rotation,y$ntY_Rotation
 place prim_tele_Eres     z=$prim_zOffset+$prim_Eres_zDisp+$prim_E1_zCentDisp x=$prim_xOffset+$prim_Eres_xDisp+$prim_E1_xCentDisp y=$prim_yOffset+$prim_Eres_yDisp+$prim_E1_yCentDisp rotation=x$ntX_Rotation,y$ntY_Rotation
@@ -153,7 +159,7 @@ param auxl_E1_yDisp=(6.425+$ntDEthickness+$ntE1thickness/2)*sin($ntX_RotRad)
 param auxl_Eres_zDisp=(10.425+$ntDEthickness+$ntE1thickness+$ntEresthickness/2)*cos($ntX_RotRad)
 param auxl_Eres_yDisp=(10.425+$ntDEthickness+$ntE1thickness+$ntEresthickness/2)*sin($ntX_RotRad)
 
-#place auxl_tele_window  z=$auxl_zOffset x=$auxl_xOffset y=$auxl_yOffset rotation=x$ntX_Rotation
+place auxl_tele_window  z=$auxl_zOffset x=$auxl_xOffset y=$auxl_yOffset rotation=x$ntX_Rotation
 place auxl_tele_DE       z=$auxl_zOffset+$auxl_DE_zDisp x=$auxl_xOffset y=$auxl_yOffset+$auxl_DE_yDisp rotation=x$ntX_Rotation
 place auxl_tele_E1       z=$auxl_zOffset+$auxl_E1_zDisp x=$auxl_xOffset y=$auxl_yOffset+$auxl_E1_yDisp rotation=x$ntX_Rotation
 place auxl_tele_Eres     z=$auxl_zOffset+$auxl_Eres_zDisp x=$auxl_xOffset y=$auxl_yOffset+$auxl_Eres_yDisp rotation=x$ntX_Rotation

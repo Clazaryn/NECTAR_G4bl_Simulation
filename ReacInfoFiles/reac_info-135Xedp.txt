@@ -14,7 +14,7 @@ emit_y = 5e-07          ; Vertical emittance of stored ion beam in m rad
 [target_info]
 targ_A = 2              ; Target mass number A
 targ_Z = 1              ; Target atomic number Z
-targ_radius = 0.5       ; Target radius in mm  
+targ_radius = 1.0       ; Target radius in mm  
 targ_x0 = 0             ; Target center position x at z=0 in mm 
 
 [ejectile_info]
@@ -36,6 +36,7 @@ excEn_bin = 1.0         ; bin width (MeV)
 Sn_CN = 8.08712         ; 136Xe neutron separation energy in MeV
 Sn_1nDght = 6.35885     ; 135Xe neutron separation energy in MeV
 Sn_2nDght = 8.55357     ; 134Xe neutron separation energy in MeV
+Sn_3nDght = 6.43593     ; 133Xe neutron separation energy in MeV
 
 [reaction_masses]       ; Reaction masses (MeV) used by event_gen_nChamb.py
 mass_beam = 125665.08394233619      ; 135Xe
@@ -55,8 +56,8 @@ dip_Brho = 1.301393967  ; Beam magnetic rigidity (Tm)
 dip_Bfld = 0.204718258  ; Dipole magnetic field in (T)
 
 quad_Leff = 0.289       ; Quadrupole effectile length (m)
-quad_Q1 = -0.641882889  ; Quadrupole strength Qi  
-quad_Q2 = 0.582190925
-quad_Q3 = 0.431457203
-quad_Q4 = -0.569461215
-quad_Q5 = 0.515751078
+quad_Q1 = -0.664330168  ; Quadrupole strength Qi  
+quad_Q2 = 0.598052748
+quad_Q3 = 0.43831314
+quad_Q4 = -0.592681388
+quad_Q5 = 0.548245337

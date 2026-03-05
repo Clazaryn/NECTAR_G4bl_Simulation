@@ -43,7 +43,7 @@ public:
     Bool_t hit_HRplane;  // true if event hit HRplane virtual detector
     Double_t HRplane_x, HRplane_y;  // x,y coordinates of event in HRplane virtual detector
     Bool_t hit_QuadWall;  // true if event hit QuadWall virtual detector
-    Double_t QuadWall_x, QuadWall_y;  // x,y coordinates of event in QuadWall virtual detector
+    Double_t QuadWall_z, QuadWall_y;  // z,y coordinates of event in QuadWall virtual detector
     
     HeavyResidue();
 };

@@ -14,7 +14,7 @@ emit_y = 5e-07          ; Vertical emittance of stored ion beam in m rad
 [target_info]
 targ_A = 2              ; Target mass number A
 targ_Z = 1              ; Target atomic number Z
-targ_radius = 2.5       ; Target radius in mm  
+targ_radius = 1.0       ; Target radius in mm  
 targ_x0 = 0             ; Target center position x at z=0 in mm 
 
 [ejectile_info]

@@ -100,7 +100,7 @@ LightEjectile::LightEjectile() : Z(0), A(0), detector_id(0), vert_strip(0), hor_
 
 HeavyResidue::HeavyResidue() : Z(0), A(0), hit_MagSept(kFALSE), MagSept_x(0), MagSept_y(0),
                                 hit_HRplane(kFALSE), HRplane_x(0), HRplane_y(0),
-                                hit_QuadWall(kFALSE), QuadWall_x(0), QuadWall_y(0) {}
+                                hit_QuadWall(kFALSE), QuadWall_z(0), QuadWall_y(0) {}
 
 // ========= Telescope Analyzer Implementation =========
 
@@ -469,16 +469,16 @@ void fillResidueFromMaps(Int_t eventID,
         residue->HRplane_y = -9999;
     }
     
-    // Fill QuadWall data if available
+    // Fill QuadWall data if available (z,y coordinates)
     if (quadwall_data.pos_map.count(eventID) > 0) {
         auto qw_pos = quadwall_data.pos_map.at(eventID);
         residue->hit_QuadWall = kTRUE;
-        residue->QuadWall_x = std::get<0>(qw_pos);
+        residue->QuadWall_z = std::get<2>(qw_pos);
         residue->QuadWall_y = std::get<1>(qw_pos);
     } else {
         // Event did not hit QuadWall
         residue->hit_QuadWall = kFALSE;
-        residue->QuadWall_x = -9999;
+        residue->QuadWall_z = -9999;
         residue->QuadWall_y = -9999;
     }
 }

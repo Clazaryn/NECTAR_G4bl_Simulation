@@ -31,7 +31,7 @@ import nuc_reaction          # to import file containing deexcitation modes
 sys.path.insert(0, 'UtilityScripts')
 import phys_functions as funcs
 
-verbose = False          # boolean for print + graph output
+verbose = False         # boolean for print + graph output
 writeBeamFile = False   # boolean for if to write Beam + Recoil before deexcitation file
 
 # '''''''''' Input parameters ''''''''''''
@@ -270,7 +270,7 @@ Ncounter = 0
 Nreaction = 1                     # current reaction event number 
 Nbeam = 1                         # current ion beam event number (Nbeam >= Nreaction as not each beam ion will interact with the target)
 Nattempts_in_target = 0           # number of times beam was in target (kinematic attempts)
-max_attempts = max(5000000, 500 * Nions)   # safety cap to avoid near-infinite loop when kinematic acceptance is very low
+max_attempts = max(1000000, 500 * Nions)   # safety cap to avoid near-infinite loop when kinematic acceptance is very low
 
 if(HR_type == "HRf"):
     GEFfile = GEFLmdReader(Z_recoil, A_recoil, excit_En, enhance_factor, Nions+1, base_dir=".")
@@ -398,8 +398,8 @@ while Ncounter < Nions:
                 FV4_deexc = nuc_reaction.deexec_gamma(AR_4n, FV4_deexc, Eex_resid)     # execute an additional gamma decay
             mHR_final = mHR4n  # final heavy residue mass after deexcitation
             # write to output files
-            file_eject.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" % (x,y,z,-FV3[1],FV3[2],FV3[3],0,int(PDGid_eject),Nreaction,1,0,1))
-            file_HR_neutron_quadruple.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" %(x,y,z,-FV4_deexc[1],FV4_deexc[2],FV4_deexc[3],0,int(PDGid_HR_4n),Nreaction,1,0,1))
+            file_eject.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" % (x,y,z,FV3[1],FV3[2],FV3[3],0,int(PDGid_eject),Nreaction,1,0,1))
+            file_HR_neutron_quadruple.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" %(x,y,z,FV4_deexc[1],FV4_deexc[2],FV4_deexc[3],0,int(PDGid_HR_4n),Nreaction,1,0,1))
         
         # '''''''''' Fission recoil function ''''''''''''
         elif(HR_type == "HRf"):
@@ -426,10 +426,10 @@ while Ncounter < Nions:
             
             FVlight, FVheavy = nuc_reaction.fission(FV4, m_light, m_heavy, T_light_post, T_heavy_post, theta_light, theta_heavy, phi_light, phi_heavy)
 
-            file_eject.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" % (x,y,z,-FV3[1],FV3[2],FV3[3],0,int(PDGid_eject),Nreaction,1,0,1))
+            file_eject.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" % (x,y,z,FV3[1],FV3[2],FV3[3],0,int(PDGid_eject),Nreaction,1,0,1))
 
-            file_HR_fission.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" %(x,y,z,-FVlight[1],FVlight[2],FVlight[3],0,int(PDGid_HR_f_light),Nreaction,1,0,1))
-            file_HR_fission.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" %(x,y,z,-FVheavy[1],FVheavy[2],FVheavy[3],0,int(PDGid_HR_f_heavy),Nreaction,1,0,1))
+            file_HR_fission.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" %(x,y,z,FVlight[1],FVlight[2],FVlight[3],0,int(PDGid_HR_f_light),Nreaction,1,0,1))
+            file_HR_fission.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" %(x,y,z,FVheavy[1],FVheavy[2],FVheavy[3],0,int(PDGid_HR_f_heavy),Nreaction,1,0,1))
 
 
         else:

@@ -30,8 +30,6 @@ void PlotManager::fillPlots() {
     
     // Loop over all events
     Long64_t nEntries = fChain->GetEntries();
-    std::cout << "Processing " << nEntries << " events from chain..." << std::endl;
-    
     for (Long64_t i = 0; i < nEntries; ++i) {
         fChain->GetEntry(i);
         fillEvent(ejectile, residue, decay_channel);
@@ -39,7 +37,6 @@ void PlotManager::fillPlots() {
     
     delete ejectile;
     delete residue;
-    std::cout << "Finished filling plots" << std::endl;
 }
 
 // ========= Utility Functions =========

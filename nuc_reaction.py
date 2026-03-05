@@ -31,8 +31,6 @@ max_emission_mode = False       # boolean to switch between max recoil cone and 
 # TWO BODY COLLISION FUNCTION - E1, E3, etc. are kinetic energies
 
 def two_body_col(E1, m1, m2, m3, m4, Eex, particle, Eex_min_2sol, det_setup='new'):
-    thetaOK = False     # boolean to indicate if the ejectile angle is kinematically allowed
-    
     # Sampling angle: PoP telescope = 51-69 deg; new setup = 0-90 deg (forward hemisphere)
     det_setup_lower = det_setup.strip().lower() if isinstance(det_setup, str) else 'new'
     if det_setup_lower == 'pop':
@@ -70,7 +68,7 @@ def two_body_col(E1, m1, m2, m3, m4, Eex, particle, Eex_min_2sol, det_setup='new
 
     # Sorting kinematic solutions for ejectile
     if delta < 0:       # no real solutions, exiting function
-        return thetaOK, 0, 0, 0, 0, 0, 0
+        return False, 0, 0, 0, 0, 0, 0
 
     if Gamma3_ratio >= 1:       # only the first kinematic solution exists
         if (math.cos(theta3_lab) >= 0):             # minus solution is correct for forward hemisphere
@@ -78,18 +76,14 @@ def two_body_col(E1, m1, m2, m3, m4, Eex, particle, Eex_min_2sol, det_setup='new
         else:                                       # plus solution is correct for backward hemisphere
             E3_lab = (-b + math.sqrt(delta)) / (2*a) - m3
         
-        if (E3_lab > 0):        # energies must be positive
-            thetaOK = True      # valid solution, continue 
-        else:
-            return thetaOK, 0, 0, 0, 0, 0, 0        # no valid solution, exiting function
+        if (E3_lab < 0):        # energies must be positive
+            return False, 0, 0, 0, 0, 0, 0        # no valid solution, exiting function
 
     elif (0 < Gamma3_ratio < 1 and theta3_lab < math.pi/2):    # when Gamma3_ratio is strictly less than 1, two kinematic solutions exist
-        E3_1sol = (-b + math.sqrt(delta)) / (2*a) - m3
-        E3_2sol = (-b - math.sqrt(delta)) / (2*a) - m3
-        if (E3_1sol > 0 and E3_2sol > 0):            # energies must be positive and 2 solutions exist
-            thetaOK = True      # valid solution, continue 
-        else:
-            return thetaOK, 0, 0, 0, 0, 0, 0        # no valid solution, exiting function
+        E3_1sol = (-b - math.sqrt(delta)) / (2*a) - m3
+        E3_2sol = (-b + math.sqrt(delta)) / (2*a) - m3
+        if (E3_1sol < 0 or E3_2sol < 0):            # energies must be positive and 2 solutions exist
+            return False, 0, 0, 0, 0, 0, 0          # no valid solution, exiting function
         
         #chosen_sol = 1
         chosen_sol = np.random.randint(1, 3)       # if random is desired
@@ -98,12 +92,12 @@ def two_body_col(E1, m1, m2, m3, m4, Eex, particle, Eex_min_2sol, det_setup='new
         elif(chosen_sol == 2 and Eex > Eex_min_2sol):   # if chosen_sol = 2, use the second solution if it is above the threshold
             E3_lab = E3_2sol
         else:       # if below threshold, set to 0
-            return thetaOK, 0, 0, 0, 0, 0, 0                # below threshold, exiting function
+            return False, 0, 0, 0, 0, 0, 0                # below threshold, exiting function
 
     else:
         if Gamma3_ratio < 0: 
             raise ValueError("Unphysical Gamma3_ratio: Gamma3_ratio = ", Gamma3_ratio, " How did we get here?")
-        return thetaOK, 0, 0, 0, 0, 0, 0                # below threshold, exiting function
+        return False, 0, 0, 0, 0, 0, 0                # below threshold, exiting function
         
     # '''''''''' defining collision product kinematics ''''''''''''
     P3_lab = funcs.momentum_rel(E3_lab, m3)                     # Ejectile momentum in lab frame
@@ -138,7 +132,7 @@ def two_body_col(E1, m1, m2, m3, m4, Eex, particle, Eex_min_2sol, det_setup='new
     theta3_CM = math.acos(FV3_CM[3] / np.linalg.norm(FV3_CM[1:4]))
     theta4_CM = math.pi - theta3_CM 
 
-    return thetaOK, FV3_lab, theta3_lab, theta3_CM, FV4_lab, theta4_lab, theta4_CM
+    return True, FV3_lab, theta3_lab, theta3_CM, FV4_lab, theta4_lab, theta4_CM
 
 # _______________________________________________________________________________________________
 # GAMMA DEEXCITATION FUNCTION : A relativistic deexcitation function with options for single-step or cascade gamma emission

@@ -4,35 +4,60 @@
 #include "make_plots.h"
 #include "ini_parser.h"
 #include <TBox.h>
+#include <TEllipse.h>
 #include <TGraphErrors.h>
 #include <set>
 #include <sstream>
 #include <TLegendEntry.h>
 #include <TMultiGraph.h>
 #include <TStyle.h>
+#include <algorithm>
 #include <cmath>
 #include <vector>
 #include <map>
 
 static const Int_t nChannels = 5;
-static const Int_t nEexcBins = 5;
-static const Double_t Eexc_edges[nEexcBins + 1] = {0.0, 6.0, 12.0, 18.0, 24.0, 30.0};
+static const Double_t s_coincBinWidth = 2.0;  // 2 MeV bins for coincidence plots
+static const Int_t s_maxCoincBins = 6;       // max 2 MeV bins in any channel range
 static const char* channelLabels[] = {"#gamma", "1n", "2n", "3n", "4n"};
+static const char* channelLabelsROOT[] = {"HRg", "HR1n", "HR2n", "HR3n", "HR4n"};
 
-// Base colors per channel (red, blue, green, purple, cyan); hue gradient uses offsets
+// Base colors per channel; colour gradient spans channel range (first bin = offset[0])
 static const Int_t channelBaseColor[] = {kRed, kBlue, kGreen, kMagenta, kCyan};
-static const Int_t channelColorOffsets[] = {-4, -2, 0, 2, 4};  // for Eexc bins: dark to light
+static const Int_t channelColorOffsets[s_maxCoincBins] = {3, 2, 1, 0, -4, -7};  // dark to light across 2 MeV bins within each channel's range
 
-static Int_t getEexcBin(Double_t Eexc) {
-    for (Int_t i = 0; i < nEexcBins; ++i)
-        if (Eexc >= Eexc_edges[i] && Eexc < Eexc_edges[i + 1]) return i;
-    if (Eexc >= Eexc_edges[nEexcBins]) return nEexcBins - 1;
-    return 0;
+// Energy range from reac_info (set in initializePlots)
+static Double_t s_Eexc_min = 0.0;
+static Double_t s_Eexc_max = 30.0;
+
+// Per-channel energy ranges from calc_hr_ranges logic (set in initializePlots)
+static Double_t s_channelStartE[nChannels];
+static Double_t s_channelStopE[nChannels];
+static Int_t s_channelNBins[nChannels];
+static bool s_channelActive[nChannels];
+
+// HR detector box (mm): x in [-137, -15], y in [-20, 20] — matches hrBox in writePlots
+static const Double_t s_HRbox_xlo = -132.0, s_HRbox_xhi = -10.0;
+static const Double_t s_HRbox_ylo = -20.0, s_HRbox_yhi = 20.0;
+static bool isInHRdetectorBox(Double_t x, Double_t y) {
+    return (x >= s_HRbox_xlo && x <= s_HRbox_xhi && y >= s_HRbox_ylo && y <= s_HRbox_yhi);
 }
 
-static Int_t getChannelColor(Int_t channel, Int_t eexcBin) {
+// Get coincidence bin index for (channel, Eexc). Returns 0..nBins-1 or -1 if outside channel range.
+static Int_t getChannelCoincBin(Int_t channel, Double_t Eexc) {
+    if (channel < 0 || channel >= nChannels || !s_channelActive[channel]) return -1;
+    if (Eexc < s_channelStartE[channel] || Eexc > s_channelStopE[channel]) return -1;
+    Int_t bin = static_cast<Int_t>((Eexc - s_channelStartE[channel]) / s_coincBinWidth);
+    if (bin >= s_channelNBins[channel]) bin = s_channelNBins[channel] - 1;
+    if (bin < 0) return -1;
+    return bin;
+}
+
+static Int_t getChannelColor(Int_t channel, Int_t binIndex) {
+    if (binIndex < 0) return channelBaseColor[channel];
     Int_t base = channelBaseColor[channel];
-    Int_t off = channelColorOffsets[eexcBin];
+    Int_t offIdx = (binIndex >= s_maxCoincBins) ? (s_maxCoincBins - 1) : binIndex;  // clamp to highest colour if > 6
+    Int_t off = channelColorOffsets[offIdx];
     return base + off;
 }
 
@@ -80,26 +105,90 @@ TransmissionPlotManager::~TransmissionPlotManager() {
     if (c_transmission_primary) delete c_transmission_primary; if (c_transmission_auxillary) delete c_transmission_auxillary; if (c_transmission_PoP) delete c_transmission_PoP;
 }
 
+// Compute channel energy ranges (mirrors calc_hr_ranges.py logic)
+static void initChannelRanges(const ReactionInfo& rinfo, const std::set<Int_t>& activeChannels) {
+    const Double_t overlap_range = 3.0;
+    Double_t Sn_CN = rinfo.Sn_CN;
+    Double_t Sn_1nDght = rinfo.Sn_1nDght;
+    Double_t Sn_2nDght = rinfo.has_Sn_2nDght ? rinfo.Sn_2nDght : 0.0;
+    Double_t Sn_3nDght = rinfo.has_Sn_3nDght ? rinfo.Sn_3nDght : 0.0;
+    Double_t Sn_4nDght = 0.0;
+    IniParser inip;
+    if (inip.loadFile("reac_info.txt") && inip.hasKey("separation_energies", "Sn_4nDght"))
+        Sn_4nDght = inip.getDouble("separation_energies", "Sn_4nDght");
+
+    for (Int_t ch = 0; ch < nChannels; ++ch) {
+        s_channelActive[ch] = (activeChannels.count(ch) > 0);
+        s_channelStartE[ch] = s_Eexc_min;
+        s_channelStopE[ch] = s_Eexc_min;
+    }
+    if (activeChannels.count(0)) {
+        s_channelStartE[0] = s_Eexc_min;
+        s_channelStopE[0] = Sn_CN + overlap_range;
+    }
+    if (activeChannels.count(1)) {
+        s_channelStartE[1] = Sn_CN;
+        s_channelStopE[1] = Sn_CN + Sn_1nDght + overlap_range;
+    }
+    if (activeChannels.count(2)) {
+        s_channelStartE[2] = Sn_CN + Sn_1nDght;
+        s_channelStopE[2] = Sn_CN + Sn_1nDght + Sn_2nDght + overlap_range;
+    }
+    if (activeChannels.count(3)) {
+        s_channelStartE[3] = Sn_CN + Sn_1nDght + Sn_2nDght;
+        s_channelStopE[3] = Sn_CN + Sn_1nDght + Sn_2nDght + Sn_3nDght + overlap_range;
+    }
+    if (activeChannels.count(4)) {
+        s_channelStartE[4] = Sn_CN + Sn_1nDght + Sn_2nDght + Sn_3nDght;
+        s_channelStopE[4] = Sn_CN + Sn_1nDght + Sn_2nDght + Sn_3nDght + Sn_4nDght + overlap_range;
+    }
+    for (Int_t ch = 0; ch < nChannels; ++ch) {
+        s_channelStopE[ch] = std::min(s_channelStopE[ch], s_Eexc_max);
+        s_channelNBins[ch] = static_cast<Int_t>(std::ceil((s_channelStopE[ch] - s_channelStartE[ch]) / s_coincBinWidth));
+        if (s_channelNBins[ch] < 1) s_channelNBins[ch] = 1;
+        if (s_channelNBins[ch] > s_maxCoincBins) s_channelNBins[ch] = s_maxCoincBins;
+    }
+}
+
 void TransmissionPlotManager::initializePlots() {
     ReactionInfo rinfo;
     rinfo.loadFromIni("reac_info.txt");
-    Int_t nEexc = static_cast<Int_t>(rinfo.recoil_excEns.size());
-    if (nEexc < 1) nEexc = 31;
-    Double_t Eexc_min = rinfo.recoil_excEns.empty() ? 0.0 : rinfo.recoil_excEns.front();
-    Double_t Eexc_max = rinfo.recoil_excEns.empty() ? 30.0 : rinfo.recoil_excEns.back();
+
+    IniParser inip;
+    if (inip.loadFile("reac_info.txt")) {
+        s_Eexc_min = inip.hasKey("recoil_info", "excEn_start") ? inip.getDouble("recoil_info", "excEn_start") : 0.0;
+        s_Eexc_max = inip.hasKey("recoil_info", "excEn_stop") ? inip.getDouble("recoil_info", "excEn_stop") : 30.0;
+    }
+
+    // Read excEn_bin for histogram binning (1 MeV default, matching file binning)
+    Double_t excEn_bin = 1.0;
+    if (inip.hasKey("recoil_info", "excEn_bin"))
+        excEn_bin = inip.getDouble("recoil_info", "excEn_bin");
+    Int_t nBinsEexc = static_cast<Int_t>(std::round((s_Eexc_max - s_Eexc_min) / excEn_bin));
+    if (nBinsEexc < 1) nBinsEexc = 1;
+
+    std::set<Int_t> activeChannels = getActiveChannels();
+    if (activeChannels.empty())
+        for (Int_t ch = 0; ch < nChannels; ++ch) activeChannels.insert(ch);
+    initChannelRanges(rinfo, activeChannels);
 
     auto createCoincSet = [&](const char* detLabel) {
         std::vector<std::vector<std::vector<TH2D*>>> v(3);
-        Double_t xRanges[3][2] = {{-150, 150}, {-150, 0}, {2361, 3361}};
+        Double_t xRanges[3][2] = {{-150, 150}, {-150, 0}, {15000, 22000}};  // QuadWall z (mm) absolute G4bl position
         for (Int_t virt = 0; virt < 3; ++virt) {
             v[virt].resize(nChannels);
             const char* vname[] = {"MagSept", "HRplane", "QuadWall"};
             for (Int_t ch = 0; ch < nChannels; ++ch) {
-                v[virt][ch].resize(nEexcBins);
-                for (Int_t eb = 0; eb < nEexcBins; ++eb) {
-                    TString name = Form("h_%s_%s_ch%d_eb%d_%s", vname[virt], detLabel, ch, eb, reaction.c_str());
-                    TString title = Form("%s %s (%.0f-%.0f MeV); x (mm); y (mm)", vname[virt], channelLabels[ch], Eexc_edges[eb], Eexc_edges[eb+1]);
-                    v[virt][ch][eb] = new TH2D(name, title, 150, xRanges[virt][0], xRanges[virt][1], 100, -50, 50);
+                Int_t nBins = s_channelNBins[ch];
+                v[virt][ch].resize(static_cast<size_t>(nBins));
+                for (Int_t eb = 0; eb < nBins; ++eb) {
+                    Double_t eLo = s_channelStartE[ch] + eb * s_coincBinWidth;
+                    Double_t eHi = s_channelStartE[ch] + (eb + 1) * s_coincBinWidth;
+                    const char* chLab = (ch < 5) ? channelLabelsROOT[ch] : "ch";
+                    TString name = Form("h_%s_%s_%s_eb%d_%s", vname[virt], detLabel, chLab, eb, reaction.c_str());
+                    const char* xlabel = (virt == 2) ? "z (mm)" : "x (mm)";  // QuadWall uses (z,y)
+                    TString title = Form("%s %s (%.0f-%.0f MeV); %s; y (mm)", vname[virt], channelLabels[ch], eLo, eHi, xlabel);
+                    v[virt][ch][static_cast<size_t>(eb)] = new TH2D(name, title, 150, xRanges[virt][0], xRanges[virt][1], 100, -50, 50);
                 }
             }
         }
@@ -109,10 +198,11 @@ void TransmissionPlotManager::initializePlots() {
     auto createTransmissionSet = [&](const char* detLabel) {
         std::pair<std::vector<TH1D*>, std::vector<TH1D*>> p;
         for (Int_t ch = 0; ch < nChannels; ++ch) {
-            TString n1 = Form("h_MagSept_%s_ch%d_%s", detLabel, ch, reaction.c_str());
-            TString n2 = Form("h_HRplane_%s_ch%d_%s", detLabel, ch, reaction.c_str());
-            p.first.push_back(new TH1D(n1, Form("MagSept %s; E* (MeV); Counts", channelLabels[ch]), nEexc, Eexc_min, Eexc_max));
-            p.second.push_back(new TH1D(n2, Form("HRplane %s; E* (MeV); Counts", channelLabels[ch]), nEexc, Eexc_min, Eexc_max));
+            const char* chLab = (ch < 5) ? channelLabelsROOT[ch] : "ch";
+            TString n1 = Form("h_MagSept_%s_%s_%s", detLabel, chLab, reaction.c_str());
+            TString n2 = Form("h_HRplane_%s_%s_%s", detLabel, chLab, reaction.c_str());
+            p.first.push_back(new TH1D(n1, Form("MagSept %s; E* (MeV); Counts", channelLabels[ch]), nBinsEexc, s_Eexc_min, s_Eexc_max));
+            p.second.push_back(new TH1D(n2, Form("HRplane %s; E* (MeV); Counts", channelLabels[ch]), nBinsEexc, s_Eexc_min, s_Eexc_max));
         }
         return p;
     };
@@ -135,18 +225,21 @@ void TransmissionPlotManager::fillEvent(LightEjectile* ejectile, HeavyResidue* r
     if (decay_channel < 0 || decay_channel >= nChannels) return;
 
     Double_t Eexc = ejectile->true_Eexc;
-    Int_t eexcBin = getEexcBin(Eexc);
+    Int_t coincBin = getChannelCoincBin(decay_channel, Eexc);
     Int_t detId = ejectile->detector_id;
 
     auto fillCoinc = [&](std::vector<std::vector<std::vector<TH2D*>>>& v) {
-        if (residue->hit_MagSept && v.size() > 0) v[0][decay_channel][eexcBin]->Fill(residue->MagSept_x, residue->MagSept_y);
-        if (residue->hit_HRplane && v.size() > 1) v[1][decay_channel][eexcBin]->Fill(residue->HRplane_x, residue->HRplane_y);
-        if (residue->hit_QuadWall && v.size() > 2) v[2][decay_channel][eexcBin]->Fill(residue->QuadWall_x, residue->QuadWall_y);
+        if (coincBin < 0) return;  // Eexc outside channel range
+        if (residue->hit_MagSept && v.size() > 0) v[0][decay_channel][static_cast<size_t>(coincBin)]->Fill(residue->MagSept_x, residue->MagSept_y);
+        if (residue->hit_HRplane && v.size() > 1) v[1][decay_channel][static_cast<size_t>(coincBin)]->Fill(residue->HRplane_x, residue->HRplane_y);
+        if (residue->hit_QuadWall && v.size() > 2) v[2][decay_channel][static_cast<size_t>(coincBin)]->Fill(residue->QuadWall_z, residue->QuadWall_y);
     };
 
     auto fillTrans = [&](std::vector<TH1D*>& hMag, std::vector<TH1D*>& hHR) {
+        if (Eexc < s_Eexc_min || Eexc > s_Eexc_max) return;
         if (residue->hit_MagSept && decay_channel < (Int_t)hMag.size()) hMag[decay_channel]->Fill(Eexc);
-        if (residue->hit_HRplane && decay_channel < (Int_t)hHR.size()) hHR[decay_channel]->Fill(Eexc);
+        if (residue->hit_HRplane && isInHRdetectorBox(residue->HRplane_x, residue->HRplane_y) && decay_channel < (Int_t)hHR.size())
+            hHR[decay_channel]->Fill(Eexc);
     };
 
     if (det_setup == "new" || det_setup == "New") {
@@ -157,39 +250,55 @@ void TransmissionPlotManager::fillEvent(LightEjectile* ejectile, HeavyResidue* r
     }
 }
 
-// Draw coincidence canvas with boxes
+// Draw coincidence canvas with boxes (optional beam pipe: single TEllipse arc)
 static void drawCoincCanvas(TCanvas*& c, const char* detLabel, std::vector<std::vector<std::vector<TH2D*>>>& h_coinc,
                             Int_t virt, Double_t xlo, Double_t xhi, Double_t ylo, Double_t yhi,
                             TBox* box1, TBox* box2, const char* leg1, const char* leg2,
-                            const std::set<Int_t>& activeChannels) {
+                            const std::set<Int_t>& activeChannels,
+                            TEllipse* pipeArc = nullptr, const char* pipeLeg = nullptr) {
     const char* vname[] = {"MagSept", "HRplane", "QuadWall"};
     c = new TCanvas(Form("c_%s_%s", vname[virt], detLabel), Form("%s %s", vname[virt], detLabel), 800, 600);
     c->cd();
-    TLegend* leg = new TLegend(0.78, 0.35, 0.98, 0.65);
-    bool first = true;
+    TLegend* leg = new TLegend(0.12, 0.72, 0.22, 0.92);
+
+    TH2D* hFirst = nullptr;
+    for (Int_t ch = 0; ch < nChannels; ++ch) {
+        if (activeChannels.count(ch) == 0) continue;
+        for (Int_t eb = 0; eb < s_channelNBins[ch]; ++eb) {
+            TH2D* h = h_coinc[virt][ch][static_cast<size_t>(eb)];
+            if (h && h->GetEntries() >= 1) { hFirst = h; break; }
+        }
+        if (hFirst) break;
+    }
+    if (!hFirst) { leg->Draw(); c->Update(); return; }
+
+    const char* xlabel = (virt == 2) ? "z (mm)" : "x (mm)";
+    hFirst->SetTitle(Form("%s Coincidences (%s); %s; y (mm)", vname[virt], detLabel, xlabel));
+    hFirst->GetXaxis()->SetRangeUser(xlo, xhi);
+    hFirst->GetYaxis()->SetRangeUser(ylo, yhi);
+
+    // Use a clone only for the axis/frame so the same histogram is never in the pad list twice (avoids TList::Clear "already deleted" on canvas close)
+    TH2D* hAxis = static_cast<TH2D*>(hFirst->Clone(Form("hAxis_%s_%s", vname[virt], detLabel)));
+    hAxis->SetDirectory(nullptr);
+    hAxis->Draw("AXIS");
+    if (pipeArc) pipeArc->Draw("SAME");  // after axis so scatter will be on top
+
     for (Int_t ch = 0; ch < nChannels; ++ch) {
         if (activeChannels.count(ch) == 0) continue;
         bool addedCh = false;
-        for (Int_t eb = 0; eb < nEexcBins; ++eb) {
-            TH2D* h = h_coinc[virt][ch][eb];
+        for (Int_t eb = 0; eb < s_channelNBins[ch]; ++eb) {
+            TH2D* h = h_coinc[virt][ch][static_cast<size_t>(eb)];
             if (!h || h->GetEntries() < 1) continue;
             h->SetMarkerStyle(20);
             h->SetMarkerSize(0.3);
             h->SetMarkerColor(getChannelColor(ch, eb));
-            if (first) {
-                h->Draw("SCAT");
-                h->GetXaxis()->SetRangeUser(xlo, xhi);
-                h->GetYaxis()->SetRangeUser(ylo, yhi);
-                first = false;
-            } else {
-                h->Draw("SCAT SAME");
-            }
+            h->Draw("SCAT SAME");  // each histogram drawn once
             if (!addedCh) {
                 TGraph* legDummy = new TGraph(1);
                 legDummy->SetPoint(0, 0, 0);
                 legDummy->SetMarkerStyle(20);
                 legDummy->SetMarkerSize(1.5);
-                legDummy->SetMarkerColor(getChannelColor(ch, eb));
+                legDummy->SetMarkerColor(channelBaseColor[ch]);
                 leg->AddEntry(legDummy, channelLabels[ch], "p");
                 addedCh = true;
             }
@@ -197,6 +306,7 @@ static void drawCoincCanvas(TCanvas*& c, const char* detLabel, std::vector<std::
     }
     if (box1) { box1->Draw("SAME"); if (leg1) leg->AddEntry(box1, leg1, "l"); }
     if (box2) { box2->Draw("SAME"); if (leg2) leg->AddEntry(box2, leg2, "l"); }
+    if (pipeArc && pipeLeg) leg->AddEntry(pipeArc, pipeLeg, "l");
     leg->Draw();
     c->Update();
 }
@@ -236,7 +346,8 @@ static void drawTransmissionCanvas(TCanvas*& c, const char* detLabel,
         leg->AddEntry(g, channelLabels[ch], "p");
     }
     mg->Draw("AP");
-    mg->SetTitle("HR transmission fraction; E* (MeV); HRplane / MagSept (%)");
+    mg->SetTitle(Form("HR transmission fraction (%s); true E* (MeV); HRplane / MagSept (%%)", detLabel));
+    mg->GetYaxis()->SetRangeUser(0, 105);
     leg->Draw();
     c->Update();
 }
@@ -264,27 +375,43 @@ void TransmissionPlotManager::writePlots(const char* reaction_name) {
         TDirectory* sub = transDir->mkdir(folder);
         sub->cd();
 
-        // Boxes for MagSept
+        // Beam pipe: full circle r=100 mm, 10 px thick, kGray (one per canvas to avoid TList ownership issues)
+        TEllipse* pipeMag = new TEllipse(0, 0, 100, 100);
+        pipeMag->SetLineWidth(10); pipeMag->SetLineColor(kGray); pipeMag->SetFillStyle(0);
+        TEllipse* pipeHR = new TEllipse(0, 0, 100, 100);
+        pipeHR->SetLineWidth(10); pipeHR->SetLineColor(kGray); pipeHR->SetFillStyle(0);
+
+        // Boxes for MagSept (dipole entrance, magnet septum with hashed fill)
         TBox* dipBox = new TBox(-100, -35, 100, 35);
         dipBox->SetLineColor(kRed); dipBox->SetLineWidth(3); dipBox->SetFillStyle(0);
         TBox* sepBox = new TBox(70, -50, 150, 50);
-        sepBox->SetLineColor(kBlack); sepBox->SetLineStyle(2); sepBox->SetLineWidth(2); sepBox->SetFillStyle(0);
+        sepBox->SetLineColor(kBlack); sepBox->SetLineStyle(1); sepBox->SetLineWidth(2);
+        sepBox->SetFillStyle(3354); sepBox->SetFillColor(kBlack);  // hashed fill
 
-        drawCoincCanvas(cMag, folder, h_coinc, 0, -150, 150, -50, 50, dipBox, sepBox, "dipole entrance", "magnet septum", activeChannels);
+        drawCoincCanvas(cMag, folder, h_coinc, 0, -150, 150, -50, 50, dipBox, sepBox, "dip entr", "mag sept", activeChannels,
+                        pipeMag, "beam pipe");
         if (cMag) cMag->Write();
 
-        TBox* hrBox = new TBox(-137, -20, -15, 20);
+        // Boxes for HRplane (HR detector position)
+        TBox* hrBox = new TBox(s_HRbox_xlo, s_HRbox_ylo, s_HRbox_xhi, s_HRbox_yhi);
         hrBox->SetLineColor(kRed); hrBox->SetLineWidth(3); hrBox->SetFillStyle(0);
-        drawCoincCanvas(cHR, folder, h_coinc, 1, -150, 0, -30, 30, hrBox, nullptr, "HR detector position", nullptr, activeChannels);
+        drawCoincCanvas(cHR, folder, h_coinc, 1, -150, 0, -30, 30, hrBox, nullptr, "HR detector", nullptr, activeChannels,
+                        pipeHR, "beam pipe");
         if (cHR) cHR->Write();
 
-        drawCoincCanvas(cQW, folder, h_coinc, 2, 2361, 3361, -30, 30, nullptr, nullptr, nullptr, nullptr, activeChannels);
+        drawCoincCanvas(cQW, folder, h_coinc, 2, 15000, 22000, -30, 30, nullptr, nullptr, nullptr, nullptr, activeChannels);
         if (cQW) cQW->Write();
 
         drawTransmissionCanvas(cTrans, folder, hMag, hHR, activeChannels);
         if (cTrans) cTrans->Write();
 
-        for (auto& vv : h_coinc) for (auto& vvv : vv) for (auto* h : vvv) if (h) h->Write();
+        // Write intermediate histograms to detector-labelled histograms subfolder
+        TDirectory* histDir = sub->mkdir("histograms");
+        histDir->cd();
+        for (auto& vv : h_coinc)
+            for (auto& vvv : vv)
+                for (auto* h : vvv)
+                    if (h) h->Write();
         for (auto* h : hMag) if (h) h->Write();
         for (auto* h : hHR) if (h) h->Write();
     };

@@ -120,8 +120,11 @@ void processTelescopeEvents(TTree* tree_DE, TTree* tree_E1, TTree* tree_Eres,
             ejectile->detector_id = detector_id;        // Set detector ID
             
             // Fill when: ejectile-only run (no recoil data) or HR coincidence (event hit MagSept)
+            // Electronic threshold applied to telescopes: Emeas_dE > 0.4 MeV
             bool has_recoil_data = !magsept_data.pos_map.empty();
-            if (!has_recoil_data || magsept_data.pos_map.count(eventID) > 0) {
+            bool is_coincidence = magsept_data.pos_map.count(eventID) > 0;
+            bool passes_dE_threshold = ejectile->meas_dE > 0.4f;
+            if ((!has_recoil_data || is_coincidence) && passes_dE_threshold) {
                 fillResidueFromMaps(eventID, magsept_data, hrplane_data, quadwall_data, residue);
                 output_tree->Fill();
             }
