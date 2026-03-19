@@ -1,0 +1,64 @@
+; NECTAR Simulations Reaction Information - INI Format
+; This file is structured for easy reading by both Python and C++
+
+[beam_info]
+reaction = 197Au_dp     ; reaction of interest (mostly used for labelling) 
+beam_A = 197            ; Beam mass number A
+beam_q = 79             ; Beam charge state
+beam_Z = 79             ; Beam atomic number Z
+beam_EuA = 14           ; Beam energy in MeV/u 
+sig_pup = 0.0002        ; Rms value of momentum distribution spread 
+emit_x = 5e-07          ; Horizontal emittance of stored ion beam in m rad 
+emit_y = 5e-07          ; Vertical emittance of stored ion beam in m rad
+
+[target_info]
+targ_A = 2              ; Target mass number A
+targ_Z = 1              ; Target atomic number Z
+targ_radius = 1.0       ; Target radius in mm  
+targ_x0 = 0             ; Target center position x at z=0 in mm 
+
+[ejectile_info]
+ejec_A = 1              ; Ejectile mass number A
+ejec_Z = 1              ; Ejectile atomic number Z
+
+[recoil_info]
+recoil_A = 198          ; Recoil mass number A
+recoil_Z = 79           ; Recoil atomic number Z
+recoil_q = 79           ; Recoil nucleus charge state
+
+; ---------- reocil excitation energies ---------- 
+run_HR_modes = HRg, HR1n, HR2n, HR3n  ; which deexcitation modes to run
+excEn_start = 0.0       ; excitation energy starting bin (MeV)
+excEn_stop = 31.0       ; excitation energy stop bin (MeV)
+excEn_bin = 1.0         ; bin width (MeV)
+
+[separation_energies]   ; 197Au(d,p)
+Sn_CN = 6.512            ; Sn(198Au), nudat values
+Sn_1nDght = 8.072        ; Sn(197Au)
+Sn_2nDght = 6.642        ; Sn(196Au)
+Sn_3nDght = 8.072       ; Sn(195Au)
+
+[reaction_masses]       ; Reaction masses (MeV) used by event_gen_nChamb.py
+mass_beam = 183473.19720178822    ; 197Au
+mass_target = 1876.1239279924155  ; deuterium
+mass_recoil = 184406.25017169808  ; 198Au
+mass_eject = 938.7830737934914    ; 1H (proton atom)
+
+[ring_params]           ; Determined using Q1_dipole-old_ESR_std
+det_setup = new         ; choose which detector setup to run with G4bl: PoP = proof of principle setup from 2022/24, new = future telescopes with new reaction chamber
+
+beta_x = 11.58          ; Horizontal beta function in m at target position 
+beta_y = 4.709          ; Vertical beta function in m at target position 
+disp_x = 1.79           ; Dispersion x (m) of the beam at z=0
+
+dip_radius = 6.357      ; Radius dipole magnet (m)
+dip_Brho = 1.348158079  ; Beam magnetic rigidity (Tm)
+dip_Bfld = 0.212074576  ; Dipole magnetic field in (T)
+
+quad_Leff = 0.289       ; Quadrupole effectile length (m)
+quad_Q1 = -0.688202117  ; Quadrupole strength Qi  
+quad_Q2 = 0.619543093
+quad_Q3 = 0.454063424
+quad_Q4 = -0.61397872
+quad_Q5 = 0.567945909
+

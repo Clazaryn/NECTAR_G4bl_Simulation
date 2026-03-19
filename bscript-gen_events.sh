@@ -17,6 +17,8 @@ reaction=$(grep '^reaction' reac_info.txt | awk -F'=' '{gsub(/^ +| +$/,"",$2); p
 recoil_A=$(grep '^recoil_A' reac_info.txt | awk -F'=' '{gsub(/^ +| +$/,"",$2); print $2}' | awk '{print $1}')
 recoil_Z=$(grep '^recoil_Z' reac_info.txt | awk -F'=' '{gsub(/^ +| +$/,"",$2); print $2}' | awk '{print $1}')
 
+# Read info on the E* array from reac_info.txt
+excEn_bin=$(grep '^excEn_bin' reac_info.txt | awk -F'=' '{gsub(/^ +| +$/,"",$2); print $2}' | awk '{print $1}')
 
 echo "   ####################################################   "
 echo "                                                          "
@@ -128,60 +130,75 @@ wait_for_jobs() {
   done
 }
 
-# Function to check if an excitation energy is in an overlap region between modes
-# Overlap occurs at the boundary between consecutive modes (3.0 MeV overlap_range)
-is_in_overlap() {
+# Function to get overlap information for one excitation index
+# Output format:
+#   <count>|<mode1 mode2 mode3 ...>
+get_overlap_info() {
     local exc_index=$1
-    local current_mode=$2
-    local exc_en=${excitation_Ens[$exc_index]}
-    
-    # Check if this excitation energy appears in multiple mode ranges
     local count=0
+    local overlap_names=()
+
     for i in "${!mode_names[@]}"; do
         local mode_name=${mode_names[$i]}
         local mode_start=${mode_start_indices[$i]}
         local mode_stop=${mode_stop_indices[$i]}
-        
-        # Check if exc_index is within this mode's range
+
         if [ "$exc_index" -ge "$mode_start" ] && [ "$exc_index" -le "$mode_stop" ]; then
             count=$((count + 1))
+            overlap_names+=("$mode_name")
         fi
     done
-    
-    [ $count -gt 1 ]    # Return true if the excitation energy is in an overlap region
+
+    echo "${count}|${overlap_names[*]}"
 }
 
 # Function to run event generation in background
 run_event_generation() {
   local exc_index=$1
   local rec_type=$2
-  
+
   (
-    en=${excitation_Ens[$exc_index]}
-    lbl=$(echo "$en" | awk '{printf "%04.1fMeV", $1}')  # Format: XX.XMeV (1 decimal place with leading zero)
-    
-    # Check if this excitation energy is in an overlap region. If so, use half the events to avoid double-counting
-    local events_to_use=$nevents
-    if is_in_overlap $exc_index "$rec_type"; then
-        events_to_use=$((nevents / 2))
+    local en="${excitation_Ens[$exc_index]}"
+    en_next=$(awk -v x="$en" -v step="$excEn_bin" 'BEGIN{printf "%.1f", x + step}')
+    echo "en = $en | en_next = $en_next"
+    local lbl
+    lbl=$(awk -v x="$en" 'BEGIN{printf "%04.1fMeV", x}')
+
+    local events_before="$nevents"
+    local events_to_use="$nevents"
+    local overlap_info
+    local overlap_count
+    local overlap_names
+    local enhancement_factor
+
+    overlap_info=$(get_overlap_info "$exc_index")
+    overlap_count="${overlap_info%%|*}"
+    overlap_names="${overlap_info#*|}"
+
+    if [ "$overlap_count" -gt 1 ]; then
+        events_to_use=$((nevents / overlap_count))
+        #echo "Excitation energy ${en} MeV is in overlap between channels: ${overlap_names}"
+        #echo "Number of overlapping channels: ${overlap_count}"
+        #echo "Events before division: ${events_before}"
+        #echo "Events after division : ${events_to_use}"
     fi
-    
+
     if [ "$rec_type" == "HRf" ]; then
-      #__FIRST__Make__the_GEF_.lmd_file
-      #__(SECOND__Make the GEF_tree)__if_one_want_to_investigate_it
-      enhancement_factor=$(( (nevents + 99999) / 100000 ))
+      # FIRST make the GEF .lmd file
+      # SECOND make the GEF_tree if needed
+      enhancement_factor=$(( (events_to_use + 99999) / 100000 ))
       ./GEFbashscript.sh "$recoil_Z" "$recoil_A" "$en" "$enhancement_factor"
 
-      #__THIRD___generate events !!___
-      python3.5 event_generator.py "$nevents" "HRf" "$en" "$lbl" "$enhancement_factor" 
+      # THIRD generate events
+      python3.5 event_generator.py "$events_to_use" "HRf" "$en" "$lbl" "$enhancement_factor"
     else
       python3.5 event_generator.py "$events_to_use" "$rec_type" "$en" "$lbl"
     fi
-  ) &  # Background job
-  
-  job_pids+=($!)  # Capture the PID of the current background job
-  jobs_running=$((jobs_running + 1))  # Increment job count
-  wait_for_jobs  # Wait if we've reached the limit
+  ) &
+
+  job_pids+=($!)
+  jobs_running=$((jobs_running + 1))
+  wait_for_jobs
 }
 
 echo ""  # New line before progress bar starts

@@ -101,7 +101,7 @@ class GEFLmdReader(object):
                  filename_template="../GEF/out/GEFResults_Z{Z}_A{A}_E{E}_factor_{factor}.lmd",
                  one_based_events=True,
                  build_index=True,
-                 show_progress=True):
+                 show_progress=False):
 
         self.Z = int(Z)
         self.A = int(A)
@@ -343,6 +343,9 @@ class GEFLmdReader(object):
 
     def GetEexc2(self, event_number):
         return self.get_event(event_number).Eexc2
+
+    def GetEstar(self, event_number):
+        return self.get_event(event_number).E_at_fission
 
     def GetZ_pair(self, event_number):
         ev = self.get_event(event_number)

@@ -6,15 +6,16 @@ set -euo pipefail
 # Produces:
 #   GEFResults_Z92_A238_E9.0_factor_10.lmd   (in the GEF dir by default)
 
-if [[ $# -ne 4 ]]; then
-  echo "Usage: $0 <Z> <A> <Eexc_MeV> <enhancement_factor>"
+if [[ $# -ne 5 ]]; then
+  echo "Usage: $0 <Z> <A> <Eexc_MeV> <SPIN> <enhancement_factor>"
   exit 1
 fi
 
 Z="$1"
 A="$2"
 EEXC="$3"
-FACTOR="$4"
+SPIN="$4"
+FACTOR="$5"
 
 # --- Configure where GEF lives ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -33,7 +34,7 @@ inputs=(
   "GS"            # energy input option (as in your screenshot)
   "${EEXC}"       # energy value
 
-  ""              # ENTER
+  "${SPIN}"              # ENTER
   ""              # ENTER
   ""              # ENTER
   ""              # ENTER
@@ -41,28 +42,18 @@ inputs=(
   ""              # ENTER
 
   "${FACTOR}"     # Enhancement factor
-  "${LMD_FILE}"   # list-mode output filename
-
-  ""              # ENTER (neutrons list? default no)
-  ""              # ENTER (gammas list? default no)
-  ""              # ENTER (Eexc contributions? default no)
-
+  ""   # NO list-mode output filename
   "no"            # Show display of mass distributions? [y/n]
 )
 
-#echo "MAKING $GEF_DIR/$LMD_FILE IT TAKE SOME TIME, BE PATIENT !"
+echo "MAKING $GEF_DIR/$LMD_FILE IT TAKE SOME TIME, BE PATIENT !"
 
 # First check if it the file already exist if not then it does the job if not !
 OUTPUT_PATH="$GEF_DIR/out/$LMD_FILE"
 
-if [ -s "$OUTPUT_PATH" ]; then
-    : #echo "Skipping $LMD_FILE (already computed)"
-else
-    (
-      cd "$GEF_DIR"
-      printf "%s\n" "${inputs[@]}" | "$GEF_BIN" > /dev/null
-    )
-fi
+
+cd "$GEF_DIR"
+printf "%s\n" "${inputs[@]}" | "$GEF_BIN" > /dev/null
 
 # ---------------------------------
 # Run ROOT macro only if tree missing
@@ -87,4 +78,4 @@ fi
 #fi
 
 
-#echo "Done. Wrote: $GEF_DIR/$LMD_FILE"
+echo "Done. Wrote: $GEF_DIR/$LMD_FILE"
