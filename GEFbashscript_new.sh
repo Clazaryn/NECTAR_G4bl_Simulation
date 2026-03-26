@@ -40,7 +40,7 @@ EEXC_SPEC_FILE="in/$SPEC_BASENAME"
 
 # --- Output file name (exact format you requested) ---
 EEXC_FMT=$(LC_NUMERIC=C printf "%.1f" "$EEXC") #Forces the format so it can be read by the GEF reader after...
-LMD_FILE="GEFResults_Z${Z}_A${A}_E${EEXC_FMT}_factor_${FACTOR}.lmd"
+LMD_FILE="TEST_GEFResults_RandinBin_Z${Z}_A${A}_E${EEXC_FMT}_factor_${FACTOR}.lmd"
 
 # --- Inputs to feed to GEF ---
 # IMPORTANT: do NOT put '#' comments inside the input stream.

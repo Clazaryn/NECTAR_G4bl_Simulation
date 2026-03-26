@@ -48,6 +48,29 @@ public:
     HeavyResidue();
 };
 
+class FissionFragment {
+public:
+    Int_t Z, A;
+    Int_t vert_strip, hor_strip; // from 1 to 16 && = 0 if not detected in any detector
+    Double_t true_Efragment, true_theta;
+    Double_t recon_Efragment, recon_theta;
+    Bool_t hit_Topdetec;
+    Double_t  Topdetec_x, Topdetec_y; 
+    Bool_t hit_Bottomdetec;
+    Double_t  Bottomdetec_x, Bottomdetec_y; 
+    Bool_t hit_Sidedetec;
+    Double_t  Sidedetec_x, Sidedetec_y; 
+    FissionFragment();
+};
+
+class FissionEvent {
+public:
+    Bool_t is_fission;
+    FissionFragment light;
+    FissionFragment heavy;
+    FissionEvent();
+};
+
 // ========= Telescope Analyzer Base Class =========
 
 class TelescopeAnalyzer {

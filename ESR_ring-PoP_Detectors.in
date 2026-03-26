@@ -11,7 +11,7 @@
 ## ===== define parallel operation + output file =====
 param -unset histoFile="Detectors_238U_dp_HRg_excEn00MeV_ejectile.root"
 param -unset outFile="g4bl_238U_dp_HRg_excEn00MeV_ejectile.out"
-param -unset eventFile="./238U_dp_results/Event_output/output_event_generator_238U_dp_HRg_excEn00MeV_recoil.txt"
+param -unset eventFile="./238U_dp_results/Event_output/output_event_generator_238U_dp_HRf_excEn10.0MeV_recoil.txt"
 #output $outFile        # this line sends output to file, but we now do this in the bash script for cleaner output
 
 # to run g4bl in the cmd line, use the template below or edit the defaults above
@@ -135,6 +135,70 @@ box HR_pocket_Bottom height=40 width=230 length=1.5 material=STAINLESS-STEEL max
 detector HR_pocket_Back height=60 width=230 length=1.5 material=Si maxStep=0.002 color=1,1,1,0.2 
 box HR_pocket_Side height=58 width=38 length=1.5 material=STAINLESS-STEEL maxStep=0.002 color=1,1,1,0.2
 
+## ====== Fission fragment detector  ======
+
+#virtualdetector Fission_virtual height=200 width=200 length=10 maxStep=0.0005 color=1,1,1
+
+### TOP POCKET
+# Top fission detector
+detector Solarcells_top height=40 width=80 length=0.230 color=1,0.4,1 material=Si maxStep=0.0005 color=0.4,0.5,0
+
+# Top fission window
+detector Stainlesswindow_top height=40 width=80 length=0.025 material=STAINLESS-STEEL maxStep=0.0005 color=1,1,1,0.2 
+
+# Top fission air pocket interior
+detector Airgap_top height=40 width=80 length=3 material=AIR maxStep=0.3 color=0,0,1,0.2
+
+# Top fission pocket 
+box Top_Face1 height=4 width=80 length=1.5 material=STAINLESS-STEEL maxStep=0.15 color=1,1,1,0.2
+box Top_Face2 height=100 width=5 length=1.5 material=STAINLESS-STEEL maxStep=0.15 color=1,1,1,0.2
+box Top_Face3 height=100 width=5 length=1.5 material=STAINLESS-STEEL maxStep=0.15 color=1,1,1,0.2
+box Top_Face4 height=56 width=80 length=1.5 material=STAINLESS-STEEL maxStep=0.15 color=1,1,1,0.2
+box Top_Left height=100 width=27 length=1.5 material=STAINLESS-STEEL maxStep=0.15 color=1,1,1,0.2
+box Top_Right height=100 width=27 length=1.5 material=STAINLESS-STEEL maxStep=0.15 color=1,1,1,0.2
+box Top_Back height=100 width=90 length=1.5 material=STAINLESS-STEEL maxStep=0.15 color=1,1,1,0.2
+box Top_Beam height=27 width=87 length=1.5 material=STAINLESS-STEEL maxStep=0.15 color=1,1,1,0.2
+
+### BOTTOM POCKET
+# Bottom fission detector
+detector Silicon_bottom height=40 width=80 length=0.500 color=1,0.4,1 material=Si maxStep=0.0005 color=0.4,0.5,0
+
+# Bottom fission window
+detector Stainlesswindow_bottom height=40 width=80 length=0.025 material=STAINLESS-STEEL maxStep=0.0005 color=1,1,1,0.2 
+
+# Bottom fission air pocket interior
+detector Airgap_bottom height=40 width=80 length=3 material=AIR maxStep=0.3 color=0,0,1,0.2
+
+# Bottom fission pocket 
+box Bottom_Face1 height=4 width=80 length=1.5 material=STAINLESS-STEEL maxStep=0.15 color=1,1,1,0.2
+box Bottom_Face2 height=100 width=5 length=1.5 material=STAINLESS-STEEL maxStep=0.15 color=1,1,1,0.2
+box Bottom_Face3 height=100 width=5 length=1.5 material=STAINLESS-STEEL maxStep=0.15 color=1,1,1,0.2
+box Bottom_Face4 height=56 width=80 length=1.5 material=STAINLESS-STEEL maxStep=0.15 color=1,1,1,0.2
+box Bottom_Left height=100 width=27 length=1.5 material=STAINLESS-STEEL maxStep=0.15 color=1,1,1,0.2
+box Bottom_Right height=100 width=27 length=1.5 material=STAINLESS-STEEL maxStep=0.15 color=1,1,1,0.2
+box Bottom_Back height=100 width=90 length=1.5 material=STAINLESS-STEEL maxStep=0.15 color=1,1,1,0.2
+box Bottom_Beam height=27 width=87 length=1.5 material=STAINLESS-STEEL maxStep=0.15 color=1,1,1,0.2
+
+### SIDE POCKET
+# Side fission detector
+detector Silicon_side height=44 width=122 length=0.500 color=0.4,0.5,0 material=Si maxStep=0.0005 color=0.4,0.5,0
+
+# Side fission window
+detector Stainlesswindow_side height=40 width=120 length=0.025 material=STAINLESS-STEEL maxStep=0.0005 color=1,1,1,0.2
+
+# Side fission air pocket interior
+detector Airgap_side height=40 width=120 length=2 material=AIR maxStep=0.2 color=0,0,1,0.2
+
+# Side fission pocket 
+box Side_Face1 height=8.5 width=150 length=1.5 material=STAINLESS-STEEL maxStep=0.15 color=1,1,1,0.2
+box Side_Face2 height=8.5 width=150 length=1.5 material=STAINLESS-STEEL maxStep=0.15 color=1,1,1,0.2
+box Side_Top height=40 width=150 length=1.5 material=STAINLESS-STEEL maxStep=0.15 color=1,1,1,0.2
+box Side_Bottom height=40 width=150 length=1.5 material=STAINLESS-STEEL maxStep=0.15 color=1,1,1,0.2
+box Side_Back height=60 width=150 length=1.5 material=STAINLESS-STEEL maxStep=0.15 color=1,1,1,0.2
+box Side_Beam height=60 width=40 length=1.5 material=STAINLESS-STEEL maxStep=0.15 color=1,1,1,0.2
+box Side_Face3 height=40 width=30 length=1.5 material=STAINLESS-STEEL maxStep=0.15 color=1,1,1,0.2
+
+
 ## ====== MAGNETIC SEPTUM  ======
 detector MagSept height=500 width=500 length=1792 material=STAINLESS-STEEL maxStep=0.2 color=0,0.8,0.6 kill=1
 
@@ -207,6 +271,54 @@ place E6_DL_Si_1 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+
 place Telescope_E6 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4+0.75)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4+0.75)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
 place E6_DL_Si_2 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4+1.5+0.0005/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4+1.5+0.0005/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg
 place E6_DL_Al_2 z=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4+1.5+0.0005+0.0003/2)*cos($DEthetarad) x=($DEdistance+0.025+3+$DEthickness+3.01+1.50+0.4+1.50+1.6+1.5+0.4+1.5+1.6+1.50+0.4+1.5+0.0005+0.0003/2)*sin($DEthetarad) y=0 rotation=y$DEthetadeg	
+
+# ====== Fission fragment detectors ======
+
+### TOP POCKET
+place Top_Face1 z=386.775 y=22 x=0
+place Stainlesswindow_top z=386.0125 y=44 x=0 
+place Airgap_top z=387.525 y=44 x=0 
+place Solarcells_top z=389.14 y=44 x=0 
+place Top_Face2 z=386.775 y=70 x=-42.5
+place Top_Face3 z=386.775 y=70 x=42.5
+place Top_Face4 z=386.775 y=92 x=0
+place Top_Left z=401.025 y=70 x=44.25 rotation=y90
+place Top_Right z=401.025 y=70 x=-44.25 rotation=y90
+place Top_Back z=415.275 y=70 x=0 
+place Top_Beam z=401.025 y=20.75 x=0 rotation=x90
+
+#place Fission_virtual z=206.775
+
+### BOTTOM POCKET
+place Bottom_Face1 z=206.775 y=-22 x=0
+place Stainlesswindow_bottom z=206.0125 y=-44 x=0 
+place Airgap_bottom z=207.525 y=-44 x=0
+place Silicon_bottom z=209.275 y=-44 x=0 
+place Bottom_Face2 z=206.775 y=-70 x=-42.5
+place Bottom_Face3 z=206.775 y=-70 x=42.5
+place Bottom_Face4 z=206.775 y=-92 x=0
+place Bottom_Left z=221.025 y=-70 x=44.25 rotation=y90
+place Bottom_Right z=221.025 y=-70 x=-44.25 rotation=y90
+place Bottom_Back z=235.275 y=-70 x=0 
+place Bottom_Beam z=221.025 y=-20.75 x=0 rotation=x90
+
+## SIDE POCKET
+place Side_Face1 z=326.775 y=24.25 x=76.5+$Sidepocketdistance
+place Stainlesswindow_side z=326.0125 y=0 x=63+$Sidepocketdistance
+place Airgap_side z=327.5 y=0 x=63+$Sidepocketdistance
+place Silicon_side z=329.275 y=0 x=71.5+$Sidepocketdistance
+place Side_Face2 z=326.775 y=-24.25 x=76.5+$Sidepocketdistance
+place Side_Top z=346.025 y=29.25 x=76.5+$Sidepocketdistance rotation=x90
+place Side_Bottom z=346.025 y=-29.25 x=76.5+$Sidepocketdistance rotation=x90
+place Side_Back z=366.775 y=0 x=76.5+$Sidepocketdistance
+place Side_Beam z=346.025 y=0 x=0.75+$Sidepocketdistance rotation=y90
+place Side_Face3 z=326.775 y=0 x=138+$Sidepocketdistance
+
+#place HRsize4 z=329.275
+
+
+#place testblock z=(20)*cos($DEthetarad) x=(20)*sin($DEthetarad) y=0 rotation=y$DEthetadeg 
+#place testblock z=326 x=0 y=0 
 
 
 # __________________________________________________________

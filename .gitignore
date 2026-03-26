@@ -9,3 +9,4 @@ g4bl*.out
 Detectors*.root
 lib*.so
 *_results/
+*.pdf

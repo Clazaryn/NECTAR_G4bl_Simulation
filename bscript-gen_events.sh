@@ -160,7 +160,7 @@ run_event_generation() {
   (
     local en="${excitation_Ens[$exc_index]}"
     en_next=$(awk -v x="$en" -v step="$excEn_bin" 'BEGIN{printf "%.1f", x + step}')
-    echo "en = $en | en_next = $en_next"
+    #echo "en = $en | en_next = $en_next"
     local lbl
     lbl=$(awk -v x="$en" 'BEGIN{printf "%04.1fMeV", x}')
 
@@ -188,7 +188,6 @@ run_event_generation() {
       # SECOND make the GEF_tree if needed
       enhancement_factor=$(( (events_to_use + 99999) / 100000 ))
       ./GEFbashscript.sh "$recoil_Z" "$recoil_A" "$en" "$enhancement_factor"
-
       # THIRD generate events
       python3.5 event_generator.py "$events_to_use" "HRf" "$en" "$lbl" "$enhancement_factor"
     else

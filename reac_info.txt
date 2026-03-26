@@ -45,7 +45,7 @@ mass_recoil = 222677.66436713093    ; 239U
 mass_eject = 938.7830736444523      ; proton
 
 [ring_params]           ; Determined using Q1_dipole-old_ESR_std
-det_setup = new         ; choose which detector setup to run with G4bl: PoP = proof of principle setup from 2022/24, new = future telescopes with new reaction chamber
+det_setup = PoP         ; choose which detector setup to run with G4bl: PoP = proof of principle setup from 2022/24, new = future telescopes with new reaction chamber
 
 beta_x = 11.58          ; Horizontal beta function in m at target position 
 beta_y = 4.709          ; Vertical beta function in m at target position 

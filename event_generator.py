@@ -104,9 +104,9 @@ if writeBeamFile:
 # Fission decay
 # Ejectile is now created with recoil to ensure pairing in separate files for correlation
 if(HR_type == "HRf"):
-    file_eject = open("../{}_sim/Event_output/output_event_generator_{}_HRf_excEn{}_ejectile.txt".format(reaction, reaction, ex_label), "w")
+    file_eject = open("./{}_results/Event_output/output_event_generator_{}_HRf_excEn{}_ejectile.txt".format(reaction, reaction, ex_label), "w")
     file_eject.write("%s %s %s %s %s %s %s %s %s %s %s %s\n" % ('#x','y','z','px','py','pz','t','PDGid','EventID','TrackID','ParentID','Weight'))
-    file_HR_fission = open("../{}_sim/Event_output/output_event_generator_{}_HRf_excEn{}_recoil.txt".format(reaction, reaction, ex_label), "w")
+    file_HR_fission = open("./{}_results/Event_output/output_event_generator_{}_HRf_excEn{}_recoil.txt".format(reaction, reaction, ex_label), "w")
     file_HR_fission.write("%s %s %s %s %s %s %s %s %s %s %s %s\n" % ('#x','y','z','px','py','pz','t','PDGid','EventID','TrackID','ParentID','Weight')) 
 
 # Gamma emission nucleus
@@ -418,7 +418,12 @@ while Ncounter < Nions:
             phi_heavy = phi_heavy_deg * math.pi / 180.0;
             #print("For event_", Nreaction, "__T_light___", T_light_post, "__T_heavy___", T_heavy_post)
             m_light = funcs.atomic_to_nuclear_mass(nuclide_data.weight(Z_light,A_light), Z_light) * amu     # Light Fragment Mass 
-            m_heavy = funcs.atomic_to_nuclear_mass(nuclide_data.weight(Z_heavy,A_heavy), Z_heavy) * amu     # Heavy Fragment Mass
+            try:
+                m_heavy = funcs.atomic_to_nuclear_mass(nuclide_data.weight(Z_heavy, A_heavy),Z_heavy) * amu
+
+            except Exception as e:
+                print("Error for Z_heavy =", Z_heavy, "A_heavy =", A_heavy)
+                print("Exception:", e)
 
             PDGid_HR_f_light = funcs.define_PDGid(Z_light, A_light)
             PDGid_HR_f_heavy = funcs.define_PDGid(Z_heavy, A_heavy)
@@ -428,8 +433,8 @@ while Ncounter < Nions:
 
             file_eject.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" % (x,y,z,FV3[1],FV3[2],FV3[3],0,int(PDGid_eject),Nreaction,1,0,1))
 
-            file_HR_fission.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" %(x,y,z,FVlight[1],FVlight[2],FVlight[3],0,int(PDGid_HR_f_light),Nreaction,1,0,1))
-            file_HR_fission.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" %(x,y,z,FVheavy[1],FVheavy[2],FVheavy[3],0,int(PDGid_HR_f_heavy),Nreaction,1,0,1))
+            file_HR_fission.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" %(x,y,z,FVlight[1],FVlight[2],FVlight[3],0,int(PDGid_HR_f_light),(2*Nreaction)-1,1,0,1))
+            file_HR_fission.write("%.6f %.6f %.2f %.5f %.5f %.5f %i %i %i %i %i %i\n" %(x,y,z,FVheavy[1],FVheavy[2],FVheavy[3],0,int(PDGid_HR_f_heavy),(2*Nreaction),1,0,1))
 
 
         else:
