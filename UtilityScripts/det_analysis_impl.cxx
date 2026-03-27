@@ -102,6 +102,14 @@ HeavyResidue::HeavyResidue() : Z(0), A(0), hit_MagSept(kFALSE), MagSept_x(0), Ma
                                 hit_HRplane(kFALSE), HRplane_x(0), HRplane_y(0),
                                 hit_QuadWall(kFALSE), QuadWall_z(0), QuadWall_y(0) {}
 
+FissionFragment::FissionFragment(): Z(0), A(0), vert_strip(0), hor_strip(0),
+                                     true_Efragment(0), true_theta(0),
+                                     recon_Efragment(0), recon_theta(0),
+                                     hit_Topdetec(kFALSE), Topdetec_x(-9999), Topdetec_y(-9999),
+                                     hit_Bottomdetec(kFALSE), Bottomdetec_x(-9999), Bottomdetec_y(-9999),
+                                     hit_Sidedetec(kFALSE), Sidedetec_x(-9999), Sidedetec_y(-9999) {}
+
+FissionEvent::FissionEvent() {}
 // ========= Telescope Analyzer Implementation =========
 
 TelescopeAnalyzer::TelescopeAnalyzer(const char* r, const char* rt, Int_t el, 
@@ -480,5 +488,100 @@ void fillResidueFromMaps(Int_t eventID,
         residue->hit_QuadWall = kFALSE;
         residue->QuadWall_z = -9999;
         residue->QuadWall_y = -9999;
+    }
+}
+
+
+void fillFissionFromMaps(Int_t eventID, const VirtualDetectorData& top_data, const VirtualDetectorData& bottom_data, const VirtualDetectorData& side_data, FissionEvent* fission)
+{
+    Int_t lightID = 2 * eventID - 1;
+    Int_t heavyID = 2 * eventID;
+
+    // ---------------- light fragment ----------------
+    if (top_data.pos_map.count(lightID))
+    {
+        auto pos = top_data.pos_map.at(lightID);
+        fission->light.hit_Topdetec = kTRUE;
+        fission->light.Topdetec_x = std::get<0>(pos);
+        fission->light.Topdetec_y = std::get<1>(pos);
+
+        if (top_data.pdgid_map.count(lightID))
+        {
+            Int_t pdgid = top_data.pdgid_map.at(lightID);
+            fission->light.Z = getZ(pdgid);
+            fission->light.A = getA(pdgid);
+        }
+    }
+    if (bottom_data.pos_map.count(lightID))
+    {
+        auto pos = bottom_data.pos_map.at(lightID);
+        fission->light.hit_Bottomdetec = kTRUE;
+        fission->light.Bottomdetec_x = std::get<0>(pos);
+        fission->light.Bottomdetec_y = std::get<1>(pos);
+
+        if (bottom_data.pdgid_map.count(lightID))
+        {
+            Int_t pdgid = bottom_data.pdgid_map.at(lightID);
+            fission->light.Z = getZ(pdgid);
+            fission->light.A = getA(pdgid);
+        }
+    }
+    if (side_data.pos_map.count(lightID))
+    {
+        auto pos = side_data.pos_map.at(lightID);
+        fission->light.hit_Sidedetec = kTRUE;
+        fission->light.Sidedetec_x = std::get<0>(pos);
+        fission->light.Sidedetec_y = std::get<1>(pos);
+
+        if (side_data.pdgid_map.count(lightID))
+        {
+            Int_t pdgid = side_data.pdgid_map.at(lightID);
+            fission->light.Z = getZ(pdgid);
+            fission->light.A = getA(pdgid);
+        }
+    }
+
+    // ---------------- heavy fragment ----------------
+    if (top_data.pos_map.count(heavyID))
+    {
+        auto pos = top_data.pos_map.at(heavyID);
+        fission->heavy.hit_Topdetec = kTRUE;
+        fission->heavy.Topdetec_x = std::get<0>(pos);
+        fission->heavy.Topdetec_y = std::get<1>(pos);
+
+        if (top_data.pdgid_map.count(heavyID))
+        {
+            Int_t pdgid = top_data.pdgid_map.at(heavyID);
+            fission->heavy.Z = getZ(pdgid);
+            fission->heavy.A = getA(pdgid);
+        }
+    }
+    if (bottom_data.pos_map.count(heavyID))
+    {
+        auto pos = bottom_data.pos_map.at(heavyID);
+        fission->heavy.hit_Bottomdetec = kTRUE;
+        fission->heavy.Bottomdetec_x = std::get<0>(pos);
+        fission->heavy.Bottomdetec_y = std::get<1>(pos);
+
+        if (bottom_data.pdgid_map.count(heavyID))
+        {
+            Int_t pdgid = bottom_data.pdgid_map.at(heavyID);
+            fission->heavy.Z = getZ(pdgid);
+            fission->heavy.A = getA(pdgid);
+        }
+    }
+    if (side_data.pos_map.count(heavyID))
+    {
+        auto pos = side_data.pos_map.at(heavyID);
+        fission->heavy.hit_Sidedetec = kTRUE;
+        fission->heavy.Sidedetec_x = std::get<0>(pos);
+        fission->heavy.Sidedetec_y = std::get<1>(pos);
+
+        if (side_data.pdgid_map.count(heavyID))
+        {
+            Int_t pdgid = side_data.pdgid_map.at(heavyID);
+            fission->heavy.Z = getZ(pdgid);
+            fission->heavy.A = getA(pdgid);
+        }
     }
 }

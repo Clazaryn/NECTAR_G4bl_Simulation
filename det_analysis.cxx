@@ -124,9 +124,120 @@ void processTelescopeEvents(TTree* tree_DE, TTree* tree_E1, TTree* tree_Eres,
             bool has_recoil_data = !magsept_data.pos_map.empty();
             bool is_coincidence = magsept_data.pos_map.count(eventID) > 0;
             bool passes_dE_threshold = ejectile->meas_dE > 0.4f;
-            if ((!has_recoil_data || is_coincidence) && passes_dE_threshold) {
+            if (passes_dE_threshold) {
                 fillResidueFromMaps(eventID, magsept_data, hrplane_data, quadwall_data, residue);
                 output_tree->Fill();
+            }
+        }
+    }
+}
+
+// This is the solution for now, for fission event exception, it's a bit spaghetti, Please pardon me, I'll do better in the future... 
+void processTelescopeEventsFission(TTree* tree_DE, TTree* tree_E1, TTree* tree_Eres,
+                                   TelescopeAnalyzer* analyzer,
+                                   const std::unordered_map<int, std::tuple<int, int, double, double, double>>& eventMap,
+                                   const VirtualDetectorData& top_data,
+                                   const VirtualDetectorData& bottom_data,
+                                   const VirtualDetectorData& side_data,
+                                   Int_t detector_id,
+                                   TTree* output_tree,
+                                   LightEjectile* ejectile,
+                                   FissionEvent* fission,
+                                   TFile* eject_det_output = nullptr) {
+
+    // --- same code as processTelescopeEvents up to analyzeEvent ---
+
+    std::unordered_map<int, Float_t> E1_map, Eres_map;
+    Float_t EventID_E1, Edep_E1, EventID_Eres, Edep_Eres;
+
+    if (tree_E1) {
+        tree_E1->SetBranchAddress("EventID", &EventID_E1);
+        tree_E1->SetBranchAddress("Edep", &Edep_E1);
+        for (Int_t i = 0; i < tree_E1->GetEntries(); ++i) {
+            tree_E1->GetEntry(i);
+            E1_map[static_cast<int>(EventID_E1)] = Edep_E1;
+        }
+    }
+
+    std::unordered_map<int, Float_t> E2_map, E3_map, E4_map, E5_map, E6_map;
+
+    if (tree_Eres) {
+        tree_Eres->SetBranchAddress("EventID", &EventID_Eres);
+        tree_Eres->SetBranchAddress("Edep", &Edep_Eres);
+        for (Int_t i = 0; i < tree_Eres->GetEntries(); ++i) {
+            tree_Eres->GetEntry(i);
+            Eres_map[static_cast<int>(EventID_Eres)] = Edep_Eres;
+        }
+    } else if (eject_det_output) {
+        Float_t EventID_E, Edep_E;
+        std::unordered_map<int, Float_t>* E_maps[] = {&E2_map, &E3_map, &E4_map, &E5_map, &E6_map};
+        for (int i = 2; i <= 6; ++i) {
+            TString tree_name = Form("Detector/Telescope_E%d", i);
+            TTree* tree_E_i = (TTree*)eject_det_output->Get(tree_name.Data());
+            if (tree_E_i) {
+                tree_E_i->SetBranchAddress("EventID", &EventID_E);
+                tree_E_i->SetBranchAddress("Edep", &Edep_E);
+                std::unordered_map<int, Float_t>* current_map = E_maps[i-2];
+                for (Int_t j = 0; j < tree_E_i->GetEntries(); ++j) {
+                    tree_E_i->GetEntry(j);
+                    int eventID = static_cast<int>(EventID_E);
+                    (*current_map)[eventID] = Edep_E;
+                    Eres_map[eventID] += Edep_E;
+                }
+            }
+        }
+    }
+
+    Float_t x_DE, y_DE, z_DE, EventID_DE, Edep_DE;
+    tree_DE->SetBranchAddress("x", &x_DE);
+    tree_DE->SetBranchAddress("y", &y_DE);
+    tree_DE->SetBranchAddress("z", &z_DE);
+    tree_DE->SetBranchAddress("EventID", &EventID_DE);
+    tree_DE->SetBranchAddress("Edep", &Edep_DE);
+
+    for (Int_t i = 0; i < tree_DE->GetEntries(); ++i) {
+        tree_DE->GetEntry(i);
+        Int_t eventID = static_cast<int>(EventID_DE);
+
+        std::vector<Float_t> Edep_vec;
+        Edep_vec.push_back(Edep_DE);
+        Edep_vec.push_back((E1_map.count(eventID) > 0) ? E1_map[eventID] : 0);
+
+        if (!tree_Eres && eject_det_output) {
+            std::unordered_map<int, Float_t>* E_maps[] = {&E2_map, &E3_map, &E4_map, &E5_map, &E6_map};
+            for (int j = 0; j < 5; ++j) {
+                Edep_vec.push_back((E_maps[j]->count(eventID) > 0) ? (*E_maps[j])[eventID] : 0);
+            }
+        } else {
+            Float_t Edep_Eres_val = (Eres_map.count(eventID) > 0) ? Eres_map[eventID] : 0;
+            Edep_vec.push_back(Edep_Eres_val);
+            for (int j = 0; j < 4; ++j) {
+                Edep_vec.push_back(0);
+            }
+        }
+
+        if (analyzer->analyzeEvent(eventID, x_DE, y_DE, z_DE, Edep_vec, *ejectile)) {
+            auto it = eventMap.find(eventID);
+            if (it != eventMap.end()) {
+                auto true_vals = it->second;
+                ejectile->Z = std::get<0>(true_vals);
+                ejectile->A = std::get<1>(true_vals);
+                ejectile->true_Eexc = std::get<2>(true_vals);
+                ejectile->true_Eejc = std::get<3>(true_vals);
+                ejectile->true_theta = std::get<4>(true_vals);
+            }
+
+            ejectile->detector_id = detector_id;
+
+            bool passes_dE_threshold = ejectile->meas_dE > 0.4f;
+
+            if (passes_dE_threshold){
+                *fission = FissionEvent(); //reset
+                fillFissionFromMaps(eventID, top_data, bottom_data, side_data, fission);
+                //bool has_fragment_hit = fission->light.hit_Topdetec || fission->light.hit_Bottomdetec || fission->light.hit_Sidedetec || fission->heavy.hit_Topdetec || fission->heavy.hit_Bottomdetec || fission->heavy.hit_Sidedetec;
+                //if (has_fragment_hit){ // check if a fragment hit a detector
+                output_tree->Fill();
+                //}
             }
         }
     }
@@ -214,16 +325,33 @@ void det_analysis(Int_t excLabel, const char* recType) {
         decay_channel_id = 3;
     } else if (strcmp(recType, "HR4n") == 0) {
         decay_channel_id = 4;
+    } else if (strcmp(recType, "HRf") == 0) {
+        decay_channel_id = 5;
     }
     
+    bool isFission = (decay_channel_id == 5);
+
     // Create objects for branches
     LightEjectile* ejectile = new LightEjectile();
-    HeavyResidue* residue = new HeavyResidue();
-    
+    HeavyResidue* residue = nullptr;
+    FissionEvent* fission = nullptr;
+
+    if (isFission) {
+        fission = new FissionEvent();
+    } else {
+        residue = new HeavyResidue();
+    }
+
     // Set branches using objects
     tree->Branch("ejectile", &ejectile);
-    tree->Branch("residue", &residue);
     tree->Branch("decay_channel", &decay_channel_id);
+
+    if (isFission) {
+        tree->Branch("fission", &fission);
+    } else {
+        tree->Branch("residue", &residue);
+    }
+
     
     // Load virtual detector data only when recoil file is present (same names for both detector types)
     // Read PDGid from Event_output text file to avoid precision loss from ROOT Float_t storage
@@ -236,9 +364,22 @@ void det_analysis(Int_t excLabel, const char* recType) {
         quadwall_data = loadVirtualDetector(recoil_det_output, "VirtualDetector/virt_QuadWall",
                                             reaction, recType, excLabel, excEn);
     }
+
+    VirtualDetectorData top_data, bottom_data, side_data;
+
+    if (recoil_det_output && isFission) {
+        top_data = loadVirtualDetector(recoil_det_output, "Detector/Solarcells_top",
+                                    reaction, recType, excLabel, excEn);
+
+        bottom_data = loadVirtualDetector(recoil_det_output, "Detector/Silicon_bottom",
+                                        reaction, recType, excLabel, excEn);
+
+        side_data = loadVirtualDetector(recoil_det_output, "Detector/Silicon_side",
+                                        reaction, recType, excLabel, excEn);
+    }
     
     // Process ejectile telescopes when ejectile detector file is present
-    if (eject_det_output && strcmp(detType, "New") == 0) {
+    if (eject_det_output && strcmp(detType, "New") == 0 && !isFission) {
         // New detector setup - process both primary and auxillary telescopes
         std::vector<TString> detector_names = {"prim", "auxl"};
         std::vector<TVector3> offsets = {
@@ -271,7 +412,7 @@ void det_analysis(Int_t excLabel, const char* recType) {
                                   magsept_data, hrplane_data, quadwall_data, tel_idx, tree, ejectile, residue, eject_det_output);
         }
         
-    } else if (eject_det_output && strcmp(detType, "PoP") == 0) {
+    } else if (eject_det_output && strcmp(detType, "PoP") == 0 && !isFission) {
         // PoP detector setup: positions, etc. are hardcoded
         TTree* tree_DE = (TTree*)eject_det_output->Get("Detector/Telescope_DE");
         TTree* tree_E1 = (TTree*)eject_det_output->Get("Detector/Telescope_E1");
@@ -289,6 +430,27 @@ void det_analysis(Int_t excLabel, const char* recType) {
         // For PoP, Eres is sum of E2+E3+E4+... (calculated in processTelescopeEvents)
         processTelescopeEvents(tree_DE, tree_E1, nullptr, &analyzer, eventMap,
                               magsept_data, hrplane_data, quadwall_data, 0, tree, ejectile, residue, eject_det_output);
+    } else if (eject_det_output && strcmp(detType, "PoP") == 0 && isFission) {
+
+        //  PoP detector setup similar to previous elif condition but with process processTelescopeEventsFission instead
+        TTree* tree_DE = (TTree*)eject_det_output->Get("Detector/Telescope_DE");
+        TTree* tree_E1 = (TTree*)eject_det_output->Get("Detector/Telescope_E1");
+        TTree* tree_E2 = (TTree*)eject_det_output->Get("Detector/Telescope_E2");
+
+        if (!tree_DE || !tree_E1 || !tree_E2) {
+            std::cerr << "det_analysis.cxx:" << __LINE__
+                      << ": Error: Could not find PoP detector trees (fission case)" << std::endl;
+            std::exit(1);
+        }
+
+        PoPTelescopeAnalyzer analyzer(reaction, recType, excLabel,
+                                     mass_beam, mass_target, mass_recoil, mass_ejectile,
+                                     Ek_beam, P_beam, tree_E2);
+
+        processTelescopeEventsFission(tree_DE, tree_E1, nullptr,
+                                     &analyzer, eventMap,
+                                     top_data, bottom_data, side_data,
+                                     0, tree, ejectile, fission, eject_det_output);
     }
     
     // Recoil-only: fill tree from virtual detector data when no ejectile file
@@ -310,6 +472,7 @@ void det_analysis(Int_t excLabel, const char* recType) {
     
     delete ejectile;
     delete residue;
+    delete fission;
     
     std::cout << "Analysis complete. Output written to: " << output_filename << std::endl;
 }

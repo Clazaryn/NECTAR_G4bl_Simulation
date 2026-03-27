@@ -206,6 +206,7 @@ detector MagSept height=500 width=500 length=1792 material=STAINLESS-STEEL maxSt
 virtualdetector virt_MagSept height=500 width=500 length=0.5 maxStep=0.05 color=0.4,0.0,0.4
 virtualdetector virt_HRplane height=200 width=200 length=0.5 maxStep=0.05 color=0.4,0.0,0.4
 virtualdetector virt_QuadWall height=70 width=0.01 length=5722 maxStep=0.05 color=0.4,0.0,0.4
+virtualdetector Fission_virtual height=200 width=200 length=10 maxStep=0.0005 color=0.4,0,0.4
 
 # __________________________________________________________
 # PLACE DETECTOR ELEMENTS ---- 
@@ -287,7 +288,7 @@ place Top_Right z=401.025 y=70 x=-44.25 rotation=y90
 place Top_Back z=415.275 y=70 x=0 
 place Top_Beam z=401.025 y=20.75 x=0 rotation=x90
 
-#place Fission_virtual z=206.775
+place Fission_virtual z=100.000
 
 ### BOTTOM POCKET
 place Bottom_Face1 z=206.775 y=-22 x=0

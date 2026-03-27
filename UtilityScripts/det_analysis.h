@@ -65,7 +65,6 @@ public:
 
 class FissionEvent {
 public:
-    Bool_t is_fission;
     FissionFragment light;
     FissionFragment heavy;
     FissionEvent();
@@ -181,6 +180,11 @@ void fillResidueFromMaps(Int_t eventID,
                          const VirtualDetectorData& quadwall_data,
                          HeavyResidue* residue);
 
+void fillFissionFromMaps(Int_t eventID, 
+                         const VirtualDetectorData& top_data, 
+                         const VirtualDetectorData& bottom_data, 
+                         const VirtualDetectorData& side_data, 
+                         FissionEvent* fission);
 
 // ========= Main analysis function =========
 void det_analysis(Int_t excLabel, const char* recType);
