@@ -1,6 +1,9 @@
 # THIS SMALL TXT FILE IS AN HELPER FOR YOU TO
 # PLOT FASTLY SOME HISTO FROM THE HRf Det_analysis trees
 
+TChain* events = new TChain("events");
+events->Add("events_238U_dp_HRf_exc*.root");
+
 // To draw Z distribution
 
 events->Draw("fission.light.Z>>h(100,0,100)","","")
@@ -11,3 +14,8 @@ events->Draw("fission.heavy.Z>>h2(100,0,100)","fission.heavy.Z>0","same")
 
 events->Draw("fission.light.A>>h(100,60,160)","fission.light.Z>0","")
 events->Draw("fission.heavy.A>>h2(100,60,160)","fission.heavy.Z>0","same")
+
+events->Draw("fission.heavy.true_theta>>h2(100,0,100)","fission.heavy.true_theta>0","")
+
+events->Draw("fission.light.hor_strip:fission.light.vert_strip>>h1(16,0,16,16,0,16)","fission.light.hit_Bottomdetec","col")
+events->Draw("fission.heavy.hor_strip:fission.heavy.vert_strip>>h2(16,0,16,16,0,16)","fission.heavy.hit_Bottomdetec","colsame")

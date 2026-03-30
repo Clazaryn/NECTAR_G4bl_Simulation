@@ -136,9 +136,9 @@ void processTelescopeEvents(TTree* tree_DE, TTree* tree_E1, TTree* tree_Eres,
 void processTelescopeEventsFission(TTree* tree_DE, TTree* tree_E1, TTree* tree_Eres,
                                    TelescopeAnalyzer* analyzer,
                                    const std::unordered_map<int, std::tuple<int, int, double, double, double>>& eventMap,
-                                   const VirtualDetectorData& top_data,
-                                   const VirtualDetectorData& bottom_data,
-                                   const VirtualDetectorData& side_data,
+                                   const FissionDetectorData& top_data,
+                                   const FissionDetectorData& bottom_data,
+                                   const FissionDetectorData& side_data,
                                    Int_t detector_id,
                                    TTree* output_tree,
                                    LightEjectile* ejectile,
@@ -365,16 +365,16 @@ void det_analysis(Int_t excLabel, const char* recType) {
                                             reaction, recType, excLabel, excEn);
     }
 
-    VirtualDetectorData top_data, bottom_data, side_data;
+    FissionDetectorData top_data, bottom_data, side_data;
 
     if (recoil_det_output && isFission) {
-        top_data = loadVirtualDetector(recoil_det_output, "Detector/Solarcells_top",
+        top_data = loadFissionDetector(recoil_det_output, "Detector/Solarcells_top",
                                     reaction, recType, excLabel, excEn);
 
-        bottom_data = loadVirtualDetector(recoil_det_output, "Detector/Silicon_bottom",
+        bottom_data = loadFissionDetector(recoil_det_output, "Detector/Silicon_bottom",
                                         reaction, recType, excLabel, excEn);
 
-        side_data = loadVirtualDetector(recoil_det_output, "Detector/Silicon_side",
+        side_data = loadFissionDetector(recoil_det_output, "Detector/Silicon_side",
                                         reaction, recType, excLabel, excEn);
     }
     
@@ -454,7 +454,7 @@ void det_analysis(Int_t excLabel, const char* recType) {
     }
     
     // Recoil-only: fill tree from virtual detector data when no ejectile file
-    if (recoil_det_output && !eject_det_output) {
+    if (recoil_det_output && !eject_det_output && !isFission) {
         for (const auto& kv : magsept_data.pos_map) {
             Int_t eventID = kv.first;
             fillResidueFromMaps(eventID, magsept_data, hrplane_data, quadwall_data, residue);

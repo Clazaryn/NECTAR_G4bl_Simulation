@@ -29,6 +29,11 @@ double CsI_resolution(double E) {
     else return (a * pow(E, b)) / 2.355;
 }
 
+Int_t getStripNbr(Float_t pos, Float_t det_size, Float_t strip_width)
+{
+    return std::ceil((pos + det_size / 2.0f) / strip_width);
+}
+
 // Reads ejectile event file to recover true ejectile properties
 std::unordered_map<int, std::tuple<int, int, double, double, double>> readEjectileFile(
     const char* reaction, const char* recType, Int_t excLabel, Double_t excEn,
@@ -102,12 +107,13 @@ HeavyResidue::HeavyResidue() : Z(0), A(0), hit_MagSept(kFALSE), MagSept_x(0), Ma
                                 hit_HRplane(kFALSE), HRplane_x(0), HRplane_y(0),
                                 hit_QuadWall(kFALSE), QuadWall_z(0), QuadWall_y(0) {}
 
-FissionFragment::FissionFragment(): Z(0), A(0), vert_strip(0), hor_strip(0),
+FissionFragment::FissionFragment(): Z(0), A(0), vert_strip(-100), hor_strip(-100),
+                                     detec_x(-9999),detec_y(-9999),
                                      true_Efragment(0), true_theta(0),
                                      recon_Efragment(0), recon_theta(0),
-                                     hit_Topdetec(kFALSE), Topdetec_x(-9999), Topdetec_y(-9999),
-                                     hit_Bottomdetec(kFALSE), Bottomdetec_x(-9999), Bottomdetec_y(-9999),
-                                     hit_Sidedetec(kFALSE), Sidedetec_x(-9999), Sidedetec_y(-9999) {}
+                                     hit_Topdetec(kFALSE),
+                                     hit_Bottomdetec(kFALSE),
+                                     hit_Sidedetec(kFALSE) {}
 
 FissionEvent::FissionEvent() {}
 // ========= Telescope Analyzer Implementation =========
@@ -439,6 +445,97 @@ VirtualDetectorData loadVirtualDetector(TFile* recoil_det_output, const char* tr
     return data;
 }
 
+FissionDetectorData loadFissionDetector(TFile* recoil_det_output, const char* tree_path,
+                                        const char* reaction, const char* recType,
+                                        Int_t excLabel, Double_t excEn)
+{
+    FissionDetectorData data;
+
+    TString lbl = Form("%04.1fMeV", excEn);
+    TString recoil_evnt_filename = Form("./%s_results/Event_output/output_event_generator_%s_%s_excEn%s_recoil.txt",
+                                        reaction, reaction, recType, lbl.Data());
+
+    std::unordered_map<int, Int_t> eventid_to_pdgid;
+    std::unordered_map<int, Double_t> eventid_to_Ekin;
+
+    std::ifstream recoil_evnt_file(recoil_evnt_filename.Data());
+    if (recoil_evnt_file.is_open())
+    {
+        std::string line;
+        std::getline(recoil_evnt_file, line);
+
+        while (std::getline(recoil_evnt_file, line))
+        {
+            std::istringstream iss(line);
+            double x_txt, y_txt, z_txt, px_txt, py_txt, pz_txt, t;
+            int pdgid, eventid, trackid, parentid;
+            double weight;
+
+            if (iss >> x_txt >> y_txt >> z_txt >> px_txt >> py_txt >> pz_txt >> t >> pdgid >> eventid >> trackid >> parentid >> weight)
+            {
+                eventid_to_pdgid[eventid] = pdgid;
+
+                Int_t Z = getZ(pdgid);
+                Int_t A = getA(pdgid);
+
+                // Replace this with your own mass lookup if needed
+                Double_t mass = A * 931.49410242;
+
+                Double_t p2 = px_txt * px_txt + py_txt * py_txt + pz_txt * pz_txt;
+                Double_t Etot = std::sqrt(p2 + mass * mass);
+                Double_t Ekin = Etot - mass;
+
+                eventid_to_Ekin[eventid] = Ekin;
+            }
+        }
+        recoil_evnt_file.close();
+    }
+    else
+    {
+        std::cerr << "Warning: Could not open recoil event file: " << recoil_evnt_filename << std::endl;
+    }
+
+    TTree* tree = (TTree*)recoil_det_output->Get(tree_path);
+    if (!tree)
+    {
+        std::cerr << "Warning: Could not find tree: " << tree_path << std::endl;
+        return data;
+    }
+
+    Float_t EventID, x, y, z, Px, Py, Pz, Edep, VisibleEdep;
+
+    tree->SetBranchAddress("EventID", &EventID);
+    tree->SetBranchAddress("x", &x);
+    tree->SetBranchAddress("y", &y);
+    tree->SetBranchAddress("z", &z);
+    tree->SetBranchAddress("Px", &Px);
+    tree->SetBranchAddress("Py", &Py);
+    tree->SetBranchAddress("Pz", &Pz);
+    tree->SetBranchAddress("Edep", &Edep);
+    tree->SetBranchAddress("VisibleEdep", &VisibleEdep);
+
+    for (Int_t i = 0; i < tree->GetEntries(); ++i)
+    {
+        tree->GetEntry(i);
+        Int_t eventID = static_cast<int>(EventID);
+
+        data.pos_map[eventID] = std::make_tuple(x, y, z);
+        data.mom_map[eventID] = std::make_tuple(Px, Py, Pz);
+        data.Edep_map[eventID] = Edep;
+        data.VisibleEdep_map[eventID] = VisibleEdep;
+
+        if (eventid_to_pdgid.count(eventID))
+            data.pdgid_map[eventID] = eventid_to_pdgid[eventID];
+
+        if (eventid_to_Ekin.count(eventID))
+            data.Ekin_map[eventID] = eventid_to_Ekin[eventID];
+    }
+
+    std::cout << "Loaded " << data.pos_map.size() << " fission hits from tree: " << tree_path << std::endl;
+
+    return data;
+}
+
 // used to fill heavy residue object if in coincidence with telescope
 void fillResidueFromMaps(Int_t eventID, 
                          const VirtualDetectorData& magsept_data,
@@ -492,96 +589,87 @@ void fillResidueFromMaps(Int_t eventID,
 }
 
 
-void fillFissionFromMaps(Int_t eventID, const VirtualDetectorData& top_data, const VirtualDetectorData& bottom_data, const VirtualDetectorData& side_data, FissionEvent* fission)
-{
+// Helper: fill one fragment from one detector map set
+void fillFragmentFromOneDetector(
+    Int_t fragmentID,
+    const FissionDetectorData& data,
+    FissionFragment& fragment,
+    const char* detectorName
+) {
+    // Position
+    auto pos_it = data.pos_map.find(fragmentID);
+    if (pos_it != data.pos_map.end()) {
+        const auto& pos = pos_it->second;
+
+        if (std::string(detectorName) == "Top") {
+            fragment.hit_Topdetec = kTRUE;
+            fragment.detec_x = std::get<0>(pos);
+            fragment.detec_y = std::get<1>(pos);
+            fragment.vert_strip = -1 + getStripNbr(fragment.detec_x,80,5);
+            fragment.hor_strip = -1 + getStripNbr(fragment.detec_y,40,2.5);
+        }
+        else if (std::string(detectorName) == "Bottom") {
+            fragment.hit_Bottomdetec = kTRUE;
+            fragment.detec_x = std::get<0>(pos);
+            fragment.detec_y = std::get<1>(pos);
+            fragment.vert_strip = -1 + getStripNbr(fragment.detec_x,80,5);
+            fragment.hor_strip = -1 + getStripNbr(fragment.detec_y,40,2.5);
+        }
+        else if (std::string(detectorName) == "Side") {
+            fragment.hit_Sidedetec = kTRUE;
+            fragment.detec_x = std::get<0>(pos);
+            fragment.detec_y = std::get<1>(pos);
+            fragment.vert_strip = -1 + getStripNbr(fragment.detec_x,122,1);
+            fragment.hor_strip = -1 + getStripNbr(fragment.detec_y,40,1);
+        }
+    }
+
+    // PDG ID
+    auto pdg_it = data.pdgid_map.find(fragmentID);
+    if (pdg_it != data.pdgid_map.end()) {
+        Int_t pdgid = pdg_it->second;
+        fragment.Z = getZ(pdgid);
+        fragment.A = getA(pdgid);
+    }
+
+    // Momentum
+    auto mom_it = data.mom_map.find(fragmentID);
+    if (mom_it != data.mom_map.end()) {
+        const auto& mom = mom_it->second;
+        Double_t px = std::get<0>(mom);
+        Double_t py = std::get<1>(mom);
+        Double_t pz = std::get<2>(mom);
+
+        Double_t p = std::sqrt(px * px + py * py + pz * pz);
+        if (p > 0.0) {
+            fragment.true_theta = std::acos(pz / p) * 180.0 / M_PI;
+        }
+    }
+}
+
+void fillFissionFromMaps(
+    Int_t eventID,
+    const FissionDetectorData& top_data,
+    const FissionDetectorData& bottom_data,
+    const FissionDetectorData& side_data,
+    FissionEvent* fission
+) {
     Int_t lightID = 2 * eventID - 1;
     Int_t heavyID = 2 * eventID;
 
-    // ---------------- light fragment ----------------
-    if (top_data.pos_map.count(lightID))
-    {
-        auto pos = top_data.pos_map.at(lightID);
-        fission->light.hit_Topdetec = kTRUE;
-        fission->light.Topdetec_x = std::get<0>(pos);
-        fission->light.Topdetec_y = std::get<1>(pos);
+    struct DetectorEntry {
+        const FissionDetectorData* data;
+        const char* name;
+    };
 
-        if (top_data.pdgid_map.count(lightID))
-        {
-            Int_t pdgid = top_data.pdgid_map.at(lightID);
-            fission->light.Z = getZ(pdgid);
-            fission->light.A = getA(pdgid);
-        }
-    }
-    if (bottom_data.pos_map.count(lightID))
-    {
-        auto pos = bottom_data.pos_map.at(lightID);
-        fission->light.hit_Bottomdetec = kTRUE;
-        fission->light.Bottomdetec_x = std::get<0>(pos);
-        fission->light.Bottomdetec_y = std::get<1>(pos);
+    std::vector<DetectorEntry> detectors = {
+        {&top_data,    "Top"},
+        {&bottom_data, "Bottom"},
+        {&side_data,   "Side"}
+    };
 
-        if (bottom_data.pdgid_map.count(lightID))
-        {
-            Int_t pdgid = bottom_data.pdgid_map.at(lightID);
-            fission->light.Z = getZ(pdgid);
-            fission->light.A = getA(pdgid);
-        }
-    }
-    if (side_data.pos_map.count(lightID))
-    {
-        auto pos = side_data.pos_map.at(lightID);
-        fission->light.hit_Sidedetec = kTRUE;
-        fission->light.Sidedetec_x = std::get<0>(pos);
-        fission->light.Sidedetec_y = std::get<1>(pos);
-
-        if (side_data.pdgid_map.count(lightID))
-        {
-            Int_t pdgid = side_data.pdgid_map.at(lightID);
-            fission->light.Z = getZ(pdgid);
-            fission->light.A = getA(pdgid);
-        }
-    }
-
-    // ---------------- heavy fragment ----------------
-    if (top_data.pos_map.count(heavyID))
-    {
-        auto pos = top_data.pos_map.at(heavyID);
-        fission->heavy.hit_Topdetec = kTRUE;
-        fission->heavy.Topdetec_x = std::get<0>(pos);
-        fission->heavy.Topdetec_y = std::get<1>(pos);
-
-        if (top_data.pdgid_map.count(heavyID))
-        {
-            Int_t pdgid = top_data.pdgid_map.at(heavyID);
-            fission->heavy.Z = getZ(pdgid);
-            fission->heavy.A = getA(pdgid);
-        }
-    }
-    if (bottom_data.pos_map.count(heavyID))
-    {
-        auto pos = bottom_data.pos_map.at(heavyID);
-        fission->heavy.hit_Bottomdetec = kTRUE;
-        fission->heavy.Bottomdetec_x = std::get<0>(pos);
-        fission->heavy.Bottomdetec_y = std::get<1>(pos);
-
-        if (bottom_data.pdgid_map.count(heavyID))
-        {
-            Int_t pdgid = bottom_data.pdgid_map.at(heavyID);
-            fission->heavy.Z = getZ(pdgid);
-            fission->heavy.A = getA(pdgid);
-        }
-    }
-    if (side_data.pos_map.count(heavyID))
-    {
-        auto pos = side_data.pos_map.at(heavyID);
-        fission->heavy.hit_Sidedetec = kTRUE;
-        fission->heavy.Sidedetec_x = std::get<0>(pos);
-        fission->heavy.Sidedetec_y = std::get<1>(pos);
-
-        if (side_data.pdgid_map.count(heavyID))
-        {
-            Int_t pdgid = side_data.pdgid_map.at(heavyID);
-            fission->heavy.Z = getZ(pdgid);
-            fission->heavy.A = getA(pdgid);
-        }
+    for (const auto& det : detectors) {
+        fillFragmentFromOneDetector(lightID, *(det.data), fission->light, det.name);
+        fillFragmentFromOneDetector(heavyID, *(det.data), fission->heavy, det.name);
     }
 }

@@ -29,7 +29,7 @@ echo "   ####################################################   "
 N=14  # number of concurrent jobs
 
 # Generate plots (yes/no) - default to yes
-generate_plots="yes"
+generate_plots="no"
 
 # Calculate HR channel ranges and get excitation energies from calc_hr_ranges.py
 eval $(python3 UtilityScripts/calc_hr_ranges.py)

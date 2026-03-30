@@ -51,15 +51,13 @@ public:
 class FissionFragment {
 public:
     Int_t Z, A;
-    Int_t vert_strip, hor_strip; // from 1 to 16 && = 0 if not detected in any detector
+    Int_t vert_strip, hor_strip; // from 1 to 16 && = -100 if not detected in any detector
+    Double_t  detec_x, detec_y; 
     Double_t true_Efragment, true_theta;
     Double_t recon_Efragment, recon_theta;
     Bool_t hit_Topdetec;
-    Double_t  Topdetec_x, Topdetec_y; 
     Bool_t hit_Bottomdetec;
-    Double_t  Bottomdetec_x, Bottomdetec_y; 
     Bool_t hit_Sidedetec;
-    Double_t  Sidedetec_x, Sidedetec_y; 
     FissionFragment();
 };
 
@@ -157,6 +155,9 @@ Float_t getEnResolution(Float_t EnergyMeV, Float_t Res_Percent);
 // GAGG scintillator resolution
 double GAGG_resolution(double E);
 
+// Get Strip Nbr
+Int_t getStripNbr(Float_t pos, Float_t det_size, Float_t strip_width);
+
 // Read ejectile event file (Event_output text file) to get true values
 // Tuple: (Z, A, Eexc, Eejc, theta) — Z,A int; Eexc, Eejc, theta double
 std::unordered_map<int, std::tuple<int, int, double, double, double>> readEjectileFile(
@@ -173,6 +174,20 @@ VirtualDetectorData loadVirtualDetector(TFile* recoil_det_output, const char* tr
                                         const char* reaction, const char* recType, 
                                         Int_t excLabel, Double_t excEn);
 
+// Helper function to load Fission detector data
+struct FissionDetectorData {
+    std::unordered_map<int, std::tuple<Float_t, Float_t, Float_t>> pos_map;
+    std::unordered_map<int, std::tuple<Float_t, Float_t, Float_t>> mom_map;
+    std::unordered_map<int, Int_t> pdgid_map;
+    std::unordered_map<int, Float_t> Edep_map;
+    std::unordered_map<int, Float_t> VisibleEdep_map;
+    std::unordered_map<int, Double_t> Ekin_map;
+};
+
+FissionDetectorData loadFissionDetector(TFile* recoil_det_output, const char* tree_path,
+                                        const char* reaction, const char* recType,
+                                        Int_t excLabel, Double_t excEn);
+
 // Helper function to fill residue from virtual detector maps
 void fillResidueFromMaps(Int_t eventID, 
                          const VirtualDetectorData& magsept_data,
@@ -180,10 +195,15 @@ void fillResidueFromMaps(Int_t eventID,
                          const VirtualDetectorData& quadwall_data,
                          HeavyResidue* residue);
 
+void fillFragmentFromOneDetector(Int_t fragmentID,
+                                 const FissionDetectorData& data,
+                                 FissionFragment& fragment,
+                                 const char* detectorName);
+
 void fillFissionFromMaps(Int_t eventID, 
-                         const VirtualDetectorData& top_data, 
-                         const VirtualDetectorData& bottom_data, 
-                         const VirtualDetectorData& side_data, 
+                         const FissionDetectorData& top_data, 
+                         const FissionDetectorData& bottom_data, 
+                         const FissionDetectorData& side_data, 
                          FissionEvent* fission);
 
 // ========= Main analysis function =========
