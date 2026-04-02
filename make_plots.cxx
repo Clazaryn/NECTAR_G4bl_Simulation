@@ -6,6 +6,7 @@
 // This file is compiled with g++ into a shared library
 
 #include "UtilityScripts/make_plots.h"
+#include "UtilityScripts/make_plots_banana.h"
 #include "UtilityScripts/det_analysis.h"
 #include <TChain.h>
 #include <TFile.h>
@@ -38,28 +39,54 @@ void make_plots() {
     
     std::cout << "Added " << nAdded << " file(s) to chain. Note all ROOT files in Det_analysis directory will be added to the chain." << std::endl;
     
+    // IMPORTANT:
+    // For the full chain, used for BananaPlot only , we only keep ejectile active
+    //fChain->SetBranchStatus("*", 0);
+    //fChain->SetBranchStatus("ejectile*", 1);
+
+    // Chain with all files EXCEPT HRf
+    TChain* fChain_no_fission = new TChain("events");
+
+    Int_t nAddedNoFission = 0;
+    nAddedNoFission += fChain_no_fission->Add(Form("./%s_results/Det_analysis/events_%s_HR1n_*.root", reaction, reaction));
+    nAddedNoFission += fChain_no_fission->Add(Form("./%s_results/Det_analysis/events_%s_HR2n_*.root", reaction, reaction));
+    nAddedNoFission += fChain_no_fission->Add(Form("./%s_results/Det_analysis/events_%s_HR3n_*.root", reaction, reaction));
+    nAddedNoFission += fChain_no_fission->Add(Form("./%s_results/Det_analysis/events_%s_HR4n_*.root", reaction, reaction));
+    nAddedNoFission += fChain_no_fission->Add(Form("./%s_results/Det_analysis/events_%s_HRg_*.root", reaction, reaction));
+
+    if (nAddedNoFission == 0) {
+        std::cerr << "make_plots.cxx:" << __LINE__ << ": Error: No det_analysis files found for pattern: " << pattern << std::endl;
+        delete fChain;
+        return;
+    }
+
+    std::cout << "Added " << nAddedNoFission
+              << " file(s) to no-fission chain." << std::endl;
+
     // Create plot managers (no recType needed - they handle channels internally)
     BananaPlotManager bananaPlots(fChain, det_setup, reaction, "");
     bananaPlots.initializePlots();
     bananaPlots.fillPlots();
     bananaPlots.writePlots(reaction);
 
-    AccuracyPlotManager accuracyPlots(fChain, det_setup, reaction, "");
+    AccuracyPlotManager accuracyPlots(fChain_no_fission, det_setup, reaction, "");
     accuracyPlots.initializePlots();
     accuracyPlots.fillPlots();
     accuracyPlots.writePlots(reaction);
 
-    ExcResolutionPlotManager excResPlots(fChain, det_setup, reaction, "");
+    ExcResolutionPlotManager excResPlots(fChain_no_fission, det_setup, reaction, "");
     excResPlots.initializePlots();
     excResPlots.fillPlots();
     excResPlots.writePlots(reaction);
 
-    TransmissionPlotManager transPlots(fChain, det_setup, reaction, "");
+    TransmissionPlotManager transPlots(fChain_no_fission, det_setup, reaction, "");
     transPlots.initializePlots();
     transPlots.fillPlots();
     transPlots.writePlots(reaction);
+
     
     delete fChain;
+    delete fChain_no_fission;
     
     std::cout << "\n=== All plotting complete ===" << std::endl;
 }

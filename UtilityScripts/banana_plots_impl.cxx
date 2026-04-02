@@ -1,4 +1,5 @@
 // Implementation file for banana plots
+#include "make_plots_banana.h"
 #include "make_plots.h"
 #include <TMath.h>
 #include <cmath>
@@ -7,9 +8,12 @@
 
 BananaPlotManager::BananaPlotManager(TChain* chain, const std::string& setup, 
                                      const std::string& reac, const std::string& rec)
-    : PlotManager(chain, setup, reac, rec),
-      nBins_dE(150), nBins_E1(250), nBins_Eres(250), nBins_Eresid(250),
-      dE_max(15), E1_max(25), Eres_max(100), Eresid_max(125) {
+    : BananaPlotManagerBase(chain, setup, reac, rec),
+    nBins_dE(150), nBins_E1(250), nBins_Eres(250), nBins_Eresid(250),
+    dE_min(0), dE_max(15),
+    E1_min(0), E1_max(25),
+    Eres_min(0), Eres_max(100),
+    Eresid_max(125) {
     
     // Primary: 35-45, 45-55, 55-65, 65-75, 75-85 deg
     thetaBinEdges_primary[0] = 35;
@@ -113,7 +117,7 @@ void BananaPlotManager::initializePlots() {
     }
 }
 
-void BananaPlotManager::fillEvent(LightEjectile* ejectile, HeavyResidue* residue, Short_t decay_channel) {
+void BananaPlotManager::fillEvent(LightEjectile* ejectile) {
     // Get measured energies from ejectile object
     // Note: decay_channel is ignored - all channels are combined
     Float_t dE = ejectile->meas_dE;
@@ -136,8 +140,7 @@ void BananaPlotManager::fillEvent(LightEjectile* ejectile, HeavyResidue* residue
     bool punch_through_dE_E1 = (dE > 0 && E1 > 0);
     
     // Suppress unused parameter warnings
-    (void)residue;
-    (void)decay_channel;
+
     
     if (det_setup == "new" || det_setup == "New") {
         if (detector_id == 0) {

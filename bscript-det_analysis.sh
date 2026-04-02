@@ -29,7 +29,7 @@ echo "   ####################################################   "
 N=14  # number of concurrent jobs
 
 # Generate plots (yes/no) - default to yes
-generate_plots="no"
+generate_plots="yes"
 
 # Calculate HR channel ranges and get excitation energies from calc_hr_ranges.py
 eval $(python3 UtilityScripts/calc_hr_ranges.py)
@@ -279,6 +279,7 @@ echo "Analysis complete. Running plotting script (disable to speed up script exe
 # Compile plotting library (links against libDetAnalysis.so)
 compile_library_if_needed "libMakePlots.so" \
   "UtilityScripts/make_plots_impl.cxx" \
+  "UtilityScripts/make_plots_banana_impl.cxx" \
   "UtilityScripts/banana_plots_impl.cxx" \
   "UtilityScripts/accuracy_plots_impl.cxx" \
   "UtilityScripts/exc_resolution_plots_impl.cxx" \
@@ -293,6 +294,13 @@ gSystem->Load("libDetAnalysis.so");
 gSystem->Load("libMakePlots.so");
 .L UtilityScripts/make_plots.h
 make_plots();
+.q
+ROOT_EOF
+
+echo "Running fission transmission plotting script..."
+root -l -b <<ROOT_EOF
+.L UtilityScripts/MakeFissionTransmissionPlot.cpp+
+MakeFissionTransmissionPlot("${reaction}");
 .q
 ROOT_EOF
 

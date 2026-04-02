@@ -1,0 +1,102 @@
+#ifndef MAKE_PLOTS_BANANA_H
+#define MAKE_PLOTS_BANANA_H
+
+#include <iostream>
+#include <vector>
+#include <string>
+#include <unordered_map>
+
+#include <TROOT.h>
+#include <TFile.h>
+#include <TTree.h>
+#include <TChain.h>
+#include <TH1D.h>
+#include <TH2D.h>
+#include <TDirectory.h>
+#include <TF1.h>
+#include <TGraphErrors.h>
+#include <TCanvas.h>
+#include <TLegend.h>
+#include <TBox.h>
+#include <TMultiGraph.h>
+
+#include "reaction_info.h"
+#include "det_analysis.h"
+
+// ========= Base Banana Plot Manager Class =========
+
+class BananaPlotManagerBase {
+protected:
+    TChain* fChain;              // Chain of events to process
+    std::string det_setup;       // "new" or "PoP"
+    std::string reaction;
+    std::string recType;
+    
+public:
+    BananaPlotManagerBase(TChain* chain, const std::string& setup, 
+                          const std::string& reac, const std::string& rec);
+    virtual ~BananaPlotManagerBase();
+    
+    // Initialize all histograms (must be implemented by derived classes)
+    virtual void initializePlots() = 0;
+    
+    // Fill plots from event data (loops over chain, calls fillEvent for each)
+    void fillPlots();
+    
+    // Fill a single event (must be implemented by derived classes)
+    virtual void fillEvent(LightEjectile* ejectile) = 0;
+    
+    // Write all plots to file (must be implemented by derived classes)
+    // Takes reaction name - derived classes handle channel separation internally
+    virtual void writePlots(const char* reaction) = 0;
+};
+
+// ========= Banana Plot Manager Class =========
+
+class BananaPlotManager : public BananaPlotManagerBase {
+private:
+    // Histogram containers
+    std::vector<TH2D*> hDEvE1_primary;      // dE vs E1 for primary telescope (New setup)
+    std::vector<TH2D*> hDEvE1_auxillary;    // dE vs E1 for auxillary telescope (New setup)
+    std::vector<TH2D*> hDEvE1_PoP;          // dE vs E1 for PoP setup
+    
+    std::vector<TH2D*> hDEvEres_primary;     // dE vs E_resid (punch-through), E_resid = E1+Eres (New)
+    std::vector<TH2D*> hDEvEres_auxillary;   // dE vs E_resid for auxillary telescope (New setup)
+    std::vector<TH2D*> hDEvEres_PoP;         // dE vs E_resid for PoP (E_resid = E1+E2+...)
+    
+    // Theta-binned histograms (New setup only)
+    std::vector<std::vector<TH2D*>> hDEvE1_primary_theta;     // [theta_bin]
+    std::vector<std::vector<TH2D*>> hDEvE1_auxillary_theta;   // [theta_bin]
+    std::vector<std::vector<TH2D*>> hDEvEres_primary_theta;   // [theta_bin]
+    std::vector<std::vector<TH2D*>> hDEvEres_auxillary_theta; // [theta_bin]
+    
+    // Theta binning: primary 35-45,...,75-85 deg; auxillary 5-15, 15-25 deg (avoid empty bins)
+    static const Int_t nThetaBins_primary = 5;    // 35-45, 45-55, 55-65, 65-75, 75-85
+    static const Int_t nThetaBins_auxillary = 2;  // 5-15, 15-25
+    Double_t thetaBinEdges_primary[nThetaBins_primary + 1];
+    Double_t thetaBinEdges_auxillary[nThetaBins_auxillary + 1];
+    
+    // Histogram parameters
+    Int_t nBins_dE, nBins_E1, nBins_Eres, nBins_Eresid;
+    Double_t dE_min, dE_max, E1_min, E1_max, Eres_min, Eres_max, Eresid_max;
+    
+    Int_t getThetaBinPrimary(Double_t theta) const;
+    Int_t getThetaBinAuxillary(Double_t theta) const;
+    
+public:
+    BananaPlotManager(TChain* chain, const std::string& setup, 
+                      const std::string& reac, const std::string& rec);
+    virtual ~BananaPlotManager();
+    
+    // Initialize all histograms
+    void initializePlots() override;
+    
+    // Fill a single event
+    void fillEvent(LightEjectile* ejectile) override;
+    
+    // Write all plots to file
+    void writePlots(const char* reaction) override;
+};
+
+
+#endif // MAKE_PLOTS_BANANA_H
