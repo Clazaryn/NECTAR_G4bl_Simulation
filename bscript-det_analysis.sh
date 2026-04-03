@@ -297,6 +297,7 @@ make_plots();
 .q
 ROOT_EOF
 
+# Now running the fission efficiency plot
 echo "Running fission transmission plotting script..."
 root -l -b <<ROOT_EOF
 .L UtilityScripts/MakeFissionTransmissionPlot.cpp+
