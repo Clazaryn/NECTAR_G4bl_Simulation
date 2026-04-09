@@ -72,6 +72,8 @@ using namespace std;
 #include <TGaxis.h>
 #include "det_analysis.h"
 
+#include "Lucas_drawing_palette.h"
+
 using namespace std;
 //namespace fs = std::filesystem;
 
@@ -239,44 +241,10 @@ void MakeFissionTransmissionPlot(const char* reaction_name = "238U_dp"){
     }*/
 
     // --------------------------------------------------------
-    // Global style, inspired by your GetGEFGraph.cpp
+    // Set Style
     // --------------------------------------------------------
-    gStyle->SetPalette(57);
-    gStyle->SetTextFont(132);
-    gStyle->SetTitleFont(132,"xyz");
-    gStyle->SetTitleFont(132,"a");
-    gStyle->SetLabelFont(132,"xyz");
-    gStyle->SetOptStat(0);
-    gStyle->SetGridColor(kGray+2);
-    gStyle->SetTitleFontSize(0.07);
-    gROOT->ForceStyle();
-
-    // --------------------------------------------------------
-    // Custom colors close to your palette spirit
-    // --------------------------------------------------------
-  
-
-    int DarkerBlueColor = TColor::GetColor((int)53,(int)39, (int)140);
-    int DarkerBlueColor2 = TColor::GetColor((int)42,(int)31, (int)111);
-    int DarkerBlueColor3 = TColor::GetColor((int)31,(int)23, (int)83);
-    int BlueColor = TColor::GetColor((int)41,(int)95, (int)166);
-    int LighterBlueColor = TColor::GetColor((int)56,(int)128, (int)223);
-    int RedColor = TColor::GetColor((int)217,(int)48, (int)62);
-    int DarkerRedColor = TColor::GetColor((int)129,(int)28, (int)37);
-    int BrownColor = TColor::GetColor((int)72,(int)16, (int)21);
-    int GreenColor = TColor::GetColor((int)10,(int)166, (int)122);
-    int DarkerGreenColor = TColor::GetColor((int)5,(int)78, (int)57);
-    int OrangeColor = TColor::GetColor((int)251,(int)131, (int)40);
-    int DarkerOrangeColor = TColor::GetColor((int)192,(int)100, (int)31);
-    int DarkerCyanColor = TColor::GetColor((int)27,(int)87, (int)107);
-    int CyanColor = TColor::GetColor((int)41,(int)135, (int)166);
-    int LighterCyanColor = TColor::GetColor((int)54,(int)176, (int)217);
-    int MagentaColor = TColor::GetColor((int)218,(int)48, (int)164);
-    int DarkerMagentaColor = TColor::GetColor((int)129,(int)28, (int)97);
-    int WaterGreenColor = TColor::GetColor((int)0,(int)224, (int)138);
-    int LightGreenColor = TColor::GetColor((int)13,(int)224, (int)165);
-    int YellowColor = TColor::GetColor((int)237,(int)196,(int)59);
-    int PurpleColor = TColor::GetColor((int)146,(int)10,(int)65);
+    
+    LucasStyle::SetGlobalStyle();
 
     // ---------------------------------------------------------------------------------------------------------------------
     // Let's loop on the fission ".root" files and gets the number of events (and proportion) for each of the detection case  
@@ -343,13 +311,12 @@ void MakeFissionTransmissionPlot(const char* reaction_name = "238U_dp"){
     TH1D* HitRatio_TopandSide = new TH1D("HitRatio_TopandSide","HitRatio_TopandSide",Bin_number,Emin,Emax);
     TH1D* HitRatio_BottomandSide = new TH1D("HitRatio_BottomandSide","HitRatio_BottomandSide",Bin_number,Emin,Emax);
     
-
-    FormatHist(HitRatio_Bottom,RedColor);
-    FormatHist(HitRatio_Side,BlueColor);
-    FormatHist(HitRatio_Top,GreenColor);
-    FormatHist(HitRatio_TopandBottom,YellowColor);
-    FormatHist(HitRatio_TopandSide,LighterCyanColor);
-    FormatHist(HitRatio_BottomandSide,PurpleColor);
+    LucasStyle::FormatHistSolid(HitRatio_Bottom, LucasStyle::RedColor);
+    LucasStyle::FormatHistSolid(HitRatio_Side, LucasStyle::BlueColor);
+    LucasStyle::FormatHistSolid(HitRatio_Top, LucasStyle::GreenColor);
+    LucasStyle::FormatHistSolid(HitRatio_TopandBottom, LucasStyle::YellowColor);
+    LucasStyle::FormatHistSolid(HitRatio_TopandSide, LucasStyle::LighterCyanColor);
+    LucasStyle::FormatHistSolid(HitRatio_BottomandSide, LucasStyle::PurpleColor);
     
     for (int Eex_bin = 0; Eex_bin < energyNumber; Eex_bin++){
 
@@ -702,19 +669,25 @@ void MakeFissionTransmissionPlot(const char* reaction_name = "238U_dp"){
         y0 += frac;
     };
 
-    drawFracBox(Full_count_bottom, RedColor);
-    drawFracBox(Full_count_top, GreenColor);
-    drawFracBox(Full_count_side, BlueColor);
-    drawFracBox(Full_count_top_and_bottom, YellowColor);
-    drawFracBox(Full_count_top_and_side, LighterCyanColor);
-    drawFracBox(Full_count_bottom_and_side, PurpleColor);
+    drawFracBox(Full_count_bottom, LucasStyle::RedColor);
+    drawFracBox(Full_count_top, LucasStyle::GreenColor);
+    drawFracBox(Full_count_side, LucasStyle::BlueColor);
+    drawFracBox(Full_count_top_and_bottom, LucasStyle::YellowColor);
+    drawFracBox(Full_count_top_and_side, LucasStyle::LighterCyanColor);
+    drawFracBox(Full_count_bottom_and_side, LucasStyle::PurpleColor);
 
     gPad->RedrawAxis();
     // --------------------------------------------------------
     // Now we save the file 
     // --------------------------------------------------------
-    cFission->SaveAs("FissionEfficiencies.pdf");
-    //cFission->SaveAs("Theta_distributions_top_bottom_allExcEn.png");
+    TString pdfDir = Form("./%s_results/Fission_pdfs", ReactionName.c_str());
+    if(gSystem->AccessPathName(pdfDir)){
+        gSystem->mkdir(pdfDir, kTRUE);
+    }
+
+    TString pdfFileName = Form("./%s_results/Fission_pdfs/FissionEfficiencies.pdf", ReactionName.c_str());
+    cFission->SaveAs(pdfFileName);
+        //cFission->SaveAs("Theta_distributions_top_bottom_allExcEn.png");
 
     // --------------------------------------------------------
     // Create ROOT-safe canvas copy with standard colors

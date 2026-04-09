@@ -11,7 +11,7 @@
 
 using namespace std;
 
-int GEF_Reader(int Zf, int Af, double Estar, int factor) {
+void GEF_Reader(int Zf, int Af, double Estar, int factor) {
 
     setlocale(LC_NUMERIC, "C");
 
@@ -23,7 +23,6 @@ int GEF_Reader(int Zf, int Af, double Estar, int factor) {
 
     if (!file) {
         std::cerr << "File does not exist or could not be opened." << std::endl;
-        return 1;  // Exit with error
     }
 
     if (gSystem->AccessPathName("GEF_tree")) gSystem->mkdir("GEF_tree", kTRUE);

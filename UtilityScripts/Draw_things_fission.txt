@@ -19,3 +19,9 @@ events->Draw("fission.heavy.true_theta>>h2(100,0,100)","fission.heavy.true_theta
 
 events->Draw("fission.light.hor_strip:fission.light.vert_strip>>h1(16,0,16,16,0,16)","fission.light.hit_Bottomdetec","col")
 events->Draw("fission.heavy.hor_strip:fission.heavy.vert_strip>>h2(16,0,16,16,0,16)","fission.heavy.hit_Bottomdetec","colsame")
+
+
+
+events->Draw("fission.heavy.E_deposited>>h2(100,0,5000)","fission.heavy.Z>0 && fission.heavy.hit_Topdetec","same")
+events->Draw("fission.heavy.E_deposited:fission.heavy.true_theta>>h2(200,0,20,100,0,5000)","fission.heavy.Z>0","col")
+events->Draw("fission.light.E_deposited:fission.light.true_theta>>h3(200,0,20,100,0,5000)","fission.light.Z>0 && fission.light.hit_Sidedetec","col")

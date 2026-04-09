@@ -181,7 +181,7 @@ box Bottom_Beam height=27 width=87 length=1.5 material=STAINLESS-STEEL maxStep=0
 
 ### SIDE POCKET
 # Side fission detector
-detector Silicon_side height=44 width=122 length=0.500 color=0.4,0.5,0 material=Si maxStep=0.0005 color=0.4,0.5,0
+detector Silicon_side height=40 width=122 length=0.500 color=0.4,0.5,0 material=Si maxStep=0.0005 color=0.4,0.5,0
 
 # Side fission window
 detector Stainlesswindow_side height=40 width=120 length=0.025 material=STAINLESS-STEEL maxStep=0.0005 color=1,1,1,0.2

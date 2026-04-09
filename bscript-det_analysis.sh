@@ -41,6 +41,8 @@ declare -a mode_names=()
 declare -a mode_start_indices=()
 declare -a mode_stop_indices=()
 
+run_fission_plots="no";
+
 # Process each mode once and store the information
 for mode in "${run_HR_modes[@]}"; do
     mode_clean=$(echo "$mode" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
@@ -53,6 +55,10 @@ for mode in "${run_HR_modes[@]}"; do
         mode_start_indices+=("$start_idx")
         mode_stop_indices+=("$stop_idx")
     fi
+
+    if [ "$mode_clean" == "HRf" ]; then
+        run_fission_plots="yes";
+    fi;
 done
 
 # Display HR channel ranges using stored information
@@ -297,12 +303,25 @@ make_plots();
 .q
 ROOT_EOF
 
-# Now running the fission efficiency plot
-echo "Running fission transmission plotting script..."
-root -l -b <<ROOT_EOF
+# Now running the fission  plot
+if [ "$run_fission_plots" == "yes" ]; then
+    echo "HRf mode detected. Running fission transmission plotting script...";
+    root -l -b <<ROOT_EOF
+gSystem->SetBuildDir("UtilityScripts/__rootcache__", kTRUE);
 .L UtilityScripts/MakeFissionTransmissionPlot.cpp+
 MakeFissionTransmissionPlot("${reaction}");
 .q
 ROOT_EOF
+
+    echo "Running fission E-strip plotting script...";
+    root -l -b <<ROOT_EOF
+gSystem->SetBuildDir("UtilityScripts/__rootcache__", kTRUE);
+.L UtilityScripts/MakeFissionEStripplots.cpp+
+MakeFissionEStripplots("${reaction}");
+.q
+ROOT_EOF
+else
+    echo "HRf mode not requested. Skipping fission-specific plots.";
+fi
 
 fi

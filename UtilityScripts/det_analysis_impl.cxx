@@ -109,8 +109,8 @@ HeavyResidue::HeavyResidue() : Z(0), A(0), hit_MagSept(kFALSE), MagSept_x(0), Ma
 
 FissionFragment::FissionFragment(): Z(0), A(0), vert_strip(-100), hor_strip(-100),
                                      detec_x(-9999),detec_y(-9999),
-                                     true_Efragment(0), true_theta(0),
-                                     recon_Efragment(0), recon_theta(0),
+                                     E_emission(0), true_theta(0),
+                                     E_deposited(0), recon_theta(0),
                                      hit_Topdetec(kFALSE),
                                      hit_Bottomdetec(kFALSE),
                                      hit_Sidedetec(kFALSE) {}
@@ -620,7 +620,7 @@ void fillFragmentFromOneDetector(
             fragment.detec_x = std::get<0>(pos);
             fragment.detec_y = std::get<1>(pos);
             fragment.vert_strip = -1 + getStripNbr(fragment.detec_x,122,1);
-            fragment.hor_strip = -1 + getStripNbr(fragment.detec_y,40,1);
+            fragment.hor_strip = -1 + getStripNbr(fragment.detec_y,40,1); // TO CHECK in the PoP 44mm is written !! 
         }
     }
 
@@ -644,6 +644,18 @@ void fillFragmentFromOneDetector(
         if (p > 0.0) {
             fragment.true_theta = std::acos(pz / p) * 180.0 / M_PI;
         }
+    }
+
+    // Emission energy = kinetic energy from event generator
+    auto Ekin_it = data.Ekin_map.find(fragmentID);
+    if (Ekin_it != data.Ekin_map.end()) {
+        fragment.E_emission = Ekin_it->second;
+    }
+
+    // Deposited energy = detector deposited energy
+    auto Edep_it = data.Edep_map.find(fragmentID);
+    if (Edep_it != data.Edep_map.end()) {
+        fragment.E_deposited = Edep_it->second;
     }
 }
 

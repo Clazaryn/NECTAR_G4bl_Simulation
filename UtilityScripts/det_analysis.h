@@ -53,8 +53,8 @@ public:
     Int_t Z, A;
     Int_t vert_strip, hor_strip; // from 1 to 16 && = -100 if not detected in any detector
     Double_t  detec_x, detec_y; 
-    Double_t true_Efragment, true_theta;
-    Double_t recon_Efragment, recon_theta;
+    Double_t E_emission, true_theta;
+    Double_t E_deposited, recon_theta;
     Bool_t hit_Topdetec;
     Bool_t hit_Bottomdetec;
     Bool_t hit_Sidedetec;
