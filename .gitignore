@@ -10,3 +10,10 @@ Detectors*.root
 lib*.so
 *_results/
 *.pdf
+*_cpp.d
+*_cpp.so
+*_cpp_ACLiC_dict_rdict.pcm
+*.rootmap
+*.pcm
+*.so
+*.d
