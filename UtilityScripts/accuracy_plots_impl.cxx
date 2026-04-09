@@ -5,9 +5,9 @@
 #include <TMath.h>
 #include <cmath>
 
-// Shared bin ranges: E* 0-26 MeV, Eejc 0-150 MeV, accuracy ±5
-static const Int_t nBins_Eexc = 26;
-static const Double_t Eexc_min = 0.0, Eexc_max = 26.0;
+// Shared bin ranges: E* from reac_info.txt, Eejc 0-150 MeV, accuracy +/-5
+static Int_t nBins_Eexc = 26;
+static Double_t Eexc_min = 0.0, Eexc_max = 26.0;
 static const Int_t nBins_Eejc = 300;
 static const Double_t Eejc_min = 0.0, Eejc_max = 150.0;
 static const Int_t nBins_accuracy = 200;
@@ -91,6 +91,7 @@ static void createDetectorHists(const std::string& reaction, const std::string& 
 }
 
 void AccuracyPlotManager::initializePlots() {
+    std::tie(Eexc_min, Eexc_max, nBins_Eexc) = getEexcBinningFromIni(0.0, 26.0, 1.0);
     if (det_setup == "new" || det_setup == "New") {
         createDetectorHists(reaction, "primary", Theta_primary_lo, Theta_primary_hi, nBins_Theta_primary,
                             h_1d_primary, h_2d_primary);

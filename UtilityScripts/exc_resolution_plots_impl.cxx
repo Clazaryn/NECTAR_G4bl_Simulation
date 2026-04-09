@@ -6,8 +6,8 @@
 #include <cmath>
 #include <vector>
 
-static const Int_t nBins_Eexc = 26;
-static const Double_t Eexc_min = 0.0, Eexc_max = 26.0;
+static Int_t nBins_Eexc = 26;
+static Double_t Eexc_min = 0.0, Eexc_max = 26.0;
 static const Int_t nBins_dEexc = 100;
 static const Double_t dEexc_min = -5.0, dEexc_max = 5.0;
 static const Int_t minEntriesForFit = 10;
@@ -73,6 +73,7 @@ ExcResolutionPlotManager::~ExcResolutionPlotManager() {
 }
 
 void ExcResolutionPlotManager::initializePlots() {
+    std::tie(Eexc_min, Eexc_max, nBins_Eexc) = getEexcBinningFromIni(0.0, 26.0, 1.0);
     TString name, title;
     TString reac(reaction.c_str());
 

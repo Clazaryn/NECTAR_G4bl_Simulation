@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <tuple>
 
 #include <TROOT.h>
 #include <TFile.h>
@@ -31,6 +32,10 @@ protected:
     std::string det_setup;       // "new" or "PoP"
     std::string reaction;
     std::string recType;
+    // Shared helper: load E* binning from reac_info (upper bound = excEn_stop + excEn_bin).
+    // Returns (min, max, nBins) with defaults if file/keys are missing.
+    static std::tuple<Double_t, Double_t, Int_t> getEexcBinningFromIni(
+        Double_t defaultMin = 0.0, Double_t defaultStop = 26.0, Double_t defaultBin = 1.0);
     
 public:
     PlotManager(TChain* chain, const std::string& setup, 
